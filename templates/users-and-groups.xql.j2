@@ -1,0 +1,66 @@
+xquery version "3.1";
+
+declare variable $local:users :=
+	map:new((
+{{exist_userpass_map[inventory_hostname]}}
+	));
+
+declare function local:create-user-and-group($name) {
+(: create group :)
+    if(false() = sm:group-exists($name))
+    then (
+        sm:create-group($name),
+        <msg>{"created group '"|| $name || "'"}</msg>
+    )
+    else (
+        <msg>{"group '" || $name || "' already exists"}</msg>
+    ),
+    (: create user :)
+    if(false() = sm:user-exists($name))
+    then (
+        sm:create-account($name, $name, $name,()),
+        <msg>{"created user '"|| $name ||"'"}</msg>
+    )
+    else (
+        <msg>{"user '" || $name || "' already exists"}</msg>
+    )
+};
+
+declare function local:change-passwords(){
+    let $changed-user-passwords := for $user in map:keys($local:users)
+    return
+        let $passwd :=
+            if(true() = sm:user-exists($user))
+            then (
+                let $change := sm:passwd($user, $local:users($user))
+                return "changed pwd for user: '" || $user || "'"
+            ) else (
+                let $create-user := local:create-user-and-group($user)
+                let $change := sm:passwd($user, $local:users($user))
+                return "created user '" || $user || "' and changed its password"
+                
+            )
+        return
+            <msg>{$passwd}</msg>
+
+    return
+        $changed-user-passwords
+
+
+};
+
+let $changed-pwds := local:change-passwords()
+return
+    <hardening>
+        <users count="{count( sm:list-users() ) }">{
+            for $user in sm:list-users()
+            return
+                <user>{$user}</user>
+        }</users>
+        <groups count="{ count( sm:get-groups() ) }">{
+            for $group in sm:get-groups()
+            return
+                <group>{$group}</group>
+        }</groups>
+        <updated-passwords count="{ count( $changed-pwds ) }">{$changed-pwds}</updated-passwords>
+    </hardening>

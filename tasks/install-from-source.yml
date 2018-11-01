@@ -1,0 +1,41 @@
+---
+## Install exist-db from source (git + build)
+
+- name: Determine git branch revision
+  shell: "cd {{ exist_path }}; git show-ref -s --abbrev --heads {{ exist_repo_version }} || true"
+  register: git_revision
+  #when: ansible_local['exist'][exist_suffix]['exist_installed']
+
+- name: Set fact whether to replace an installed eXist
+  set_fact:
+    exist_replace_installation: yes
+  # if exist is installed AND the archive revision is different from installed
+  when:
+    - ansible_local['exist'][exist_suffix]['exist_installed']
+    - git_revision.stdout != ansible_local['exist'][exist_suffix]['exist_revision']
+
+- name: Debug1
+  debug:
+    msg: "installed: {{ ansible_local['exist'][exist_suffix]['exist_installed'] }} running: {{ ansible_local['exist'][exist_suffix]['exist_running'] }} gitsrc: {{ ansible_local['exist'][exist_suffix]['exist_gitsrc'] }} rev: {{ ansible_local['exist'][exist_suffix]['exist_revision'] }} git_rev: {{ git_revision.stdout }} replace: {{ exist_replace_installation }}"
+
+- name: Include stop and backup tasks if installing a different eXist
+  include_tasks: stop-and-backup.yml
+  when: exist_replace_installation
+
+- name: Clone eXist into configured directory
+  become_user: "{{ exist_user }}"
+  git:
+    repo: "{{ exist_repo }}"
+    dest: "{{ exist_path }}"
+    version: "{{ exist_repo_version }}"
+    #refspec: origin
+    force: "{{ exist_repo_force }}"
+    update: "{{ exist_repo_update }}"
+  when: not ansible_local['exist'][exist_suffix]['exist_installed'] or exist_replace_installation
+
+- name: Build/rebuild eXist
+  become_user: "{{ exist_user }}"
+  shell: "./build.sh clean clean-all && ./build.sh >build.log 2>&1"
+  args:
+    chdir: "{{ exist_path }}"
+  when: not ansible_local['exist'][exist_suffix]['exist_installed'] or exist_replace_installation

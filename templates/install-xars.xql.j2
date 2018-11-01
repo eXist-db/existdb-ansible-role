@@ -1,0 +1,110 @@
+xquery version "3.1";
+
+declare namespace expath="http://expath.org/ns/pkg";
+
+declare variable $local:xarlist := ("{{ xarlist | join("\",\"") }}");
+declare variable $local:force-install := "{{ exist_force_xar_install }}";
+
+(: util to peek into expath:package data of yet uninstalled xar files.
+ : stolen from eXide, thanks :)
+declare function local:get-descriptors($zipPath) {
+    let $binary := util:binary-doc($zipPath)
+    return
+        if (exists($binary)) then
+            let $dataCb := function($path as xs:anyURI, $type as xs:string, $data as item()?, $param as item()*) { $data }
+            let $entryCb := function($path as xs:anyURI, $type as xs:string, $param as item()*) { $path = "expath-pkg.xml" }
+            return
+                compression:unzip($binary, $entryCb, (), $dataCb, ())
+        else
+            util:log('info', "file not found: " || $zipPath)
+};
+
+(: helper functions to compare version number strings.
+ : stolen from packagemanager, thanks, very nice :)
+declare function local:is-newer($available as xs:string, $installed as xs:string) as xs:boolean {
+    let $verInstalled := tokenize($installed, "\.")
+    let $verAvailable := tokenize($available, "\.")
+    return
+        local:compare-versions($verInstalled, $verAvailable)
+};
+declare function local:compare-versions($installed as xs:string*, $available as xs:string*) as xs:boolean {
+    if (empty($installed)) then
+        exists($available)
+    else if (empty($available)) then
+        false()
+    else if (head($available) = head($installed)) then
+        local:compare-versions(tail($installed), tail($available))
+    else
+        number(head($available)) > number(head($installed))
+};
+
+(: deploy a single xar file, uninstall older first if needed :)
+declare function local:deploy-xar($xar) {
+    let $fname := "/usr/local/existdb/exist/xars/" || $xar
+
+    let $xarfile :=  
+        if (file:exists($fname) and file:is-readable($fname)) then ( 
+            file:read-binary($fname)
+        ) else ( 
+            let $log := util:log('info', "install-xars: file " || $fname || " does not exist or is not readable")
+            return ()
+        )
+
+    (: $stored is logically true if the xar could be saved into eXist DB :)
+    let $stored := 
+        if (not(empty($xarfile))) then ( 
+(:        if (boolean($xarfile)) then ( :)
+            xmldb:store("/db/temp", $xar, $xarfile)
+        ) else ( 
+            let $log := util:log('info', "install-xars: not storing empty xar file " || $fname)
+            return ()
+        )
+
+    let $descriptors := local:get-descriptors("/db/temp/" || $xar)
+    let $expath := $descriptors/expath:package
+    let $name := $expath/@name
+    let $newversion := $expath/@version
+    let $installed := (collection("/db/apps")//expath:package,
+                       collection("/db/system/repo")//expath:package)[@name = $name]
+    let $oldversion := $installed/@version
+    let $log := util:log('info', "install-xars: xar " || $xar || ", fname: " || $fname || ", uri: " || $name || ", oldversion: " || $oldversion || ", newversion: " || $newversion)
+
+    let $toinstall :=
+        if (not(boolean($installed))) then (
+            let $log := util:log('info', "install-xars: xar " || $xar || " is not installed")
+            return true()
+        ) else if ($local:force-install = "true") then (
+            let $log := util:log('info', "install-xars: forcing uninstall of existing version " || $oldversion || ", uninstalling " || $name)
+            let $undep := repo:undeploy($name)
+            return repo:remove($name)
+        ) else ( 
+            if (local:is-newer($newversion, $oldversion)) then (
+                let $log := util:log('info', "install-xars: found older version " || $oldversion || ", uninstalling " || $name)
+                let $undep := repo:undeploy($name)
+                return repo:remove($name)
+            ) else ( 
+                let $log := util:log('info', "install-xars: xar " || $xar || " is not newer than installed version")
+                return false()
+            )
+        )
+
+    return
+        if (boolean($toinstall)) then (
+(::        if ($toinstall) then ( :)
+            let $log := util:log('info', "install-xars: installing " || $xar)
+            return repo:install-and-deploy-from-db("/db/temp/" || $xar)
+        ) else ( 
+            false()
+        )
+};
+
+
+(: create "/db/temp", used during xar installation :)
+let $mkcoll :=
+    if (not(xmldb:collection-available("/db/temp"))) then (
+        xmldb:create-collection("/db", "temp")
+    ) else ()
+
+
+for $xar in ($local:xarlist)
+return local:deploy-xar($xar)

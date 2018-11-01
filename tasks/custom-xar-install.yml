@@ -1,0 +1,43 @@
+---
+## this is called from main.yml ONLY IF exist_install_custom_xars is true
+
+- name: Remove default autodeploy files (custom xar installation)
+  file:
+    path: "{{ exist_path }}/autodeploy"
+    state: absent
+
+- name: Ensure xar deploy dir is present (custom xar installation)
+  file:
+    path: "{{ exist_path }}/xars"
+    state: directory
+    owner: "{{ exist_user }}"
+    group: "{{ exist_group }}"
+    mode: 0755
+
+- name: Prepare remote xars to install (custom xar installation)
+  get_url:
+    url: "{{ exist_xarbaseurl }}/{{ item }}"
+    dest: "{{ exist_path }}/xars/{{ item }}"
+    owner: "{{ exist_user }}"
+    group: "{{ exist_group }}"
+  with_items: "{{ exist_remote_xars }}"
+
+- name: Prepare local xars to install (custom xar installation)
+  copy:
+    src: "{{ exist_xarprivdir }}/{{ item }}"
+    dest: "{{ exist_path }}/xars/{{ item }}"
+    owner: "{{ exist_user }}"
+    group: "{{ exist_group }}"
+  with_items: "{{ exist_local_xars }}"
+
+- name: Set fact for list of xars to install (custom xar installation)
+  set_fact:
+    xarlist: "{{ exist_remote_xars + exist_local_xars }}"
+
+- name: Prepare install-xars.xql.j2 from template (custom xar installation)
+  template:
+    src: install-xars.xql.j2
+    dest: "{{ exist_path }}/install-xars.xql"
+    owner: "{{ exist_user }}"
+    group: "{{ exist_group }}"
+    mode: 0755

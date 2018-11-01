@@ -1,0 +1,111 @@
+---
+- name: Install eXist-DB init script (SysV init)
+  template:
+    src: eXist-db.init.j2
+    dest: "/etc/init.d/{{ exist_servicename }}"
+    mode: 0755
+  when: ansible_service_mgr != "systemd"
+  notify:
+    - restart eXist
+
+- name: Install eXist-DB service file (systemd)
+  template:
+    src: eXist-db.systemd.j2
+    dest: "/etc/systemd/system/{{ exist_servicename }}.service"
+    mode: 0644
+  when: ansible_service_mgr == "systemd"
+  notify:
+    - restart eXist
+
+## setup config files before startup
+
+- name: Setup wrapper conf from template
+  template:
+    src: wrapper.conf.j2
+    dest: "{{ exist_path }}/tools/yajsw/conf/wrapper.conf"
+    owner: "{{ exist_user }}"
+    group: "{{ exist_group }}"
+    mode: 0644
+  when: exist_wrapperconf_from_template
+  notify:
+    - restart eXist
+
+- name: Setup logging conf from template
+  template:
+    src: log4j2.xml.j2
+    dest: "{{ exist_path }}/tools/yajsw/conf/log4j2.xml"
+    owner: "{{ exist_user }}"
+    group: "{{ exist_group }}"
+    mode: 0644
+  when: exist_logconf_from_template
+  notify:
+    - restart eXist
+
+- name: Setup eXist conf.xml from template
+  template: 
+    src: conf.xml.j2
+    dest: "{{ exist_path }}/conf.xml"
+    owner: "{{ exist_user }}"
+    group: "{{ exist_group }}"
+    mode: 0644
+  when: exist_confxml_from_template
+  notify:
+    - restart eXist
+
+- name: Setup eXist web.xml from template
+  template:
+    src: web.xml.j2
+    dest: "{{ exist_path }}/webapp/WEB-INF/web.xml"
+    owner: "{{ exist_user }}"
+    group: "{{ exist_group }}"
+    mode: 0644
+  when: exist_webxml_from_template
+  notify:
+    - restart eXist
+
+- name: Setup eXist client.properties from template
+  template: 
+    src: client.properties.j2
+    dest: "{{ exist_path }}/client.properties"
+    owner: "{{ exist_user }}"
+    group: "{{ exist_group }}"
+    mode: 0644
+  when: exist_clientprops_from_template
+  notify:
+    - restart eXist
+
+#- name: Debug2
+#  debug:
+#    msg: "installed: {{ ansible_local['exist'][exist_suffix]['exist_installed'] }} running: {{ ansible_local['exist'][exist_suffix]['exist_running'] }} gitsrc: {{ ansible_local['exist'][exist_suffix]['exist_gitsrc'] }} rev: {{ ansible_local['exist'][exist_suffix]['exist_revision'] }} archive_rev: {{ archive_revision.stdout }} replace: {{ exist_replace_installation }}"
+
+- name: Restore data directory from previous installation
+  synchronize: 
+    src: "{{ exist_home }}/backup/last/exist/webapp/WEB-INF/data"
+    dest: "{{ exist_path }}/webapp/WEB-INF/"
+  delegate_to: "{{ inventory_hostname }}"
+  when:
+    - exist_replace_installation
+    - exist_restore_prevdata
+
+# if jmxservlet.token file is present, register jmxtoken_file var,
+# so we can check whether the token was already created
+- name: Check whether token has already been created
+  stat:
+    path: "{{ exist_path }}/webapp/WEB-INF/data/jmxservlet.token"
+  register: jmxtoken_file
+
+- name: Generate uuid for JMX token
+  command: uuidgen
+  register: uuidgen
+  when: not jmxtoken_file.stat.exists
+
+- name: Setup JMX token from template
+  template:
+    src: jmxservlet.token.j2
+    dest: "{{ exist_path }}/webapp/WEB-INF/data/jmxservlet.token"
+    owner: "{{ exist_user }}"
+    group: "{{ exist_group }}"
+    mode: 0644
+  when: not jmxtoken_file.stat.exists
+  notify:
+    - restart eXist

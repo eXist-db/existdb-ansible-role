@@ -1,0 +1,28 @@
+<settings>
+    <repositories>
+        <repository>http://exist-db.org/exist/apps/public-repo</repository>
+    </repositories>
+    <authorization>
+        <!-- ##### future foo ###### -->
+        <!--
+        # This file allows to configure finegrained access to package service.
+        # So even if a user is given collection access via 'sm:has-access' the following actions are tested in
+        # addition.
+        #
+        # Example 1: when you want to give users the permission to see app details (metadata) you can add
+        # the group 'view-package-details' to your usergroup.
+        #
+        # Example 2: you want only your users to be able to only see local packages just add the group
+        # 'view-local-packages' to the respective usergroup.
+        -->
+<!--
+        <action name="view-default-apps" required-group="dba"/>
+        <action name="install-package" required-group="dba"/>
+        <action name="remove-package" required-group="dba"/>
+
+        <action name="view-package-details" required-group="view-package-details"/>
+        <action name="view-remote-packages" required-group="view-remote-packages"/>
+        <action name="view-local-packages" required-group="view-local-packages"/>
+-->
+    </authorization>
+</settings>

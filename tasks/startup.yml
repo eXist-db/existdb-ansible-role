@@ -1,0 +1,70 @@
+---
+## tasks for post installation that need exist running
+
+- name: Ensure exist service is running
+  service:
+    name: "{{ exist_servicename }}"
+    enabled: yes
+    state: restarted
+    #daemon-reload: true
+
+# we need to wait until eXist becomes ready.  starting eXist from the
+# wrapper will return quickly, so this playbook moves on.  But eXist may
+# still be busy with autodeploy installation, so the following tasks might
+# fail.  Explicitly wait until eXist port becomes ready.
+- name: Wait for eXist to become ready
+  wait_for:
+    port: "{{ exist_http_port }}"
+    timeout: "{{ exist_startup_timeout }}"
+
+# if .password-set file is present, register password_set_file var,
+# so we can check whether the password was already set
+- name: Check whether password has already been set
+  stat:
+    path: "{{ exist_path }}/webapp/WEB-INF/data/.password-set"
+  register: password_set_file
+
+# set-adminpass.xql may contain sensitive information, so gets installed
+# with root access only, and gets removed afterwards
+- name: Prepare set-adminpass XQuery script
+  template:
+    src: set-adminpass.xql.j2
+    dest: "{{ exist_path }}/set-adminpass.xql"
+    owner: root
+    mode: 0600
+  when: not password_set_file.stat.exists
+
+- name: Set admin password (exec set-adminpass.xql)
+  shell: bin/client.sh -u admin -P "" -F set-adminpass.xql -ouri=xmldb:exist://localhost:{{ exist_http_port }}/exist/xmlrpc && touch webapp/WEB-INF/data/.password-set
+  args:
+    chdir: "{{ exist_path }}"
+  when: not password_set_file.stat.exists
+
+- name: Install custom xar files (exec install-xars.xql)
+  shell: "bin/client.sh -u admin -P '{{ exist_adminpass[inventory_hostname] }}' -F install-xars.xql -ouri=xmldb:exist://localhost:{{ exist_http_port }}/exist/xmlrpc"
+  args:
+    chdir: "{{ exist_path }}"
+  when: exist_install_custom_xars
+
+# users-and-groups.xql may contain sensitive information, so gets installed
+# with root access only, and gets removed afterwards
+- name: Prepare hardening XQuery script users-and-groups.xql
+  template:
+    src: users-and-groups.xql.j2
+    dest: "{{ exist_path }}/users-and-groups.xql"
+    owner: root
+    mode: 0600
+
+- name: Run post-install/hardening (exec users-and-groups.xql)
+  shell: "bin/client.sh -u admin -P '{{ exist_adminpass[inventory_hostname] }}' -p {{ exist_http_port }} -F users-and-groups.xql -ouri=xmldb:exist://localhost:{{ exist_http_port }}/exist/xmlrpc"
+  args:
+    chdir: "{{ exist_path }}"
+
+- name: Ensure post-install scripts are absent after install
+  file:
+    path: "{{ exist_path }}/{{ item }}"
+    state: absent
+  with_items:
+    - set-adminpass.xql
+    - users-and-groups.xql
+    - install-xars.xql

@@ -1,0 +1,78 @@
+---
+## setup infrastructure for exist
+
+- name: Ensure required packages are installed (Debian)
+  apt:
+    name: "{{ item }}"
+    state: present
+  with_items: "{{ exist_debian_extra_packages }}"
+  when: ansible_distribution == 'Debian'
+
+- name: Ensure required packages are installed (Ubuntu)
+  apt:
+    name: "{{ item }}"
+    state: present
+  with_items: "{{ exist_ubuntu_extra_packages }}"
+  when: ansible_distribution == 'Ubuntu'
+
+- name: Ensure required packages are installed (RedHat family)
+  yum: 
+    name: "{{ item }}"
+    state: present
+  with_items: "{{ exist_redhat_extra_packages }}"
+  when: ansible_os_family == 'RedHat'
+
+- name: Ensure backup and scripts dirs are present
+  file:
+    path: "{{ exist_home }}/{{ item }}"
+    state: directory
+    owner: "{{ exist_user }}"
+    group: "{{ exist_group }}"
+    mode: 0751
+    recurse: yes
+  with_items:
+    - backup
+    - scripts
+
+- name: Ensure tmp dir is present
+  file:
+    path: "{{ exist_home }}/tmp"
+    state: directory
+    owner: "{{ exist_user }}"
+    group: "{{ exist_group }}"
+    mode: 0775
+
+- name: Install util scripts from files
+  copy:
+    src: "{{ item }}"
+    dest: "{{ exist_home}}/scripts/{{ item }}"
+    owner: "{{ exist_user }}"
+    group: "{{ exist_group }}"
+    mode: 0751
+  with_items:
+    - upload-xmlrpc.pl
+
+- name: Install util scripts from templates
+  template: 
+    src: "{{ item }}.j2"
+    dest: "{{ exist_home}}/scripts/{{ item }}"
+    owner: "{{ exist_user }}"
+    group: "{{ exist_group }}"
+    mode: 0751
+  with_items:
+    - exist-restore.sh
+
+- name: Ensure Ansible facts dir is present
+  file:
+    path: "/etc/ansible/facts.d"
+    state: directory
+    recurse: yes
+
+- name: Install fact gathering script
+  template: 
+    src: exist.fact.j2
+    dest: "/etc/ansible/facts.d/exist.fact"
+    mode: 0755
+
+- name: Re-gather facts to run the fact gathering script
+  setup:

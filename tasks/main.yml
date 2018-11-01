@@ -1,0 +1,30 @@
+---
+- name: Set facts for this exist instance
+  set_fact:
+    exist_path: "{{ exist_home }}/{{ exist_dir }}{{ exist_suffix }}"
+    exist_instname: "{{ exist_dir }}{{ exist_suffix }}"
+    exist_servicename: "{{ exist_service }}{{ exist_suffix }}"
+
+- name: Include user setup tasks
+  include_tasks: setup-user.yml
+
+- name: Include pre-installation tasks
+  include_tasks: preinstall.yml
+
+- name: Include tasks to install exist from source
+  include_tasks: install-from-source.yml
+  when: exist_install_method == "source"
+
+- name: Include tasks to install exist from pre-packaged archive file
+  include_tasks: install-archive.yml
+  when: exist_install_method == "remote_archive" or exist_install_method == "local_archive"
+
+- name: Include custom xar installation tasks
+  include_tasks: custom-xar-install.yml
+  when: exist_install_custom_xars
+
+- name: Include post-installation pre-startup tasks
+  include_tasks: postinstall.yml
+
+- name: Include startup exist and post-startup tasks
+  include_tasks: startup.yml

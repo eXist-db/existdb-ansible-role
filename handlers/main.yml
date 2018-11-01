@@ -1,0 +1,3 @@
+- name: restart eXist
+  become: True
+  service: name={{exist_service}} state=restarted

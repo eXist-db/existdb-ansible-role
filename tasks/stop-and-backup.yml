@@ -1,0 +1,30 @@
+---
+- name: Ensure exist service is stopped
+  service:
+    name: "{{ exist_servicename }}"
+    state: stopped
+
+- name: Backup installed exist
+  become_user: "{{ exist_user }}"
+  shell: "export now=`date +'%Y%m%d%H%M'` && mkdir {{ exist_instname }}.${now} && mv {{ exist_path }} {{ exist_instname }}.${now} && rm -f last && ln -sf {{ exist_instname }}.${now} last"
+  args:
+    chdir: "{{ exist_home }}/backup"
+  when:
+    - ansible_local['exist'][exist_suffix]['exist_installed']
+    - exist_backup_previnstall
+
+- name: Backup eXist-DB init script (SysV init)
+  become_user: "{{ exist_user }}"
+  copy:
+    src: "/etc/init.d/{{ exist_servicename }}"
+    dest: "{{ exist_home }}/backup/last/{{ exist_servicename }}.init"
+    remote_src: yes
+  when: ansible_service_mgr != "systemd"
+
+- name: Backup eXist-DB service file (systemd)
+  become_user: "{{ exist_user }}"
+  copy:
+    src: "/etc/systemd/system/{{ exist_servicename }}.service"
+    dest: "{{ exist_home }}/backup/last/{{ exist_servicename }}.service"
+    remote_src: yes
+  when: ansible_service_mgr == "systemd"

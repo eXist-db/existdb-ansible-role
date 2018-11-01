@@ -1,0 +1,51 @@
+---
+## setup exist user/group/home; ensure login and SSH are disabled
+
+- name: Ensure exist group is present
+  group:
+    name: "{{ exist_group }}"
+
+- name: Ensure exist user is present
+  user:
+    name: "{{ exist_user }}"
+    group: "{{ exist_group }}"
+    home: "{{ exist_home }}"
+    password: "*"
+
+- name: Ensure exist homedir owned by exist user/group
+  file:
+    path: "{{ exist_home }}"
+    state: directory
+    owner: "{{ exist_user }}"
+    group: "{{ exist_group }}"
+    mode: 0751
+
+- name: Ensure exist homedir does not have .ssh/authorized_keys
+  file:
+    path: "{{ exist_home }}/.ssh/authorized_keys"
+    state: absent
+
+## increase file descriptor limits for eXist user
+
+- name: Setup file descriptor limits for user exist from template
+  template:
+    src: limits.exist.j2
+    dest: /etc/security/limits.d/exist.conf
+  when: exist_fdset_enable == True
+
+- name: Ensure limits get applied by PAM (Debian family)
+  lineinfile:
+    path: "/etc/pam.d/{{ item }}"
+    regexp: 'session\s+required\s+pam_limits.so'
+    line: "session  required  pam_limits.so"
+  with_items:
+    - login
+    - su
+  when: exist_fdset_enable == True and ansible_os_family == "Debian"
+
+- name: Ensure limits get applied by PAM (Redhat family)
+  lineinfile:
+    name: /etc/pam.d/system-auth
+    regexp: 'session\s+required\s+pam_limits.so'
+    line: "session  required  pam_limits.so"
+  when: exist_fdset_enable == True and ansible_os_family == "RedHat"
