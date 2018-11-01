@@ -39,7 +39,7 @@ exist_restore_prevdata: yes
 
 # which config files to generate from Ansible
 exist_wrapperconf_from_template: yes
-exist_logconf_from_template: yes
+exist_logconf_from_template: no
 exist_clientprops_from_template: yes
 exist_webxml_from_template: yes
 # XXX these are not fully supported yet, leave as is!

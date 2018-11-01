@@ -17,8 +17,8 @@ This role installs exist and performs all necessary tasks to run on a server
 (create user, install system service, misc setup).
 
 Various config files get modified before starting exist (wrapper.conf, 
-conf.xml, web.xml, client.properties), this is configurable and used to tune
-performance parameters such as "max_mem".
+conf.xml, web.xml, client.properties), this is configurable and may be used to
+tune behavioral and performance parameters.
 
 By default, the exist/autodeploy directory is left untouched, so any xar files
 there get installed at first startup. This can be overridden to pre-install a
@@ -27,9 +27,10 @@ change. Works for us on large sites where dev/staging/prod servers get a
 different set of >20 xar packages pre-installed.
 
 When upgrading or replacing a running exist DB (either by installing a newer
-or different archive, or switching install methods between source/archive),
-a backup gets created by default, and the data directory of the previous
-installation gets copied back into the new installation. This is configurable.
+or different archive, or switching install methods between source/archive
+installation), a backup gets created by default, and the data directory of the
+previous installation gets copied back into the new installation. This is
+configurable.
 
 After a fresh exist installation the exist admin password and user passwords
 get set. They are persistent and not re-set in later Ansible runs.
@@ -138,7 +139,7 @@ whether to restore the previous `webapp/WEB_INF/data` directory in the new
 installation.
 
     exist_wrapperconf_from_template: yes
-    exist_logconf_from_template: yes
+    exist_logconf_from_template: no
     exist_clientprops_from_template: yes
     exist_webxml_from_template: yes
     exist_confxml_from_template: no
@@ -157,7 +158,7 @@ this limit.
     exist_syslog_enable: false
     exist_syslog_loghost: 127.0.0.1
 
-XXX
+Settings for logging to a remote syslog server. See "Logging" below.
 
     exist_confxml_dbconn_cachesize: "256M"
     exist_confxml_trigger_xquerystartup_enable: False
@@ -287,7 +288,26 @@ lrwxrwxrwx 1 existdb existdb   18 Oct 14 15:03 last -> exist.201810141503
 A backup can be restored by calling the `exist-restore.sh` like this:
 `/usr/local/existdb/scripts/exist-restore.sh exist.201810081603`.
 
+## Logging
+
+By default, eXist-db logs into logfiles located in
+`/usr/local/existdb/exist/webapp/WEB-INF/logs`.
+
+To log to a central remote syslog server, use the following settings:
+
+    exist_logconf_from_template: yes
+    exist_syslog_enable: yes
+    exist_syslog_loghost: 192.168.0.100
+
+With these settings, `/usr/local/existdb/exist/tools/yajsw/conf/log4j2.xml`
+gets modified to log events in syslog format to the remote syslog server
+`192.168.0.100`.
+
 ## Security Considerations
+
+We recommend to run eXist-db behind a reverse proxy such as `nginx` when
+exposing eXist-db to the public Internet. Simply because `nginx` is much more
+lightweight in dealing with HTTP abuse attempts.
 
 File webapp/WEB-INF/web.xml gets modified so that `servlet/init-param` prevents
 unauthorized directory listings (`exist_webxml_initparam_hidden="true"`). To
