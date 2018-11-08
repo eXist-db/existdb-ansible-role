@@ -155,6 +155,12 @@ Increase the OS limit of open file descriptors per process beyond the common
 OS default of 1024, otherwise busy sites may experience problems when hitting
 this limit.
 
+    exist_kerneltune_enable: false
+    exist_kerneltune_swappiness: 10
+    exist_kerneltune_cachepressure: 50
+
+Kernel memory tuning parameters.  XXX EXPERIMENTAL
+
     exist_syslog_enable: false
     exist_syslog_loghost: 127.0.0.1
 
