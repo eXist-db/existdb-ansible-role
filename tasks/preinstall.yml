@@ -27,6 +27,8 @@
     src: "sysctl.exist.j2"
     dest: "/etc/sysctl.d/99-exist.conf"
   when: exist_kerneltune_enable
+  notify:
+    - reload sysctl
 
 - name: Ensure backup and scripts dirs are present
   file:
