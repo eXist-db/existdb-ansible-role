@@ -50,6 +50,11 @@ exist_fdset_enable: true
 exist_fdsoft_limit: 8192
 exist_fdhard_limit: 16384
 
+# used for kernel memory tuning for edge cases  XXX EXPERIMENTAL
+exist_kerneltune_enable: false
+exist_kerneltune_swappiness: 10
+exist_kerneltune_cachepressure: 50
+
 # enable and define loghost for logging to a central syslog server,  default
 # logging to local files only.
 exist_syslog_enable: false

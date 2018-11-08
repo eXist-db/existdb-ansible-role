@@ -22,6 +22,12 @@
   with_items: "{{ exist_redhat_extra_packages }}"
   when: ansible_os_family == 'RedHat'
 
+- name: Tune kernel parameters
+  template: 
+    src: "sysctl.exist.j2"
+    dest: "/etc/sysctl.d/99-exist.conf"
+  when: exist_kerneltune_enable
+
 - name: Ensure backup and scripts dirs are present
   file:
     path: "{{ exist_home }}/{{ item }}"
