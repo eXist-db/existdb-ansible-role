@@ -149,7 +149,7 @@ installation.
 Whether to create certain config files from template.
 XXX Not fully supported for conf.xml.
 
-    exist_fdset_enable: true
+    exist_fdset_enable: yes
     exist_fdsoft_limit: 8192
     exist_fdhard_limit: 16384
 
@@ -157,34 +157,34 @@ Increase the OS limit of open file descriptors per process beyond the common
 OS default of 1024, otherwise busy sites may experience problems when hitting
 this limit.
 
-    exist_kerneltune_enable: false
+    exist_kerneltune_enable: no
     exist_kerneltune_swappiness: 10
     exist_kerneltune_cachepressure: 50
 
 Kernel memory tuning parameters.  XXX EXPERIMENTAL
 
-    exist_syslog_enable: false
+    exist_syslog_enable: no
     exist_syslog_loghost: 127.0.0.1
 
 Settings for logging to a remote syslog server. See "Logging" below.
 
     exist_confxml_dbconn_cachesize: "256M"
-    exist_confxml_trigger_xquerystartup_enable: False
-    exist_confxml_trigger_autodeploy_enable: True
+    exist_confxml_trigger_xquerystartup_enable: no
+    exist_confxml_trigger_autodeploy_enable: yes
     exist_confxml_pool_max: 20
     exist_confxml_recovery_enabled: "yes"
     exist_confxml_recovery_consistency_check: "yes"
-    exist_confxml_job_check1_enable: False
+    exist_confxml_job_check1_enable: no
     exist_confxml_job_check1_backup: "yes"
-    exist_confxml_job_twitter_enable: False
-    exist_confxml_job_cleansso_enable: False
+    exist_confxml_job_twitter_enable: no
+    exist_confxml_job_cleansso_enable: no
     exist_confxml_serializer_indent: "yes"
 
 Template parameters to modify exist conf.xml file.
 
     exist_wrapper_max_mem: 2048
-    exist_wrapper_gcdebug_enable: False
-    exist_wrapper_jmx_enable: False
+    exist_wrapper_gcdebug_enable: no
+    exist_wrapper_jmx_enable: no
     exist_wrapper_jmx_port: 9911
     exist_wrapper_loglevel: INFO
     exist_wrapper_startup_timeout: 90
@@ -197,12 +197,12 @@ Template parameters to modify exist tools/yajsw/conf/wrapper.conf file.
 
 Template parameters to modify exist webapp/WEB-INF/web.xml file.
 
-    exist_install_custom_xars: False
+    exist_install_custom_xars: no
 
 The default behavior is to support exist "autodeploy", that means installing
 all Xar files that are present in the `$EXIST_HOME/autodeploy` folder.
 
-Set `exist_install_custom_xars` to True if you need to control which Xar files
+Set `exist_install_custom_xars` to `yes` if you need to control which Xar files
 to install. You need to provide lists of Xar file names such as "foo-1.0.0.xar"
 in variables in the calling playbook, see "Customizing Xar Installation"
 below.
@@ -331,7 +331,7 @@ Increase memory for the exist process beyond 2GB default (unit is MB):
 
 Ensure file descriptor limits are increased:
 
-    exist_fdset_enable: true
+    exist_fdset_enable: yes
     exist_fdsoft_limit: 8192
 
 More tunable parameters. Do not blindly increase, make sure you understand the
