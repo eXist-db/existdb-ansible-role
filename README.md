@@ -102,12 +102,14 @@ Service name for SysV/init.d or systemd. Rarely needs to be changed. Gets
 
 How to install exist. Can be `source` (git clone official existdb repository
 and run `build.sh` on the server to install), `remote_archive` (pre-packaged
-archive file downloaded from remote server), or `local_archive` (pre-packaged
-archive present on the Ansible host). Default is to install from source.
+archive file downloaded from remote server), `local_archive` (pre-packaged
+archive present on the Ansible host) or `none` (do not install or modify
+eXist). Default is to install from source.
 
 If you can not or do not want to build locally, prepare a pre-packaged archive
 for download and use `remote_archive`. If policy or firewalling does not allow
-this, use `local_archive`.
+this, use `local_archive`. Use `none` to leave the eXist installation
+untouched (eg to run other parts of this role only).
 
     exist_repo: https://github.com/eXist-db/exist.git
     exist_repo_version: develop-4.x.x

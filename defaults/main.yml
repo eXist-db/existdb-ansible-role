@@ -13,7 +13,7 @@ exist_startup_timeout: 300
 # XXX this is not fully supported yet, leave as is!
 exist_suffix: ""
 
-# exist install method, either "source", "remote_archive", "local_archive"
+# exist install method: "source", "remote_archive", "local_archive", "none"
 exist_install_method: source
 
 # git settings (for exist_install_method == "source")
