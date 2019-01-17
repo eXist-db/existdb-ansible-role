@@ -198,7 +198,7 @@
         collections, you can also increase the collectionCacheSize value 
     -->
     <db-connection cacheSize="{{exist_confxml_dbconn_cachesize}}" checkMaxCacheSize="true" collectionCache="64M" database="native"
-        files="webapp/WEB-INF/data" pageSize="4096" nodesBuffer="1000" cacheShrinkThreshold="10000"
+        files="{{ exist_datadir }}" pageSize="4096" nodesBuffer="1000" cacheShrinkThreshold="10000"
         doc-ids="default" minDiskSpace="128M" posix-chown-restricted="true" preserve-on-copy="false">
 
         <!--
@@ -590,11 +590,11 @@
 {% endif %}
         <job type="system" name="check1" 
             class="org.exist.storage.ConsistencyCheckTask"
-            cron-trigger="0 0 * * * ?">
-            <parameter name="output" value="export"/>
+            cron-trigger="{{ exist_confxml_job_check1_backup_cron }}">
+            <parameter name="output" value="{{ exist_backupdir }}"/>
             <parameter name="backup" value="{{exist_confxml_job_check1_backup}}"/>
-            <parameter name="incremental" value="no"/>
-            <parameter name="incremental-check" value="no"/>
+            <parameter name="incremental" value="yes"/>
+            <parameter name="incremental-check" value="no"/>c
             <parameter name="max" value="2"/>
         </job>
 {% if exist_confxml_job_check1_enable == False %}        -->

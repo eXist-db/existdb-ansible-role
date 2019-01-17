@@ -1,4 +1,21 @@
 ---
+
+- name: Ensure data and log dirs exist and have correct permissions
+  file:
+    path: "{{ item }}"
+    state: directory
+    mode: 0755
+  with_items:
+    - "{{ exist_datadir }}"
+    - "{{ exist_logdir }}"
+
+- name: Ensure data and log dirs exist and have correct permissions
+  file:
+    path: "{{ exist_backupdir }}"
+    state: directory
+    mode: 0755
+  when: exist_confxml_job_check1_enable == true and exist_confxml_job_check1_backup == "yes"
+
 - name: Install eXist-DB init script (SysV init)
   template:
     src: eXist-db.init.j2

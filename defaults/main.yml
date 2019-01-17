@@ -9,6 +9,10 @@ exist_http_port: 8080
 exist_ssl_port: 8443
 exist_startup_timeout: 300
 
+exist_datadir: webapp/WEB-INF/data
+exist_logdir: webapp/WEB-INF/logs
+exist_backupdir: /exist-backup
+
 # exist_suffix should be "-foo" for multi-instance exist installations
 # XXX this is not fully supported yet, leave as is!
 exist_suffix: ""
@@ -97,6 +101,7 @@ exist_confxml_recovery_enabled: "yes"
 exist_confxml_recovery_consistency_check: "yes"
 exist_confxml_job_check1_enable: no
 exist_confxml_job_check1_backup: "yes"
+exist_confxml_job_check1_backup_cron: "0 0 * * * ?"
 exist_confxml_job_twitter_enable: no
 exist_confxml_job_cleansso_enable: no
 exist_confxml_serializer_indent: "yes"
