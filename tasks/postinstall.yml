@@ -4,8 +4,9 @@
   file:
     path: "{{ item }}"
     state: directory
-    user: "{{ exist_user }}"
-    group: "{{ exist_group }}"
+    recurse: yes
+    owner: "{{ exist_user }}"
+    group: "{{ exist_group }}"    
     mode: 0755
   with_items:
     - "{{ exist_datadir }}"
@@ -15,7 +16,8 @@
   file:
     path: "{{ exist_backupdir }}"
     state: directory
-    user: "{{ exist_user }}"
+    recurse: yes
+    owner: "{{ exist_user }}"
     group: "{{ exist_group }}"
     mode: 0755
   when: exist_confxml_job_check1_enable == true and exist_confxml_job_check1_backup == "yes"
