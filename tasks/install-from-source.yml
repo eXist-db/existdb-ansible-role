@@ -4,7 +4,7 @@
 # this only to simplify conditionals below
 - name: Set fact whether eXist is installed
   set_fact:
-    exist_is_installed: ansible_local['exist'][exist_suffix]['exist_installed']
+    exist_is_installed: "{{ ansible_local['exist'][exist_suffix]['exist_installed'] }}"
 
 - name: Determine git branch revision
   shell: "cd {{ exist_path }}; git show-ref -s --abbrev --heads {{ exist_repo_version }} || true"
