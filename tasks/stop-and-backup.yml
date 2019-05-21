@@ -10,7 +10,7 @@
   args:
     chdir: "{{ exist_home }}/backup"
   when:
-    - ansible_local['exist'][exist_suffix]['exist_installed']
+    - ansible_local[exist_instname]['exist_installed']
     - exist_backup_previnstall
 
 - name: Backup eXist-DB init script (SysV init)

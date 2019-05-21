@@ -4,7 +4,7 @@
 # this only to simplify conditionals below
 - name: Set fact whether eXist is installed
   set_fact:
-    exist_is_installed: "{{ ansible_local['exist'][exist_suffix]['exist_installed'] }}"
+    exist_is_installed: "{{ ansible_local[exist_instname]['exist_installed'] }}"
 
 - name: Determine git branch revision
   shell: "cd {{ exist_path }}; git show-ref -s --abbrev --heads {{ exist_repo_version }} || true"
@@ -16,11 +16,11 @@
   # if exist is installed AND the archive revision is different from installed
   when:
     - exist_is_installed
-    - git_revision.stdout != ansible_local['exist'][exist_suffix]['exist_revision']
+    - git_revision.stdout != ansible_local[exist_instname]['exist_revision']
 
 - name: Debug1
   debug:
-    msg: "installed: {{ exist_is_installed }} running: {{ ansible_local['exist'][exist_suffix]['exist_running'] }} gitsrc: {{ ansible_local['exist'][exist_suffix]['exist_gitsrc'] }} rev: {{ ansible_local['exist'][exist_suffix]['exist_revision'] }} git_rev: {{ git_revision.stdout }} replace: {{ exist_replace_installation }}"
+    msg: "installed: {{ exist_is_installed }} running: {{ ansible_local[exist_instname]['exist_running'] }} gitsrc: {{ ansible_local[exist_instname]['exist_gitsrc'] }} rev: {{ ansible_local[exist_instname]['exist_revision'] }} git_rev: {{ git_revision.stdout }} replace: {{ exist_replace_installation }}"
 
 - name: Include stop and backup tasks if installing a different eXist
   include_tasks: stop-and-backup.yml
