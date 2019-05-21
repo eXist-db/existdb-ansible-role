@@ -5,6 +5,10 @@
     exist_instname: "{{ exist_dir }}{{ exist_suffix }}"
     exist_servicename: "{{ exist_service }}{{ exist_suffix }}"
 
+- name: Debug0
+  debug:
+    msg: 'exist_path: {{ exist_path }} exist_instname: {{ exist_instname }} exist_servicename {{ exist_servicename }}'
+
 - name: Include user setup tasks
   include_tasks: setup-user.yml
 
