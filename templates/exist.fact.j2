@@ -1,6 +1,5 @@
 #!/bin/sh
 
-ex_instance="{{ exist_suffix }}"
 ex_path="{{ exist_path }}"
 
 # defaults
@@ -13,7 +12,7 @@ ex_revision=
 ex_jmxtoken=
 ex_gitsrc=false
 
-if [ -d "$ex_path" -a -f $ex_path/exist.jar ]; then
+if [ -d "$ex_path" -a -f $ex_path/exist.jar -a -f $ex_path/VERSION.txt ]; then
     ex_installed=true
     ex_version=`grep project.version $ex_path/VERSION.txt | sed -e 's/project.version=//;'`
     ex_built=`grep project.built $ex_path/VERSION.txt | sed -e 's/project.built=//;'`
@@ -28,23 +27,21 @@ if [ -d "$ex_path/.git" ]; then
     ex_gitsrc=true
 fi
 
-if pgrep -lf 'exist.start.jar' >/dev/null; then
+if pgrep -lf '{{ exist_instname }}.start.jar' >/dev/null; then
     ex_running=true
 fi
 
 
 cat <<EOF
 {
-    "${ex_instance}": {
-        "exist_installed": ${ex_installed},
-        "exist_path": "${ex_path}",
-        "exist_running": ${ex_running},
-        "exist_version": "${ex_version}",
-        "exist_build_date": "${ex_built}",
-        "exist_branch": "${ex_branch}",
-        "exist_revision": "${ex_revision}",
-        "exist_jmxtoken": "${ex_jmxtoken}",
-        "exist_gitsrc": ${ex_gitsrc}
-    }
+    "exist_installed": ${ex_installed},
+    "exist_path": "${ex_path}",
+    "exist_running": ${ex_running},
+    "exist_version": "${ex_version}",
+    "exist_build_date": "${ex_built}",
+    "exist_branch": "${ex_branch}",
+    "exist_revision": "${ex_revision}",
+    "exist_jmxtoken": "${ex_jmxtoken}",
+    "exist_gitsrc": ${ex_gitsrc}
 }
 EOF
