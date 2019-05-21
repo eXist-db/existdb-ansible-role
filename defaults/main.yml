@@ -13,6 +13,14 @@ exist_startup_timeout: 300
 # XXX this is not fully supported yet, leave as is!
 exist_suffix: ""
 
+# because eXist-db 5.0 introduces many changes in its filesystem layout that
+# affect Ansible operation, we use this variable as an indicator for Ansible
+# processing. Expected values:
+# - 4     eXist-db 4.x
+# - 4.99  eXist-db 5.0 transitional (before layout changes)
+# - 5     eXist-db 5.x
+exist_major_version: 4
+
 # exist install method: "source", "remote_archive", "local_archive", "none"
 exist_install_method: source
 
