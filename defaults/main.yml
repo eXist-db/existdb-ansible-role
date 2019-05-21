@@ -92,6 +92,8 @@ exist_syslog_loghost: 127.0.0.1
 # defaults for config file settings
 exist_wrapper_init_mem: 2048
 exist_wrapper_max_mem: 2048
+exist_wrapper_max_meta: 1024
+exist_wrapper_max_direct: 1024
 exist_wrapper_gcdebug_enable: no
 exist_wrapper_jmx_enable: no
 exist_wrapper_jmx_port: 9911

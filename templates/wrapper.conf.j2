@@ -110,6 +110,8 @@ wrapper.java.additional.5=-Djava.awt.headless=true
 # GC settings
 wrapper.java.additional.6=-XX:+UseG1GC
 wrapper.java.additional.7=-XX:MaxGCPauseMillis=200
+wrapper.java.additional.16=-XX:MaxMetaspaceSize={{ exist_wrapper_max_meta }}m
+wrapper.java.additional.17=-XX:MaxDirectMemorySize={{ exist_wrapper_max_direct }}m
 # set tmpdir
 wrapper.java.additional.8=-Djava.io.tmpdir={{ exist_home }}/tmp
 
