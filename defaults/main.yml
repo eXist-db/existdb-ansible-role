@@ -11,8 +11,16 @@ exist_http_port: 8080
 exist_ssl_port: 8443
 exist_startup_timeout: 300
 
+# for multiple eXist-db instances on a single host, assign an individual
+# instance name to each one. No spaces, umlauts or special chars!
+# if you're not running multiple instances the default is fine
+exist_instname: 'exist'
+#exist_instname: 'exist-test'
+#exist_instname: 'exist-prod'
+
 # exist_suffix should be "-foo" for multi-instance exist installations
 # XXX this is not fully supported yet, leave as is!
+# XXX will be replaced by exist_instname
 exist_suffix: ""
 
 # because eXist-db 5.0 introduces many changes in its filesystem layout that

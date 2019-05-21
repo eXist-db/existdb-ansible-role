@@ -1,9 +1,11 @@
 ---
 - name: Set facts for this exist instance
   set_fact:
-    exist_path: "{{ exist_home }}/{{ exist_dir }}{{ exist_suffix }}"
-    exist_instname: "{{ exist_dir }}{{ exist_suffix }}"
-    exist_servicename: "{{ exist_service }}{{ exist_suffix }}"
+    #exist_path: "{{ exist_home }}/{{ exist_dir }}{{ exist_suffix }}"
+    #exist_instname: "{{ exist_dir }}{{ exist_suffix }}"
+    #exist_servicename: "{{ exist_service }}{{ exist_suffix }}"
+    exist_path: "{{ exist_home }}/{{ exist_instname }}"
+    exist_servicename: "{{ exist_instname }}"
 
 - name: Debug0
   debug:
