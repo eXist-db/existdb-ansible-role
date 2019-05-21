@@ -5,6 +5,8 @@ exist_group: existdb
 exist_home: /usr/local/existdb
 exist_dir: exist
 exist_service: eXist-db
+# for reference, but don't force anyone to localhost by default
+#exist_http_host: '127.0.0.1'
 exist_http_port: 8080
 exist_ssl_port: 8443
 exist_startup_timeout: 300
