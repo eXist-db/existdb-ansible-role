@@ -14,7 +14,7 @@
         </Console>
 
 {% if exist_syslog_enable %}
-        <Syslog name="syslog" host="{{ syslog_loghost }}" port="514" protocol="UDP"
+        <Syslog name="syslog" host="{{ exist_syslog_loghost }}" port="514" protocol="UDP"
                 appName="exist" facility="LOCAL1" charset="ISO-8859-1">
         </Syslog>
 {% endif %}
