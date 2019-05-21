@@ -12,6 +12,7 @@
 # wrapper will return quickly, so this playbook moves on.  But eXist may
 # still be busy with autodeploy installation, so the following tasks might
 # fail.  Explicitly wait until eXist port becomes ready.
+# NOTE: make sure the port you wait for is not bound by another application
 - name: Wait for eXist to become ready
   wait_for:
     port: "{{ exist_http_port }}"
@@ -35,7 +36,7 @@
   when: not password_set_file.stat.exists
 
 - name: Set admin password (exec set-adminpass.xql)
-  shell: bin/client.sh -u admin -P "" -F set-adminpass.xql -ouri=xmldb:exist://localhost:{{ exist_http_port }}/exist/xmlrpc && touch webapp/WEB-INF/data/.password-set
+  shell: 'bin/client.sh -u admin -P "" -F set-adminpass.xql -ouri=xmldb:exist://localhost:{{ exist_http_port }}/exist/xmlrpc && touch webapp/WEB-INF/data/.password-set'
   args:
     chdir: "{{ exist_path }}"
   when: not password_set_file.stat.exists
