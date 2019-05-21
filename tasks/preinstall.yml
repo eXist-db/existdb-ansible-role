@@ -79,7 +79,7 @@
 - name: Install fact gathering script
   template: 
     src: exist.fact.j2
-    dest: "/etc/ansible/facts.d/exist.fact"
+    dest: '/etc/ansible/facts.d/{{ exist_instname }}.fact'
     mode: 0755
 
 - name: Re-gather facts to run the fact gathering script
