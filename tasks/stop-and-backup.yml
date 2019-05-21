@@ -6,7 +6,7 @@
 
 - name: Backup installed exist
   become_user: "{{ exist_user }}"
-  shell: "export now=`date +'%Y%m%d%H%M'` && mkdir {{ exist_instname }}.${now} && mv {{ exist_path }} {{ exist_instname }}.${now} && rm -f last && ln -sf {{ exist_instname }}.${now} last"
+  shell: "export now=`date +'%Y%m%d%H%M'` && mkdir {{ exist_instname }}.${now} && mv {{ exist_path }} {{ exist_instname }}.${now} && rm -f {{ exist_instname }}.last && ln -sf {{ exist_instname }}.${now} {{ exist_instname }}.last"
   args:
     chdir: "{{ exist_home }}/backup"
   when:
