@@ -122,6 +122,9 @@ wrapper.java.additional.10=-XX:+PrintGCDateStamps
 wrapper.java.additional.11=-Xloggc:{{ exist_path }}/webapp/WEB-INF/logs/gc.log
 {% endif %}
 
+# Java NIO cache tuning (256k)
+wrapper.java.additional.20=-Djdk.nio.maxCachedBufferSize=262144
+
 # JMX monitoring support
 {% if exist_wrapper_jmx_enable == True %}
 wrapper.java.additional.12=-Dcom.sun.management.jmxremote
