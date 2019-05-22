@@ -57,7 +57,7 @@
     mode: 0600
 
 - name: Run post-install/hardening (exec users-and-groups.xql)
-  shell: "bin/client.sh -u admin -P '{{ exist_adminpass[inventory_hostname] }}' -p {{ exist_http_port }} -F users-and-groups.xql -ouri=xmldb:exist://localhost:{{ exist_http_port }}/exist/xmlrpc"
+  shell: 'bin/client.sh -u admin -P "{{ exist_adminpass[inventory_hostname][exist_instname] }}" -p {{ exist_http_port }} -F users-and-groups.xql -ouri=xmldb:exist://localhost:{{ exist_http_port }}/exist/xmlrpc'
   args:
     chdir: "{{ exist_path }}"
 
