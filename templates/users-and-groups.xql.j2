@@ -1,9 +1,17 @@
 xquery version "3.1";
 
+
+{% if exist_major_version > 4 %}
 declare variable $local:users :=
-	map:new((
+    map {
 {{ exist_userpass_map[inventory_hostname][exist_instname] }}
-	));
+};
+{% else %}
+declare variable $local:users :=
+    map:new((
+ {{ exist_userpass_map[inventory_hostname][exist_instname] }}
+    ));
+{% endif %}
 
 declare function local:create-user-and-group($name) {
 (: create group :)
@@ -38,7 +46,6 @@ declare function local:change-passwords(){
                 let $create-user := local:create-user-and-group($user)
                 let $change := sm:passwd($user, $local:users($user))
                 return "created user '" || $user || "' and changed its password"
-                
             )
         return
             <msg>{$passwd}</msg>
@@ -52,15 +59,30 @@ declare function local:change-passwords(){
 let $changed-pwds := local:change-passwords()
 return
     <hardening>
+{% if exist_major_version > 4 %}
         <users count="{count( sm:list-users() ) }">{
+{% else %}
+        <users count="{count( sm:get-users() ) }">{
+{% endif %}
             for $user in sm:list-users()
             return
                 <user>{$user}</user>
         }</users>
+{% if exist_major_version > 4 %}
+        <groups count="{ count( sm:list-groups() ) }">{
+{% else %}
         <groups count="{ count( sm:get-groups() ) }">{
-            for $group in sm:get-groups()
+{% endif %}
+            for $group in sm:list-groups()
             return
                 <group>{$group}</group>
         }</groups>
-        <updated-passwords count="{ count( $changed-pwds ) }">{$changed-pwds}</updated-passwords>
+        <updated-passwords count="{ count( $changed-pwds ) }">{
+            for $msg in $changed-pwds
+                return
+                    (
+                        util:log("info", "users-and-groups: " || $msg/text()),
+                        $msg
+                    )
+        }</updated-passwords>
     </hardening>
