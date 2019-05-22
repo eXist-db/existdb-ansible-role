@@ -42,7 +42,7 @@
   when: not password_set_file.stat.exists
 
 - name: Install custom xar files (exec install-xars.xql)
-  shell: "bin/client.sh -u admin -P '{{ exist_adminpass[inventory_hostname] }}' -F install-xars.xql -ouri=xmldb:exist://localhost:{{ exist_http_port }}/exist/xmlrpc"
+  shell: 'bin/client.sh -u admin -P "{{ exist_adminpass[inventory_hostname][exist_instname] }}" -F install-xars.xql -ouri=xmldb:exist://localhost:{{ exist_http_port }}/exist/xmlrpc'
   args:
     chdir: "{{ exist_path }}"
   when: exist_install_custom_xars

@@ -2,7 +2,7 @@ xquery version "3.1";
 
 declare variable $local:users :=
 	map:new((
-{{exist_userpass_map[inventory_hostname]}}
+{{ exist_userpass_map[inventory_hostname][exist_instname] }}
 	));
 
 declare function local:create-user-and-group($name) {

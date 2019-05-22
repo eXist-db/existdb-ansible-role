@@ -79,19 +79,23 @@ exist_syslog_loghost: 127.0.0.1
 # reference only.
 #
 #exist_adminpass:
-#  myserver1: MySecretPass
-#  myserver2: MyOtherPass
+#  myserver1:
+#    myinstance1: MySecretPass
+#  myserver2:
+#    myinstance2: MyOtherPass
 #
-# NOTE: the last entry for each host MUST NOT have a trailing comma!!
+# NOTE: the last entry for each host/instance MUST NOT have a trailing comma!!
 #exist_userpass_map:
-#  myserver1: |
-#    map:entry("eXide", "thispassword"),
-#    map:entry("guest", "guestpass"),
-#    map:entry("SYSTEM", "wonttell")
-#  myserver2: |
-#    map:entry("eXide", "thatpassword"),
-#    map:entry("guest", "guestpass"),
-#    map:entry("extrauser", "secret")
+#  myserver1:
+#    myinstance1: |
+#      map:entry("eXide", "thispassword"),
+#      map:entry("guest", "guestpass"),
+#      map:entry("SYSTEM", "wonttell")
+#  myserver2:
+#    myinstance2: |
+#      map:entry("eXide", "thatpassword"),
+#      map:entry("guest", "guestpass"),
+#      map:entry("extrauser", "secret")
 
 
 # defaults for config file settings
