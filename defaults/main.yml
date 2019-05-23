@@ -18,6 +18,13 @@ exist_instname: 'exist'
 #exist_instname: 'exist-test'
 #exist_instname: 'exist-prod'
 
+# if you run multiple eXist-db instances on a single host, you may want to each
+# of them as a different user.
+# if you're not running multiple instances the default is fine
+exist_instuser: 'existdb'
+#exist_instuser: 'tester'
+#exist_instuser: 'customer1'
+
 # because eXist-db 5.0 introduces many changes in its filesystem layout that
 # affect Ansible operation, we use this variable as an indicator for Ansible
 # processing. Expected values:
