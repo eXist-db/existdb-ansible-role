@@ -1,6 +1,10 @@
 ---
 ## Install exist-db from source (git + build)
 
+- name: Prepare maven for eXist-db 5.x builds
+  include_tasks: setup-maven.yml
+  when: exist_major_version > 4
+
 # this only to simplify conditionals below
 - name: Set fact whether eXist is installed
   set_fact:
