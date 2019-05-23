@@ -47,7 +47,7 @@
 - name: Setup file descriptor limits for user exist from template
   template:
     src: limits.exist.j2
-    dest: /etc/security/limits.d/exist.conf
+    dest: '/etc/security/limits.d/[[ exist_instuser }}.conf'
   when: exist_fdset_enable == True
 
 - name: Ensure limits get applied by PAM (Debian family)
