@@ -11,26 +11,26 @@
 
 - name: Ensure exist system group is present
   group:
-    name: "{{ exist_group }}"
+    name: '{{ exist_group }}'
 
 - name: Ensure exist system user is present
   user:
-    name: "{{ exist_user }}"
-    group: "{{ exist_group }}"
-    home: "{{ exist_home }}"
-    password: "*"
+    name: '{{ exist_user }}'
+    group: '{{ exist_group }}'
+    home: '{{ exist_home }}'
+    password: '*'
 
 - name: Ensure exist system dir is owned by exist system user/group
   file:
-    path: "{{ exist_home }}"
+    path: '{{ exist_home }}'
     state: directory
-    owner: "{{ exist_user }}"
-    group: "{{ exist_group }}"
+    owner: '{{ exist_user }}'
+    group: '{{ exist_group }}'
     mode: 0751
 
 - name: Ensure exist system dir does not have .ssh/authorized_keys
   file:
-    path: "{{ exist_home }}/.ssh/authorized_keys"
+    path: '{{ exist_home }}/.ssh/authorized_keys'
     state: absent
 
 ## setup exist instance user
@@ -42,7 +42,7 @@
     password: '{{ exist_adminpass[inventory_hostname][exist_instname] }}'
   when: exist_instuser != exist_user
 
-## increase file descriptor limits for eXist user
+## increase file descriptor limits for exist instance user
 
 - name: Setup file descriptor limits for user exist from template
   template:
@@ -52,9 +52,9 @@
 
 - name: Ensure limits get applied by PAM (Debian family)
   lineinfile:
-    path: "/etc/pam.d/{{ item }}"
+    path: '/etc/pam.d/{{ item }}'
     regexp: 'session\s+required\s+pam_limits.so'
-    line: "session  required  pam_limits.so"
+    line: 'session  required  pam_limits.so'
   with_items:
     - login
     - su
@@ -64,5 +64,5 @@
   lineinfile:
     name: /etc/pam.d/system-auth
     regexp: 'session\s+required\s+pam_limits.so'
-    line: "session  required  pam_limits.so"
+    line: 'session  required  pam_limits.so'
   when: exist_fdset_enable == True and ansible_os_family == "RedHat"
