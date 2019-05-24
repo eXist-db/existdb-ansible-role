@@ -5,9 +5,14 @@
 # Required-Stop:
 # Default-Start:  2 3 4 5
 # Default-Stop: 0 1 6
+{% if exist_major_version > 4 %}
+# Short-Description: eXist-db Native XML Database
+{% else %}
 # Short-Description: yajsw wrapper for eXist-db Native XML Database
+{% endif %}
 # Description: eXist-db Database Server
 ### END INIT INFO
+{% if exist_major_version == 4 %}
 # config: {{ exist_path }}/tools/yajsw/conf/wrapper.conf
 # pidfile: {{ exist_path }}/wrapper.eXist-db.pid
 # apppidfile: {{ exist_path }}/wrapper.java.eXist-db.pid
@@ -15,18 +20,38 @@
 # YAJSW sh script template.  Suitable for starting and stopping
 #  wrapped daemon on POSIX platforms.
 #-----------------------------------------------------------------------------
+{% endif %}
 
 status() {
+{% if exist_major_version > 4 %}
+    if pgrep -lf {{ exist_instname }}.start.jar; then
+	echo running
+	exit 0
+    else
+	echo stopped
+	exit 1
+    fi
+{% else %}
      {{ ansible_env.JAVA_HOME }}/bin/java -Dwrapper.pidfile={{ exist_path }}/wrapper.eXist-db.pid -Dwrapper.service=true -Dwrapper.visible=false -Djna_tmpdir={{ exist_home }}/tmp -jar {{ exist_path }}/tools/yajsw/wrapper.jar -qx {{ exist_path }}/tools/yajsw/conf/wrapper.conf
+{% endif %}
 }
 
 stopit() {
     echo "Stopping eXist-db ..."
+{% if exist_major_version > 4 %}
+    cd {{ exist_path }} && sudo -u {{ exist_instuser }} bin/shutdown.sh
+{% else %}
     {{ ansible_env.JAVA_HOME }}/bin/java -Dwrapper.pidfile={{ exist_path }}/wrapper.eXist-db.pid -Dwrapper.service=true -Dwrapper.visible=false -Djna_tmpdir={{ exist_home }}/tmp -jar {{ exist_path }}/tools/yajsw/wrapper.jar -px {{ exist_path }}/tools/yajsw/conf/wrapper.conf
+{% endif %}
 }
+
 startit() {
     echo "Starting eXist-db ..."
-    sudo -u {{ exist_user }} {{ ansible_env.JAVA_HOME }}/bin/java -Dwrapper.pidfile={{ exist_path }}/wrapper.eXist-db.pid -Dwrapper.service=true -Dwrapper.visible=false -Djna_tmpdir={{ exist_home }}/tmp -jar {{ exist_path }}/tools/yajsw/wrapper.jar -tx {{ exist_path }}/tools/yajsw/conf/wrapper.conf
+{% if exist_major_version > 4 %}
+    cd {{ exist_path }} && sudo -u {{ exist_instuser }} bin/startup.sh
+{% else %}
+    sudo -u {{ exist_instuser }} {{ ansible_env.JAVA_HOME }}/bin/java -Dwrapper.pidfile={{ exist_path }}/wrapper.eXist-db.pid -Dwrapper.service=true -Dwrapper.visible=false -Djna_tmpdir={{ exist_home }}/tmp -jar {{ exist_path }}/tools/yajsw/wrapper.jar -tx {{ exist_path }}/tools/yajsw/conf/wrapper.conf
+{% endif %}
 }
 
 

@@ -5,9 +5,15 @@ After=syslog.target
 
 [Service]
 Type=forking
-User={{exist_user}}
+User={{exist_instuser}}
+Environment=JAVA_HOME={{ ansible_env.JAVA_HOME }}
+{% if exist_major_version > 4 %}
+ExecStart=cd {{ exist_path }} && bin/startup.sh
+ExecStop=cd {{ exist_path }} && bin/shutdown.sh
+{% else %}
 ExecStart={{ ansible_env.JAVA_HOME }}/bin/java -Dwrapper.pidfile={{ exist_path }}/tools/yajsw/work/wrapper.eXist-db.pid -Dwrapper.service=true -Dwrapper.visible=false -Djna_tmpdir={{exist_home}}/tmp -jar {{ exist_path }}/tools/yajsw/wrapper.jar -tx {{ exist_path }}/tools/yajsw/conf/wrapper.conf
 ExecStop={{ ansible_env.JAVA_HOME }}/bin/java -Dwrapper.pidfile={{ exist_path }}/tools/yajsw/work/wrapper.eXist-db.pid -Dwrapper.service=true -Dwrapper.visible=false -Djna_tmpdir={{exist_home}}/tmp -jar {{ exist_path }}/tools/yajsw/wrapper.jar -px {{ exist_path }}/tools/yajsw/conf/wrapper.conf
+{% endif %}
 Restart=on-abort
 StandardOutput=null
 
