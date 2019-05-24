@@ -3,7 +3,7 @@
 
 - name: Ensure exist service is running
   service:
-    name: "{{ exist_servicename }}"
+    name: "{{ exist_instname }}"
     enabled: yes
     state: restarted
     #daemon-reload: true

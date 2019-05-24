@@ -2,7 +2,7 @@
 - name: Install eXist-DB init script (SysV init)
   template:
     src: eXist-db.init.j2
-    dest: "/etc/init.d/{{ exist_servicename }}"
+    dest: "/etc/init.d/{{ exist_instname }}"
     mode: 0755
   when: ansible_service_mgr != "systemd"
   notify:
@@ -11,7 +11,7 @@
 - name: Install eXist-DB service file (systemd)
   template:
     src: eXist-db.systemd.j2
-    dest: "/etc/systemd/system/{{ exist_servicename }}.service"
+    dest: "/etc/systemd/system/{{ exist_instname }}.service"
     mode: 0644
   when: ansible_service_mgr == "systemd"
   notify:

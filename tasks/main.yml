@@ -2,11 +2,10 @@
 - name: Set facts for this exist instance
   set_fact:
     exist_path: "{{ exist_home }}/{{ exist_instname }}"
-    exist_servicename: "{{ exist_instname }}"
 
 - name: Debug0
   debug:
-    msg: 'exist_path: {{ exist_path }} exist_instname: {{ exist_instname }} exist_servicename {{ exist_servicename }}'
+    msg: 'exist_path: {{ exist_path }} exist_instname: {{ exist_instname }} exist_instuser: {{ exist_instuser }}'
 
 - name: Include user setup tasks
   include_tasks: setup-user.yml

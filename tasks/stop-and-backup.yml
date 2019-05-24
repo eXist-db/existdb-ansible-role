@@ -1,7 +1,7 @@
 ---
 - name: Ensure exist service is stopped
   service:
-    name: "{{ exist_servicename }}"
+    name: "{{ exist_instname }}"
     state: stopped
 
 - name: Backup installed exist
@@ -16,15 +16,15 @@
 - name: Backup eXist-DB init script (SysV init)
   become_user: "{{ exist_user }}"
   copy:
-    src: "/etc/init.d/{{ exist_servicename }}"
-    dest: "{{ exist_home }}/backup/last/{{ exist_servicename }}.init"
+    src: "/etc/init.d/{{ exist_instname }}"
+    dest: "{{ exist_home }}/backup/last/{{ exist_instname }}.init"
     remote_src: yes
   when: ansible_service_mgr != "systemd"
 
 - name: Backup eXist-DB service file (systemd)
   become_user: "{{ exist_user }}"
   copy:
-    src: "/etc/systemd/system/{{ exist_servicename }}.service"
-    dest: "{{ exist_home }}/backup/last/{{ exist_servicename }}.service"
+    src: "/etc/systemd/system/{{ exist_instname }}.service"
+    dest: "{{ exist_home }}/backup/last/{{ exist_instname }}.service"
     remote_src: yes
   when: ansible_service_mgr == "systemd"
