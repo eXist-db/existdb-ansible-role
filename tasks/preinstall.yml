@@ -30,7 +30,7 @@
   notify:
     - reload sysctl
 
-- name: Ensure backup and scripts dirs are present
+- name: Ensure scripts dir is present
   file:
     path: "{{ exist_home }}/{{ item }}"
     state: directory
@@ -39,16 +39,18 @@
     mode: 0751
     recurse: yes
   with_items:
-    - backup
     - scripts
 
-- name: Ensure tmp dir is present
+- name: Ensure backup and tmp dirs are present
   file:
-    path: "{{ exist_home }}/tmp"
+    path: "{{ exist_home }}/{{ item }}"
     state: directory
     owner: "{{ exist_user }}"
     group: "{{ exist_group }}"
     mode: 0775
+  with_items:
+    - backup
+    - tmp
 
 - name: Install util scripts from files
   copy:
