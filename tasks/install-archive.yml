@@ -40,7 +40,7 @@
     src: "{{ exist_home }}/tmp/{{ exist_archive }}"
     dest: "{{ exist_home }}"
     remote_src: yes
-    owner: "{{ exist_user }}"
+    owner: "{{ exist_instuser }}"
     group: "{{ exist_group }}"
     creates: "{{ exist_path }}/VERSION.txt"
     extra_opts: [ '--transform=s:^[^/]\+:{{ exist_instname }}:;' ]
