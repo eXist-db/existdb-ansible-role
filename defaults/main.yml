@@ -66,6 +66,25 @@ exist_webxml_from_template: yes
 # XXX these are not fully supported yet, leave as is!
 exist_confxml_from_template: no
 
+# relative paths to config files and dirs, different for eXist 4.x and 5.x
+# indexed by exist_major_version (4 or 5)
+exist_confpaths:
+  4:
+    wrapper_conf: 'tools/yajsw/conf/wrapper.conf'
+    conf_xml: 'conf.xml'
+    web_xml: 'webapp/WEB-INF/web.xml'
+    log4j2_xml: 'tools/yajsw/conf/log4j2.xml'
+    client_properties: 'client.properties'
+    data_basedir: 'webapp/WEB-INF'
+    jmxservlet_token: 'webapp/WEB-INF/data/jmxservlet.token'
+  5:
+    conf_xml: 'etc/conf.xml'
+    web_xml: 'etc/webapp/WEB-INF/web.xml'
+    log4j2_xml: 'etc/log4j2.xml'
+    client_properties: 'etc/client.properties'
+    data_basedir: ''
+    jmxservlet_token: 'UNKNOWN'
+
 # used to increase file descriptor limits for the user running eXist
 exist_fdset_enable: yes
 exist_fdsoft_limit: 8192
