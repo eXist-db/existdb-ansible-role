@@ -21,9 +21,14 @@
   include_tasks: install-archive.yml
   when: exist_install_method == "remote_archive" or exist_install_method == "local_archive"
 
-- name: Include custom xar installation tasks
+- name: Include custom xar installation tasks (eXist 4.x)
   include_tasks: custom-xar-install.yml
-  when: exist_install_custom_xars
+  when: exist_install_custom_xars and exist_major_version == 4
+
+- name: Include custom xar installation tasks (eXist 5.x)
+  fail:
+    msg: 'Custom Xar installation currently not supported on 5.x'
+  when: exist_install_custom_xars and exist_major_version == 5
 
 - name: Include post-installation pre-startup tasks
   include_tasks: postinstall.yml
