@@ -22,7 +22,6 @@
 - name: Setup wrapper conf from template
   template:
     src: wrapper.conf.j2
-    #dest: "{{ exist_path }}/tools/yajsw/conf/wrapper.conf"
     dest: "{{ exist_path }}/{{ exist_confpaths[exist_major_version]['wrapper_conf'] }}"
     owner: "{{ exist_instuser }}"
     group: "{{ exist_group }}"
@@ -56,7 +55,8 @@
 - name: Setup eXist web.xml from template
   template:
     src: web.xml.j2
-    dest: "{{ exist_path }}/{{ exist_confpaths[exist_major_version]['web_xml']     owner: "{{ exist_instuser }}"
+    dest: "{{ exist_path }}/{{ exist_confpaths[exist_major_version]['web_xml']
+    owner: "{{ exist_instuser }}"
     group: "{{ exist_group }}"
     mode: 0644
   when: exist_webxml_from_template
