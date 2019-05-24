@@ -22,19 +22,20 @@
 - name: Setup wrapper conf from template
   template:
     src: wrapper.conf.j2
-    dest: "{{ exist_path }}/tools/yajsw/conf/wrapper.conf"
-    owner: "{{ exist_user }}"
+    #dest: "{{ exist_path }}/tools/yajsw/conf/wrapper.conf"
+    dest: "{{ exist_path }}/{{ exist_confpaths[exist_major_version]['wrapper_conf'] }}"
+    owner: "{{ exist_instuser }}"
     group: "{{ exist_group }}"
     mode: 0644
-  when: exist_wrapperconf_from_template
+  when: exist_major_version == 4 and exist_wrapperconf_from_template
   notify:
     - restart eXist
 
 - name: Setup logging conf from template
   template:
     src: log4j2.xml.j2
-    dest: "{{ exist_path }}/tools/yajsw/conf/log4j2.xml"
-    owner: "{{ exist_user }}"
+    dest: "{{ exist_path }}/{{ exist_confpaths[exist_major_version]['log4j2_xml'] }}"
+    owner: "{{ exist_instuser }}"
     group: "{{ exist_group }}"
     mode: 0644
   when: exist_logconf_from_template
@@ -44,8 +45,8 @@
 - name: Setup eXist conf.xml from template
   template: 
     src: conf.xml.j2
-    dest: "{{ exist_path }}/conf.xml"
-    owner: "{{ exist_user }}"
+    dest: "{{ exist_path }}/{{ exist_confpaths[exist_major_version]['conf_xml'] }}"
+    owner: "{{ exist_instuser }}"
     group: "{{ exist_group }}"
     mode: 0644
   when: exist_confxml_from_template
@@ -55,8 +56,7 @@
 - name: Setup eXist web.xml from template
   template:
     src: web.xml.j2
-    dest: "{{ exist_path }}/webapp/WEB-INF/web.xml"
-    owner: "{{ exist_user }}"
+    dest: "{{ exist_path }}/{{ exist_confpaths[exist_major_version]['web_xml']     owner: "{{ exist_instuser }}"
     group: "{{ exist_group }}"
     mode: 0644
   when: exist_webxml_from_template
@@ -66,8 +66,8 @@
 - name: Setup eXist client.properties from template
   template: 
     src: client.properties.j2
-    dest: "{{ exist_path }}/client.properties"
-    owner: "{{ exist_user }}"
+    dest: "{{ exist_path }}/{{ exist_confpaths[exist_major_version]['client_properties']"
+    owner: "{{ exist_instuser }}"
     group: "{{ exist_group }}"
     mode: 0644
   when: exist_clientprops_from_template
@@ -91,7 +91,7 @@
 # so we can check whether the token was already created
 - name: Check whether token has already been created
   stat:
-    path: "{{ exist_path }}/webapp/WEB-INF/data/jmxservlet.token"
+    path: "{{ exist_path }}/{{ exist_confpaths[exist_major_version]['jmxservlet_token']
   register: jmxtoken_file
 
 - name: Generate uuid for JMX token
@@ -102,8 +102,8 @@
 - name: Setup JMX token from template
   template:
     src: jmxservlet.token.j2
-    dest: "{{ exist_path }}/webapp/WEB-INF/data/jmxservlet.token"
-    owner: "{{ exist_user }}"
+    dest: "{{ exist_path }}/{{ exist_confpaths[exist_major_version]['jmxservlet_token']
+    owner: "{{ exist_instuser }}"
     group: "{{ exist_group }}"
     mode: 0644
   when: not jmxtoken_file.stat.exists
