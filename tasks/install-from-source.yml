@@ -42,9 +42,13 @@
     update: "{{ exist_repo_update }}"
   when: not exist_is_installed or exist_replace_installation
 
-- name: Build/rebuild eXist
+- name: Build/rebuild eXist 4.x
   become_user: "{{ exist_user }}"
   shell: "./build.sh clean clean-all && ./build.sh >build.log 2>&1"
   args:
     chdir: "{{ exist_path }}"
-  when: not exist_is_installed or exist_replace_installation
+  when: exist_major_version == 4 and not exist_is_installed or exist_replace_installation
+
+- name: Build/rebuild eXist 5.x
+  fail:
+    msg: 'Building 5.x from source is currently not supported'
