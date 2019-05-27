@@ -35,6 +35,14 @@
   notify:
     - restart eXist
 
+- name: Install eXist-DB custom Java options file
+  template:
+    src: exist.java.options.j2
+    dest: "{{ exist_path }}/etc/exist.java.options"
+    mode: 0644
+  notify:
+    - restart eXist
+
 ## setup config files before startup
 
 - name: Setup wrapper conf from template

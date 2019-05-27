@@ -1,0 +1,33 @@
+# Custom Java options for this eXist-db instance
+
+# ports
+-Djetty.port={{ exist_http_port }}
+-Djetty.ssl.port={{ exist_ssl_port }}
+
+# initial and max Java heap memory
+-Xms{{ exist_wrapper_init_mem }}m
+-Xmx{{ exist_wrapper_max_mem }}m
+
+# max Java metaspace and direct memory sizes
+-XX:MaxMetaspaceSize={{ exist_wrapper_max_meta }}m
+-XX:MaxDirectMemorySize={{ exist_wrapper_max_direct }}m
+
+# GC
+-XX:+UseG1GC
+-XX:MaxGCPauseMillis=200
+{% if exist_wrapper_gcdebug_enable == True %}
+# GC logging/debugging
+-XX:+PrintGCDetails
+-XX:+PrintGCDateStamps
+-Xloggc:{{ exist_path }}/logs/gc-%t.log
+{% endif %}
+
+# string deduplication, requires Java >= 8u20 and G1 GC
+-XX:+UseStringDeduplication
+-XX:+PrintStringDeduplicationStatistics
+
+# Java NIO cache tuning (256k), requires Java >= 8u102
+-Djdk.nio.maxCachedBufferSize=262144
+
+# tmp dir
+-Djava.io.tmpdir={{ exist_home }}/tmp
