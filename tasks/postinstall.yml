@@ -73,7 +73,7 @@
 - name: Setup eXist web.xml from template
   template:
     src: web.xml.j2
-    dest: "{{ exist_path }}/{{ exist_confpaths[exist_major_version]['web_xml']
+    dest: "{{ exist_path }}/{{ exist_confpaths[exist_major_version]['web_xml']"
     owner: "{{ exist_instuser }}"
     group: "{{ exist_group }}"
     mode: 0644
@@ -84,7 +84,7 @@
 - name: Setup eXist client.properties from template
   template: 
     src: client.properties.j2
-    dest: "{{ exist_path }}/{{ exist_confpaths[exist_major_version]['client_properties']"
+    dest: "{{ exist_path }}/{{ exist_confpaths[exist_major_version]['client_properties'] }}"
     owner: "{{ exist_instuser }}"
     group: "{{ exist_group }}"
     mode: 0644
@@ -109,7 +109,7 @@
 # so we can check whether the token was already created
 - name: Check whether token has already been created
   stat:
-    path: "{{ exist_path }}/{{ exist_confpaths[exist_major_version]['jmxservlet_token']
+    path: "{{ exist_path }}/{{ exist_confpaths[exist_major_version]['jmxservlet_token'] }}"
   register: jmxtoken_file
 
 - name: Generate uuid for JMX token
@@ -120,7 +120,7 @@
 - name: Setup JMX token from template
   template:
     src: jmxservlet.token.j2
-    dest: "{{ exist_path }}/{{ exist_confpaths[exist_major_version]['jmxservlet_token']
+    dest: "{{ exist_path }}/{{ exist_confpaths[exist_major_version]['jmxservlet_token'] }}"
     owner: "{{ exist_instuser }}"
     group: "{{ exist_group }}"
     mode: 0644
