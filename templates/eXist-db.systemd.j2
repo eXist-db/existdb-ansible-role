@@ -6,9 +6,32 @@ After=syslog.target
 [Service]
 Type=forking
 User={{exist_instuser}}
+Environment=EXIST_NAME={{ exist_instname }}
+Environment=EXIST_USER={{ exist_instuser }}
 Environment=JAVA_HOME={{ ansible_env.JAVA_HOME }}
-ExecStart=cd {{ exist_path }} && bin/startup.sh
-ExecStop=cd {{ exist_path }} && bin/shutdown.sh
+Environment=EXIST_DEFAULT_OPTS="\
+  -Xms128m \
+  -Dfile.encoding=UTF-8 \
+  -Dlog4j.configurationFile=${EXIST_DIR}/etc/log4j2.xml \
+  -Dexist.home=${EXIST_DIR} \
+  -Dexist.configurationFile=${EXIST_DIR}/etc/conf.xml \
+  -Djetty.home=${EXIST_DIR} \
+  -Dexist.jetty.config=${EXIST_DIR}/etc/jetty/standard.enabled-jetty-configs \
+"
+Environment=EXIST_JAVA_OPTFILE=${EXIST_DIR}/etc/exist.java.options
+Environment=EXIST_JAVA_OPTS=`perl -ne 'next if /^\s*#/; print' <${EXIST_JAVA_OPTFILE}`
+Environment=REPO=${EXIST_DIR}/lib
+Environment=CLASSPATH="${EXIST_DIR}/etc:${REPO}/appassembler-booter-2.1.0.jar:${REPO}/appassembler-model-2.1.0.jar:${REPO}/plexus-utils-3.2.0.jar:${REPO}/stax-api-1.0.1.jar:${REPO}/stax-1.1.1-dev.jar"
+Environment=EXIST_BOOTER_OPTS="\
+  -classpath ${CLASSPATH] \
+  -Dapp.name=startup \
+  -Dapp.pid=\"$$\" \
+  -Dapp.repo=${REPO} \
+  -Dapp.home=${EXIST_DIR} \
+  -Dbasedir=${EXIST_DIR} \
+  org.codehaus.mojo.appassembler.booter.AppassemblerBooter"
+ExecStart={{ ansible_env.JAVA_HOME }}/bin/java ${EXIST_DEFAULT_OPTS} ${EXIST_JAVA_OPTS} ${EXIST_BOOTER_OPTS}
+ExecStop=pkill -fu ${EXIST_USER} "${EXIST_NAME} org.codehaus"
 Restart=on-abort
 StandardOutput=null
 
