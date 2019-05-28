@@ -35,11 +35,12 @@
   notify:
     - restart eXist
 
-- name: Install eXist-DB custom Java options file
+- name: Install eXist-DB custom Java options file (5.x)
   template:
     src: exist.java.options.j2
     dest: "{{ exist_path }}/etc/exist.java.options"
     mode: 0644
+  when: exist_major_version == 5
   notify:
     - restart eXist
 
@@ -81,7 +82,7 @@
 - name: Setup eXist web.xml from template
   template:
     src: web.xml.j2
-    dest: "{{ exist_path }}/{{ exist_confpaths[exist_major_version]['web_xml']"
+    dest: "{{ exist_path }}/{{ exist_confpaths[exist_major_version]['web_xml'] }}"
     owner: "{{ exist_instuser }}"
     group: "{{ exist_group }}"
     mode: 0644

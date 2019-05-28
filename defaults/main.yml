@@ -75,7 +75,7 @@ exist_confpaths:
     web_xml: 'webapp/WEB-INF/web.xml'
     log4j2_xml: 'tools/yajsw/conf/log4j2.xml'
     client_properties: 'client.properties'
-    data_basedir: 'webapp/WEB-INF'
+    data_basedir: 'webapp/WEB-INF/'
     jmxservlet_token: 'webapp/WEB-INF/data/jmxservlet.token'
   5:
     conf_xml: 'etc/conf.xml'
