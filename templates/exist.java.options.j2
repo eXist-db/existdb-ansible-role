@@ -22,6 +22,11 @@
 -Xloggc:{{ exist_path }}/logs/gc-%t.log
 {% endif %}
 
+# NMT
+-XX:NativeMemoryTracking=detail
+-XX:+UnlockDiagnosticVMOptions
+-XX:+PrintNMTStatistics
+
 # string deduplication, requires Java >= 8u20 and G1 GC
 -XX:+UseStringDeduplication
 -XX:+PrintStringDeduplicationStatistics
