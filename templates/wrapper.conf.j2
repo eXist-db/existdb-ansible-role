@@ -119,7 +119,7 @@ wrapper.java.additional.8=-Djava.io.tmpdir={{ exist_home }}/tmp
 {% if exist_wrapper_gcdebug_enable == True %}
 wrapper.java.additional.9=-XX:+PrintGCDetails
 wrapper.java.additional.10=-XX:+PrintGCDateStamps
-wrapper.java.additional.11=-Xloggc:{{ exist_path }}/webapp/WEB-INF/logs/gc.log
+wrapper.java.additional.11=-Xloggc:{{ exist_path }}/webapp/WEB-INF/logs/gc-%t.log
 {% endif %}
 
 # Java NIO cache tuning (256k)
