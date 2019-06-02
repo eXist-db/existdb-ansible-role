@@ -12,6 +12,8 @@ ex_revision=
 ex_jmxtoken=
 ex_gitsrc=false
 
+
+{% if exist_major_version == 4 %}
 if [ -d "$ex_path" -a -f $ex_path/exist.jar -a -f $ex_path/VERSION.txt ]; then
     ex_installed=true
     ex_version=`grep project.version $ex_path/VERSION.txt | sed -e 's/project.version=//;'`
@@ -23,12 +25,28 @@ if [ -d "$ex_path" -a -f $ex_path/exist.jar -a -f $ex_path/VERSION.txt ]; then
     fi
 fi
 
-if [ -d "$ex_path/.git" ]; then
-    ex_gitsrc=true
-fi
-
 if pgrep -lf '{{ exist_instname }}.start.jar' >/dev/null; then
     ex_running=true
+fi
+{% else %}
+if [ -f {{ exist_path }}/etc/conf.xml ]; then
+    ex_installed=true
+    ex_version=`grep product-version /tmp/system.properties | sed -e 's/product-version=//;'`
+    ex_built=`grep product-build /tmp/system.properties | sed -e 's/product-build=//;'`
+    ex_branch=`grep git-branch /tmp/system.properties | sed -e 's/git-branch=//;'`
+    ex_revision=`grep git-commit /tmp/system.properties | sed -e 's/git-commit=//;'`
+    if [ -f $ex_path/data/jmxservlet.token ]; then
+	ex_jmxtoken=`grep '^token=' $ex_path/data/jmxservlet.token | sed -e 's/token=//;'`
+    fi
+fi
+
+if pgrep -lfu {{ exist_instname }} '{{ exist_instname }} org.codehaus' >/dev/null; then
+    ex_running=true
+fi
+{% endif %}
+
+if [ -d "$ex_path/.git" ]; then
+    ex_gitsrc=true
 fi
 
 
