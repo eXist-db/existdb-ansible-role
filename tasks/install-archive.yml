@@ -15,9 +15,25 @@
     group: "{{ exist_group }}"
   when: exist_install_method == "local_archive"
 
-- name: Determine source code revision in archive to install
-  shell: "tar zxf {{ exist_home }}/tmp/{{ exist_archive }} exist/VERSION.txt -O | grep scm.revision | sed -e 's/scm.revision=//;'"
+- name: Determine source code revision in archive to install (4.x)
+  shell: "tar zxf {{ exist_home }}/tmp/{{ exist_archive }} {{ exist_instname }}/VERSION.txt -O | grep scm.revision | sed -e 's/scm.revision=//;'"
   register: archive_revision
+  when: exist_major_version == 4
+
+- name: Extract exist-core jar from archive to install (5.x)
+  unarchive:
+    src: "{{ exist_home }}/tmp/{{ exist_archive }}"
+    dest: "{{ exist_home }}/tmp"
+    remote_src: yes
+    owner: "{{ exist_instuser }}"
+    group: "{{ exist_group }}"
+    extra_opts: [ '--transform=s:^[^/]\+:{{ exist_instname }}:;', '*exist-core*jar' ]
+  when: exist_major_version == 5
+
+- name: Determine source code revision in archive to install (5.x)
+  shell: "unzip -p {{ exist_home }}/tmp/{{ exist_instname }}/lib/exist-core*jar org/exist/system.properties | grep git-commit | sed -e 's/git-commit=//;'"
+  register: archive_revision
+  when: exist_major_version == 5
 
 - name: Set fact whether to replace an installed eXist
   set_fact:
@@ -42,6 +58,7 @@
     remote_src: yes
     owner: "{{ exist_instuser }}"
     group: "{{ exist_group }}"
-    creates: "{{ exist_path }}/VERSION.txt"
+    #creates: "{{ exist_path }}/VERSION.txt"   # 4.x
+    #creates: "{{ exist_path }}/etc/conf.xml"  # 5.x
     extra_opts: [ '--transform=s:^[^/]\+:{{ exist_instname }}:;' ]
   when: not ansible_local[exist_instname]['exist_installed'] or exist_replace_installation
