@@ -3,30 +3,28 @@
 
 - name: Ensure required packages are installed (Debian)
   apt:
-    name: "{{ item }}"
+    name: "{{ exist_debian_extra_packages }}"
     state: present
   with_items: "{{ exist_debian_extra_packages }}"
   when: ansible_distribution == 'Debian'
 
 - name: Ensure required packages are installed (Ubuntu)
   apt:
-    name: "{{ item }}"
+    name: "{{ exist_ubuntu_extra_packages }}"
     state: present
-  with_items: "{{ exist_ubuntu_extra_packages }}"
   when: ansible_distribution == 'Ubuntu'
 
 - name: Ensure required packages are installed (RedHat family)
   yum: 
-    name: "{{ item }}"
+    name: "{{ exist_redhat_extra_packages }}"
     state: present
-  with_items: "{{ exist_redhat_extra_packages }}"
   when: ansible_os_family == 'RedHat'
 
 - name: Tune kernel parameters
   template: 
     src: "sysctl.exist.j2"
     dest: "/etc/sysctl.d/99-exist.conf"
-  when: exist_kerneltune_enable
+  when: exist_kerneltune_enable | bool
   notify:
     - reload sysctl
 
