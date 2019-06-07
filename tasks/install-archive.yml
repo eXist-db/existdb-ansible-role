@@ -33,7 +33,7 @@
 
 - name: Include stop and backup tasks if installing a different eXist
   include_tasks: stop-and-backup.yml
-  when: exist_replace_installation
+  when: exist_replace_installation | bool
 
 - name: Install exist archive
   unarchive:
@@ -44,4 +44,4 @@
     group: "{{ exist_group }}"
     creates: "{{ exist_path }}/VERSION.txt"
     extra_opts: [ '--transform=s:^[^/]\+:{{ exist_instname }}:;' ]
-  when: not ansible_local['exist'][exist_suffix]['exist_installed'] or exist_replace_installation
+  when: not ansible_local['exist'][exist_suffix]['exist_installed'] or exist_replace_installation | bool
