@@ -15,7 +15,7 @@
     exist_replace_installation: yes
   # if exist is installed AND the archive revision is different from installed
   when:
-    - exist_is_installed
+    - exist_is_installed | bool
     - git_revision.stdout != ansible_local['exist'][exist_suffix]['exist_revision']
 
 - name: Debug1
@@ -24,7 +24,7 @@
 
 - name: Include stop and backup tasks if installing a different eXist
   include_tasks: stop-and-backup.yml
-  when: exist_replace_installation
+  when: exist_replace_installation | bool
 
 - name: Clone eXist into configured directory
   become_user: "{{ exist_user }}"
