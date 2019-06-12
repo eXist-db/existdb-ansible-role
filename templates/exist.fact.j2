@@ -11,6 +11,8 @@ ex_branch=
 ex_revision=
 ex_jmxtoken=
 ex_gitsrc=false
+ex_http_port={{ exist_http_port }}
+ex_ssl_port={{ exist_ssl_port }}
 
 
 {% if exist_major_version == 4 %}
@@ -60,6 +62,8 @@ cat <<EOF
     "exist_branch": "${ex_branch}",
     "exist_revision": "${ex_revision}",
     "exist_jmxtoken": "${ex_jmxtoken}",
-    "exist_gitsrc": ${ex_gitsrc}
+    "exist_gitsrc": ${ex_gitsrc},
+    "exist_http_port": ${ex_http_port},
+    "exist_ssl_port": ${ex_ssl_port}
 }
 EOF
