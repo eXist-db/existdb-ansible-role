@@ -13,6 +13,11 @@
 - name: Include pre-installation tasks
   include_tasks: preinstall.yml
 
+# this only to improve readability in the install tasks
+- name: Set fact whether eXist is installed
+  set_fact:
+    exist_is_installed: "{{ ansible_local[exist_instname]['exist_installed'] }}"
+
 - name: Include tasks to install exist from source
   include_tasks: install-from-source.yml
   when: exist_install_method == "source"

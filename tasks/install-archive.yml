@@ -40,12 +40,12 @@
     exist_replace_installation: yes
   # if exist is installed AND the archive revision is different from installed
   when:
-    - ansible_local[exist_instname]['exist_installed']
+    - exist_is_installed
     - archive_revision.stdout != ansible_local[exist_instname]['exist_revision']
 
 - name: Debug1
   debug:
-    msg: "installed: {{ ansible_local[exist_instname]['exist_installed'] }} running: {{ ansible_local[exist_instname]['exist_running'] }} gitsrc: {{ ansible_local[exist_instname]['exist_gitsrc'] }} rev: {{ ansible_local[exist_instname]['exist_revision'] }} remote_ref: {{ archive_revision.stdout }} replace: {{ exist_replace_installation }}"
+    msg: "installed: {{ exist_is_installed }} running: {{ ansible_local[exist_instname]['exist_running'] }} gitsrc: {{ ansible_local[exist_instname]['exist_gitsrc'] }} rev: {{ ansible_local[exist_instname]['exist_revision'] }} remote_ref: {{ archive_revision.stdout }} replace: {{ exist_replace_installation }}"
 
 - name: Include stop and backup tasks if installing a different eXist
   include_tasks: stop-and-backup.yml
@@ -61,4 +61,4 @@
     #creates: "{{ exist_path }}/VERSION.txt"   # 4.x
     #creates: "{{ exist_path }}/etc/conf.xml"  # 5.x
     extra_opts: [ '--transform=s:^[^/]\+:{{ exist_instname }}:;' ]
-  when: not ansible_local[exist_instname]['exist_installed'] or exist_replace_installation
+  when: not exist_is_installed or exist_replace_installation
