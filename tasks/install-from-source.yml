@@ -28,10 +28,12 @@
 - name: Set srcpath fact (4.x)
   set_fact:
     exist_srcpath: '{{ exist_path }}'
+  when: exist_major_version == 4
 
 - name: Set srcpath fact (5.x)
   set_fact:
     exist_srcpath: '{{ exist_path }}-source'
+  when: exist_major_version == 5
 
 - name: Clone eXist into configured directory
   become_user: "{{ exist_user }}"
@@ -46,7 +48,7 @@
   when: not exist_is_installed or exist_replace_installation
 
 - name: Build/rebuild eXist 4.x
-  become_user: "{{ exist_user }}"
+  become_user: "{{ exist_instuser }}"
   shell: "./build.sh clean clean-all && ./build.sh >build.log 2>&1"
   args:
     chdir: "{{ exist_path }}"

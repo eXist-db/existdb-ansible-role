@@ -3,7 +3,7 @@
   get_url:
     url: "{{ exist_baseurl }}/{{ exist_archive }}"
     dest: "{{ exist_home }}/tmp/{{ exist_archive }}"
-    owner: "{{ exist_user }}"
+    owner: "{{ exist_instuser }}"
     group: "{{ exist_group }}"
   when: exist_install_method == "remote_archive"
 
@@ -11,7 +11,7 @@
   copy:
     src: "{{ exist_local_archive_dir }}/{{ exist_archive }}"
     dest: "{{ exist_home }}/tmp/{{ exist_archive }}"
-    owner: "{{ exist_user }}"
+    owner: "{{ exist_instuser }}"
     group: "{{ exist_group }}"
   when: exist_install_method == "local_archive"
 

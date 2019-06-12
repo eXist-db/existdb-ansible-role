@@ -5,7 +5,7 @@
     state: stopped
 
 - name: Backup installed exist
-  become_user: "{{ exist_user }}"
+  become_user: "{{ exist_instuser }}"
   shell: "export now=`date +'%Y%m%d%H%M'` && mkdir {{ exist_instname }}.${now} && mv {{ exist_path }} {{ exist_instname }}.${now} && rm -f {{ exist_instname }}.last && ln -sf {{ exist_instname }}.${now} {{ exist_instname }}.last"
   args:
     chdir: "{{ exist_home }}/backup"
@@ -14,7 +14,7 @@
     - exist_backup_previnstall
 
 - name: Backup eXist-DB init script (SysV init)
-  become_user: "{{ exist_user }}"
+  become_user: "{{ exist_instuser }}"
   copy:
     src: "/etc/init.d/{{ exist_instname }}"
     dest: "{{ exist_home }}/backup/last/{{ exist_instname }}.init"
@@ -22,7 +22,7 @@
   when: ansible_service_mgr != "systemd"
 
 - name: Backup eXist-DB service file (systemd)
-  become_user: "{{ exist_user }}"
+  become_user: "{{ exist_instuser }}"
   copy:
     src: "/etc/systemd/system/{{ exist_instname }}.service"
     dest: "{{ exist_home }}/backup/last/{{ exist_instname }}.service"

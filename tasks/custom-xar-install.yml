@@ -10,7 +10,7 @@
   file:
     path: "{{ exist_path }}/xars"
     state: directory
-    owner: "{{ exist_user }}"
+    owner: "{{ exist_instuser }}"
     group: "{{ exist_group }}"
     mode: 0755
 
@@ -18,7 +18,7 @@
   get_url:
     url: "{{ exist_xarbaseurl }}/{{ item }}"
     dest: "{{ exist_path }}/xars/{{ item }}"
-    owner: "{{ exist_user }}"
+    owner: "{{ exist_instuser }}"
     group: "{{ exist_group }}"
   with_items: "{{ exist_remote_xars }}"
 
@@ -26,7 +26,7 @@
   copy:
     src: "{{ exist_xarprivdir }}/{{ item }}"
     dest: "{{ exist_path }}/xars/{{ item }}"
-    owner: "{{ exist_user }}"
+    owner: "{{ exist_instuser }}"
     group: "{{ exist_group }}"
   with_items: "{{ exist_local_xars }}"
 
@@ -38,6 +38,6 @@
   template:
     src: install-xars.xql.j2
     dest: "{{ exist_path }}/install-xars.xql"
-    owner: "{{ exist_user }}"
+    owner: "{{ exist_instuser }}"
     group: "{{ exist_group }}"
     mode: 0755
