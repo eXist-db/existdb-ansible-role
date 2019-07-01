@@ -5,12 +5,13 @@
     state: stopped
 
 - name: Backup installed exist
-  become_user: "{{ exist_instuser }}"
+  #become_user: "{{ exist_instuser }}"
+  become: true
   shell: "export now=`date +'%Y%m%d%H%M'` && mkdir {{ exist_instname }}.${now} && mv {{ exist_path }} {{ exist_instname }}.${now} && rm -f {{ exist_instname }}.last && ln -sf {{ exist_instname }}.${now} {{ exist_instname }}.last"
   args:
     chdir: "{{ exist_home }}/backup"
   when:
-    - ansible_local[exist_instname]['exist_installed']
+    - exist_is_installed
     - exist_backup_previnstall
 
 - name: Backup eXist-DB init script (SysV init)
