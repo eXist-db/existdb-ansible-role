@@ -1,6 +1,7 @@
 - name: restart eXist
-  become: True
+  become: yes
   service: name={{exist_instname}} state=restarted
 
 - name: reload sysctl
+  become: yes
   command: "sysctl -p /etc/sysctl.d/99-exist.conf"
