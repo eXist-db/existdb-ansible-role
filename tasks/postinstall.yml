@@ -1,40 +1,4 @@
 ---
-- name: Install eXist-DB init script (SysV init, 4.x)
-  template:
-    src: eXist-db.init-v4.j2
-    dest: "/etc/init.d/{{ exist_instname }}"
-    mode: 0755
-  when: exist_major_version == 4 and ansible_service_mgr != "systemd"
-  notify:
-    - restart eXist
-
-- name: Install eXist-DB init script (SysV init, 5.x)
-  template:
-    src: eXist-db.init.j2
-    dest: "/etc/init.d/{{ exist_instname }}"
-    mode: 0755
-  when: exist_major_version == 5 and ansible_service_mgr != "systemd"
-  notify:
-    - restart eXist
-
-- name: Install eXist-DB service file (systemd, 4.x)
-  template:
-    src: eXist-db.systemd-v4.j2
-    dest: "/etc/systemd/system/{{ exist_instname }}.service"
-    mode: 0644
-  when: exist_major_version == 4 and ansible_service_mgr == "systemd"
-  notify:
-    - restart eXist
-
-- name: Install eXist-DB service file (systemd, 5.x)
-  template:
-    src: eXist-db.systemd.j2
-    dest: "/etc/systemd/system/{{ exist_instname }}.service"
-    mode: 0644
-  when: exist_major_version == 5 and ansible_service_mgr == "systemd"
-  notify:
-    - restart eXist
-
 - name: Install eXist-DB custom Java options file (5.x)
   template:
     src: exist.java.options.j2
@@ -45,6 +9,62 @@
   when: exist_major_version == 5
   notify:
     - restart eXist
+
+- name: Install eXist-DB service startup script (5.x)
+  template:
+    src: service.sh.j2
+    dest: "{{ exist_path }}/bin/service.sh"
+    mode: 0755
+    owner: "{{ exist_instuser }}"
+    group: "{{ exist_group }}"
+  when: exist_major_version == 5
+  notify:
+    - restart eXist
+
+# init script calling YAJSW wrapper
+- name: Install eXist-DB init script (SysV init, 4.x)
+  template:
+    src: eXist-db.init-v4.j2
+    dest: "/etc/init.d/{{ exist_instname }}"
+    mode: 0755
+  when: exist_major_version == 4 and ansible_service_mgr != "systemd"
+  notify:
+    - restart eXist
+
+# init script calling bin/service.sh
+- name: Install eXist-DB init script (SysV init, 5.x)
+  template:
+    src: eXist-db.init.j2
+    dest: "/etc/init.d/{{ exist_instname }}"
+    mode: 0755
+  when: exist_major_version == 5 and ansible_service_mgr != "systemd"
+  notify:
+    - restart eXist
+
+# systemd service file calling YAJSW wrapper
+- name: Install eXist-DB service file (systemd, 4.x)
+  template:
+    src: eXist-db.systemd-v4.j2
+    dest: "/etc/systemd/system/{{ exist_instname }}.service"
+    mode: 0644
+  when: exist_major_version == 4 and ansible_service_mgr == "systemd"
+  notify:
+    - restart eXist
+
+# systemd service file calling bin/service.sh
+- name: Install eXist-DB service file (systemd, 5.x)
+  template:
+    src: eXist-db.systemd.j2
+    dest: "/etc/systemd/system/{{ exist_instname }}.service"
+    mode: 0644
+  when: exist_major_version == 5 and ansible_service_mgr == "systemd"
+  notify:
+    - restart eXist
+
+# to initialize new systemd service files (using a handler runs too late)
+- name: Reload systemd
+  command: "systemctl daemon-reload"
+  when: ansible_service_mgr == "systemd"
 
 ## setup config files before startup
 

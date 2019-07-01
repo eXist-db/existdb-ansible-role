@@ -1,0 +1,32 @@
+#!/bin/sh
+
+EXIST_DIR={{ exist_path }}
+JAVA_HOME={{ ansible_env.JAVA_HOME }}
+
+# default opts as used in the launcher.sh or startup.sh scripts
+EXIST_DEFAULT_OPTS="\
+  -Xms128m \
+  -Dfile.encoding=UTF-8 \
+  -Dlog4j.configurationFile=${EXIST_DIR}/etc/log4j2.xml \
+  -Dexist.home=${EXIST_DIR} \
+  -Dexist.configurationFile=${EXIST_DIR}/etc/conf.xml \
+  -Djetty.home=${EXIST_DIR} \
+  -Dexist.jetty.config=${EXIST_DIR}/etc/jetty/standard.enabled-jetty-configs"
+
+# custom Java opts for eXist-db, read from file etc/exist.java.options
+EXIST_CUSTOM_OPTFILE=${EXIST_DIR}/etc/exist.java.options
+EXIST_CUSTOM_OPTS=`/usr/bin/perl -ne 'next if /^\s*#/; print' <${EXIST_CUSTOM_OPTFILE}`
+
+REPO=${EXIST_DIR}/lib
+CLASSPATH="${EXIST_DIR}/etc:${REPO}/appassembler-booter-2.1.0.jar:${REPO}/appassembler-model-2.1.0.jar:${REPO}/plexus-utils-3.2.0.jar:${REPO}/stax-api-1.0.1.jar:${REPO}/stax-1.1.1-dev.jar"
+# booter opts as used in the launcher.sh or startup.sh scripts
+EXIST_BOOTER_OPTS="\
+  -classpath ${CLASSPATH} \
+  -Dapp.name=startup \
+  -Dapp.pid=\"$$\" \
+  -Dapp.repo=${REPO} \
+  -Dapp.home=${EXIST_DIR} \
+  -Dbasedir=${EXIST_DIR} \
+  org.codehaus.mojo.appassembler.booter.AppassemblerBooter"
+
+exec {{ ansible_env.JAVA_HOME }}/bin/java ${EXIST_DEFAULT_OPTS} ${EXIST_CUSTOM_OPTS} ${EXIST_BOOTER_OPTS}

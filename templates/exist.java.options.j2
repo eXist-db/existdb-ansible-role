@@ -1,6 +1,9 @@
 # Custom Java options for this eXist-db instance
+#
+# pass each custom Java option on a separate line
+# comments and whitespace lines get stripped before applying options
 
-# ports
+# HTTP/TLS ports
 -Djetty.port={{ exist_http_port }}
 -Djetty.ssl.port={{ exist_ssl_port }}
 
@@ -12,7 +15,7 @@
 -XX:MaxMetaspaceSize={{ exist_wrapper_max_meta }}m
 -XX:MaxDirectMemorySize={{ exist_wrapper_max_direct }}m
 
-# GC
+# GC (default G1 GC)
 -XX:+UseG1GC
 -XX:MaxGCPauseMillis=200
 {% if exist_wrapper_gcdebug_enable == True %}
@@ -22,7 +25,7 @@
 -Xloggc:{{ exist_path }}/logs/gc-%t.log
 {% endif %}
 
-# NMT
+# NMT (native memory tracking)
 -XX:NativeMemoryTracking=detail
 -XX:+UnlockDiagnosticVMOptions
 -XX:+PrintNMTStatistics
@@ -31,7 +34,9 @@
 -XX:+UseStringDeduplication
 -XX:+PrintStringDeduplicationStatistics
 
-# Java NIO cache tuning (256k), requires Java >= 8u102
+# Java NIO cache tuning (256k) to work around high direct memory consumption
+# by java.nio
+# requires Java >= 8u102, should not be needed with Java 11
 -Djdk.nio.maxCachedBufferSize=262144
 
 # tmp dir
