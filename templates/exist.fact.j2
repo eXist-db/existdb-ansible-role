@@ -30,6 +30,10 @@ fi
 if pgrep -lf '{{ exist_instname }}.start.jar' >/dev/null; then
     ex_running=true
 fi
+
+if [ -d "$ex_path/.git" ]; then
+    ex_gitsrc=true
+fi
 {% else %}
 if [ -f {{ exist_path }}/etc/conf.xml ]; then
     ex_installed=true
@@ -45,11 +49,11 @@ fi
 if pgrep -lfu {{ exist_instname }} '{{ exist_instname }} org.codehaus' >/dev/null; then
     ex_running=true
 fi
-{% endif %}
 
-if [ -d "$ex_path/.git" ]; then
+if [ -d "${ex_path}-v5source/.git" ]; then
     ex_gitsrc=true
 fi
+{% endif %}
 
 
 cat <<EOF
