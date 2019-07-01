@@ -50,6 +50,7 @@
     mode: 0775
   with_items:
     - backup
+    - backup/last
     - tmp
 
 - name: Install util scripts from files

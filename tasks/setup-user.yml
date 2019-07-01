@@ -26,7 +26,7 @@
     state: directory
     owner: '{{ exist_user }}'
     group: '{{ exist_group }}'
-    mode: 0751
+    mode: 0771
 
 - name: Ensure exist system dir does not have .ssh/authorized_keys
   file:
