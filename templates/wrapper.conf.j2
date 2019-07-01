@@ -86,11 +86,7 @@ wrapper.app.account={{ exist_instuser }}
 # Java Classpath (include wrapper.jar)  Add class path elements as
 #  needed starting from 1
 # YAJSW: all libs required by YAJSW are in the manifest of the wrapper.jar -> only classpath of your application is required
-{% if exist_major_version == 4 %}
-wrapper.java.classpath.1={{ exist_path }}/tools/yajsw/classes
-{% else %}
-wrapper.java.classpath.1={{ exist_path }}/tools/yajsw/target/classes
-{% endif %}
+wrapper.java.classpath.1={{ exist_path }}/tools/yajsw/{{ exist_wrapper_relclasspath }}
 wrapper.java.classpath.2=start.jar
 
 # Java Library Path
