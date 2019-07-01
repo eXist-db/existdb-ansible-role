@@ -125,6 +125,7 @@ exist_syslog_loghost: 127.0.0.1
 
 
 # defaults for config file settings
+exist_wrapper_relclasspath: "classes"
 exist_wrapper_init_mem: 2048
 exist_wrapper_max_mem: 2048
 exist_wrapper_max_meta: 1024
