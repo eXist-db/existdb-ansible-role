@@ -1,12 +1,18 @@
 ---
 ## Install exist-db from source (git + build)
 
-- name: Prepare maven for eXist-db 5.x builds
-  include_tasks: setup-maven.yml
-  when: exist_major_version > 4
+- name: Set srcpath fact (4.x)
+  set_fact:
+    exist_srcpath: '{{ exist_path }}'
+  when: exist_major_version == 4
+
+- name: Set srcpath fact (5.x)
+  set_fact:
+    exist_srcpath: '{{ exist_path }}-v5source'
+  when: exist_major_version == 5
 
 - name: Determine git branch revision
-  shell: "cd {{ exist_path }}; git show-ref -s --abbrev --heads {{ exist_repo_version }} || true"
+  shell: "cd {{ exist_srcpath }}; git show-ref -s --abbrev --heads {{ exist_repo_version }} || true"
   register: git_revision
 
 - name: Set fact whether to replace an installed eXist
@@ -19,24 +25,14 @@
 
 - name: Debug1
   debug:
-    msg: "installed: {{ exist_is_installed }} running: {{ ansible_local[exist_instname]['exist_running'] }} gitsrc: {{ ansible_local[exist_instname]['exist_gitsrc'] }} rev: {{ ansible_local[exist_instname]['exist_revision'] }} git_rev: {{ git_revision.stdout }} replace: {{ exist_replace_installation }}"
+    msg: "installed: {{ exist_is_installed }} running: {{ exist_is_running }} gitsrc: {{ exist_current_gitsrc }} rev: {{ exist_current_revision }} replace: {{ exist_replace_installation }}"
 
 - name: Include stop and backup tasks if installing a different eXist
   include_tasks: stop-and-backup.yml
   when: exist_replace_installation
 
-- name: Set srcpath fact (4.x)
-  set_fact:
-    exist_srcpath: '{{ exist_path }}'
-  when: exist_major_version == 4
-
-- name: Set srcpath fact (5.x)
-  set_fact:
-    exist_srcpath: '{{ exist_path }}-source'
-  when: exist_major_version == 5
-
 - name: Clone eXist into configured directory
-  become_user: "{{ exist_user }}"
+  become_user: "{{ exist_instuser }}"
   git:
     repo: "{{ exist_repo }}"
     dest: "{{ exist_srcpath }}"
@@ -47,14 +43,10 @@
     update: "{{ exist_repo_update }}"
   when: not exist_is_installed or exist_replace_installation
 
-- name: Build/rebuild eXist 4.x
-  become_user: "{{ exist_instuser }}"
-  shell: "./build.sh clean clean-all && ./build.sh >build.log 2>&1"
-  args:
-    chdir: "{{ exist_path }}"
-  when: exist_major_version == 4 and not exist_is_installed or exist_replace_installation
+- name: Include build tasks (4.x)
+  include_tasks: build-v4.yml
+  when: exist_major_version == 4
 
-- name: Build/rebuild eXist 5.x
-  fail:
-    msg: 'Building 5.x from source is currently not supported'
+- name: Include build tasks (5.x)
+  include_tasks: build-v5.yml
   when: exist_major_version == 5

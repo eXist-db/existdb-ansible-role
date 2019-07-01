@@ -13,10 +13,21 @@
 - name: Include pre-installation tasks
   include_tasks: preinstall.yml
 
-# this only to improve readability in the install tasks
-- name: Set fact whether eXist is installed
+- name: Set defaults if no facts are known a about this eXist instance
+  set_fact:
+    exist_is_installed: false
+    exist_is_running: false
+    exist_current_gitsrc: false
+    exist_current_revision: ""
+  when: exist_instname not in ansible_local
+
+- name: Set facts for this eXist instance
   set_fact:
     exist_is_installed: "{{ ansible_local[exist_instname]['exist_installed'] }}"
+    exist_is_running: "{{ ansible_local[exist_instname]['exist_running'] }}"
+    exist_current_gitsrc: "{{ ansible_local[exist_instname]['exist_gitsrc'] }}"
+    exist_current_revision: "{{ ansible_local[exist_instname]['exist_revision'] }}"
+  when: exist_instname in ansible_local
 
 - name: Include tasks to install exist from source
   include_tasks: install-from-source.yml

@@ -1,0 +1,7 @@
+---
+- name: Build/rebuild eXist 4.x
+  become_user: "{{ exist_instuser }}"
+  shell: "./build.sh clean clean-all && ./build.sh >build.log 2>&1"
+  args:
+    chdir: "{{ exist_path }}"
+  when: not exist_is_installed or exist_replace_installation
