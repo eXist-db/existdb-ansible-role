@@ -123,6 +123,26 @@
   notify:
     - restart eXist
 
+- name: Set http.host in Jetty configs
+  lineinfile:
+    path: "{{ exist_path }}/etc/jetty/jetty-http.xml"
+    regexp: '<Set name="host"><Property name="jetty.http.host"'
+    line: '        <Set name="host"><Property name="jetty.http.host" deprecated="jetty.host"><Default><SystemProperty name="jetty.http.host" default="{{ exist_http_host }}"/></Default></Property></Set>'
+    owner: "{{ exist_instuser }}"
+    group: "{{ exist_group }}"
+    mode: '0644'
+  when: exist_http_host is defined
+
+- name: Set ssl.host in Jetty configs
+  lineinfile:
+    path: "{{ exist_path }}/etc/jetty/jetty-ssl.xml"
+    regexp: '<Set name="host"><Property name="jetty.ssl.host"'
+    line: '        <Set name="host"><Property name="jetty.ssl.host" deprecated="jetty.host"><Default><SystemProperty name="jetty.ssl.host" default="{{ exist_ssl_host }}"/></Default></Property></Set>'
+    owner: "{{ exist_instuser }}"
+    group: "{{ exist_group }}"
+    mode: '0644'
+  when: exist_ssl_host is defined
+
 #- name: Debug2
 #  debug:
 #    msg: "installed: {{ ansible_local[exist_instname]['exist_installed'] }} running: {{ ansible_local[exist_instname]['exist_running'] }} gitsrc: {{ ansible_local[exist_instname]['exist_gitsrc'] }} rev: {{ ansible_local[exist_instname]['exist_revision'] }} archive_rev: {{ archive_revision.stdout }} replace: {{ exist_replace_installation }}"
