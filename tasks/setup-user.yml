@@ -39,6 +39,7 @@
   user:
     name: '{{ exist_instuser }}'
     group: '{{ exist_group }}'
+    home: '{{ exist_path }}'
     password: '{{ exist_adminpass[inventory_hostname][exist_instname] }}'
   when: exist_instuser != exist_user
 
