@@ -8,17 +8,17 @@
 -Djetty.ssl.port={{ exist_ssl_port }}
 
 # initial and max Java heap memory
--Xms{{ exist_wrapper_init_mem }}m
--Xmx{{ exist_wrapper_max_mem }}m
+-Xms{{ exist_mem_init_heap }}m
+-Xmx{{ exist_mem_max_heap }}m
 
 # max Java metaspace and direct memory sizes
--XX:MaxMetaspaceSize={{ exist_wrapper_max_meta }}m
--XX:MaxDirectMemorySize={{ exist_wrapper_max_direct }}m
+-XX:MaxMetaspaceSize={{ exist_mem_max_meta }}m
+-XX:MaxDirectMemorySize={{ exist_mem_max_direct }}m
 
 # GC (default G1 GC)
 -XX:+UseG1GC
 -XX:MaxGCPauseMillis=200
-{% if exist_wrapper_gcdebug_enable == True %}
+{% if exist_mem_gcdebug_enable == True %}
 # GC logging/debugging
 -XX:+PrintGCDetails
 -XX:+PrintGCDateStamps

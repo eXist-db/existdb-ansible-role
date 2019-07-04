@@ -85,6 +85,18 @@ exist_confpaths:
     data_basedir: ''
     jmxservlet_token: 'UNKNOWN'
 
+# memory settings (renamed)
+#exist_wrapper_init_mem: 2048
+#exist_wrapper_max_mem: 2048
+#exist_wrapper_max_meta: 1024
+#exist_wrapper_max_direct: 1024
+#exist_wrapper_gcdebug_enable: no
+exist_mem_init_heap: 2048
+exist_mem_max_heap: 2048
+exist_mem_max_meta: 1024
+exist_mem_max_direct: 1024
+
+
 # used to increase file descriptor limits for the user running eXist
 exist_fdset_enable: yes
 exist_fdsoft_limit: 8192
@@ -126,11 +138,6 @@ exist_syslog_loghost: 127.0.0.1
 
 # defaults for config file settings
 exist_wrapper_relclasspath: "classes"
-exist_wrapper_init_mem: 2048
-exist_wrapper_max_mem: 2048
-exist_wrapper_max_meta: 1024
-exist_wrapper_max_direct: 1024
-exist_wrapper_gcdebug_enable: no
 exist_wrapper_jmx_enable: no
 exist_wrapper_jmx_port: 9911
 exist_wrapper_loglevel: INFO

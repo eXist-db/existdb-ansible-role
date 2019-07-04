@@ -106,13 +106,13 @@ wrapper.java.additional.5=-Djava.awt.headless=true
 # GC settings
 wrapper.java.additional.6=-XX:+UseG1GC
 wrapper.java.additional.7=-XX:MaxGCPauseMillis=200
-wrapper.java.additional.16=-XX:MaxMetaspaceSize={{ exist_wrapper_max_meta }}m
-wrapper.java.additional.17=-XX:MaxDirectMemorySize={{ exist_wrapper_max_direct }}m
+wrapper.java.additional.16=-XX:MaxMetaspaceSize={{ exist_mem_max_meta }}m
+wrapper.java.additional.17=-XX:MaxDirectMemorySize={{ exist_mem_max_direct }}m
 # set tmpdir
 wrapper.java.additional.8=-Djava.io.tmpdir={{ exist_home }}/tmp
 
 # GC logging/debugging
-{% if exist_wrapper_gcdebug_enable == True %}
+{% if exist_mem_gcdebug_enable == True %}
 wrapper.java.additional.9=-XX:+PrintGCDetails
 wrapper.java.additional.10=-XX:+PrintGCDateStamps
 wrapper.java.additional.11=-Xloggc:{{ exist_path }}/webapp/WEB-INF/logs/gc-%t.log
@@ -136,14 +136,14 @@ wrapper.app.parameter.2=tools/jetty/etc/standard.enabled-jetty-configs
 
 # Initial Java Heap Size (in MB)
 # alternative for wrapper.java.additional.<n>=-Xms
-wrapper.java.initmemory={{ exist_wrapper_init_mem }}
+wrapper.java.initmemory={{ exist_mem_init_heap }}
 
 # % of total RAM
 #wrapper.java.initmemory.relative=10
 
 # Maximum Java Heap Size (in MB)
 # alternative for wrapper.java.additional.<n>=-Xmx
-wrapper.java.maxmemory={{ exist_wrapper_max_mem }}
+wrapper.java.maxmemory={{ exist_init_max_heap }}
 
 # % of total RAM
 #wrapper.java.maxmemory.relative=30

@@ -182,8 +182,13 @@ Settings for logging to a remote syslog server. See "Logging" below.
 
 Template parameters to modify exist conf.xml file.
 
-    exist_wrapper_max_mem: 2048
-    exist_wrapper_gcdebug_enable: no
+    # memory settings (renamed)
+    exist_mem_init_heap: 2048
+    exist_mem_max_heap: 2048
+    exist_mem_max_meta: 1024
+    exist_mem_max_direct: 1024
+    #exist_wrapper_max_mem: 2048
+    #exist_wrapper_gcdebug_enable: no
     exist_wrapper_jmx_enable: no
     exist_wrapper_jmx_port: 9911
     exist_wrapper_loglevel: INFO
@@ -327,7 +332,7 @@ restore the default behavior:
 
 Increase memory for the exist process beyond 2GB default (unit is MB):
 
-    exist_wrapper_max_mem: 16384
+    exist_mem_max_heap: 16384
 
 Ensure file descriptor limits are increased:
 

@@ -1,0 +1,157 @@
+#!/bin/sh
+
+# Restore a backup made by Ansible when a different eXist version was
+# installed.  These backups are stored in a separate backup directory
+# {{ exist_home }}/backup.
+#
+# NOTE: This is a FAST, binary-file backup mechanism.  It is NOT meant to
+# replace 
+#
+# The backup directory layout has changed since eXist-db supports multiple
+# instances.  Below {{ exist_home }}/backup,
+# there is a subdirectory for each system user that runs an exist instance:
+#   # cd {{ exist_home }}/backup; ls -l
+#   drwx------ 3 existdb existdb 4096 Sep 18 14:09 existdb
+#   drwx------ 3 foouser existdb 4096 Sep 18 14:09 foouser
+#   drwx------ 3 baruser existdb 4096 Sep 18 14:09 baruser
+#
+# Below each users backup directory, there are directories named as the exist
+# instance name and a timestamp.  There is also a symlink pointing to the last
+# backup:
+#   # cd {{ exist_home }}/backup; ls -l foouser/
+#   drwx------ 3 foouser existdb 4096 Sep 18 14:09 foouser/fooinst.201809181409
+#   drwx------ 3 foouser existdb 4096 Sep 18 16:03 foouser/fooimst.201810081603
+#   lrwxrwxrwx 1 foouser existdb   18 Sep 18 16:03 foouser/fooinst.last -> foouser/fooimst.201810081603
+#
+# Inside these timestamped backup directories, there is a full (file) copy of
+# this instance, and a copy of the init/systemd file to start this instance:
+#   # cd {{ exist_home }}/backup; ls -l foouser/fooinst.last/
+#   drwx------ 8 foouser existdb 4096 Sep 18 16:03 foouser/fooinst.last/fooinst
+#   -rw-r--r-- 1 foouser existdb  322 Sep 18 16:05 foouser/fooinst.last/fooinst.service
+
+
+# To restore one of these backups, pass the directory name NAME.YYYYMMDDhhmm
+# to this script.  Passing "NAME.last" will not work.
+
+
+usage() {
+    cat <<EOF
+Usage: $0 [-K] backupdir
+   eg: $0 exist.201801151508
+
+Options:
+   -K  keep eXist instance dir from before restore (gets deleted by default)
+EOF
+}
+
+while getopts "K" PARAM; do
+    case "${PARAM}" in
+	K) KEEP_PREVIOUS=yes;;
+	*) usage; exit 1;;
+    esac
+done
+shift $(($OPTIND - 1))
+
+BACKUP_DIR=$1
+EXIST_BASEDIR={{ exist_home }}
+BACKUP_BASEDIR=${EXIST_BASEDIR}/backup
+LOGFILE=`mktemp`
+#SYSLOG=yes
+
+logmsg() {
+    _msg=$*
+    echo $_msg
+    [ -n "$LOGFILE" ] && echo $_msg >>$LOGFILE
+    [ -n "$SYSLOG" ]  && logger -t exist-restore $_msg
+}
+
+logerr() {
+    _excode=$1
+    shift
+    _msg=$*
+    echo $_msg >&2
+    [ -n "$LOGFILE" ] && echo $_msg >>$LOGFILE
+    [ -n "$SYSLOG"  ] && logger -t exist-restore -p error $_msg
+    echo "exiting, logfile $LOGFILE" >&2
+    exit $_excode
+}
+
+if [ "$BACKUP_DIR" = "" ]; then
+    logerr 1 "ERROR: no backup dir specified, exiting"
+fi
+
+# determine suffixed dir and service names
+suffix=`echo $BACKUP_DIR | sed -re 's/^exist//; s/\.[0-9]+$//;'`
+exist_dirsfx=exist${suffix}
+exist_svcsfx=eXist-db${suffix}
+
+logmsg "checking if backup files are available"
+bakdir=${BACKUP_BASEDIR}/${BACKUP_DIR}/${exist_dirsfx}
+if [ -d $bakdir -a -r $bakdir ]; then
+    logmsg "found exist backup $bakdir"
+    found_exist=true
+else
+    logmsg "WARN: backup not found: $bakdir"
+    found_exist=false
+fi
+init=${BACKUP_BASEDIR}/${BACKUP_DIR}/${exist_svcsfx}.init
+if [ -f $init -a -r $init ]; then
+    logmsg "found init.d script $init"
+    found_init=true
+else
+    #logmsg "WARN: not found: init.d script $init}"
+    found_init=false
+fi
+systemd=${BACKUP_BASEDIR}/${BACKUP_DIR}/${exist_svcsfx}.service
+if [ -f $systemd -a -r $systemd ]; then
+    logmsg "found systemd file $systemd"
+    found_systemd=true
+else
+    #logmsg "WARN: not found: systemd file $systemd"
+    found_systemd=false
+fi
+
+
+# if eXist instance is running, stop it first
+if pgrep -lf "${exist_dirsfx}.start.jar" >/dev/null; then
+    logmsg "stopping running eXist instance \"${exist_svcsfx}\""
+    if [ -f /etc/init.d/${exist_svcsfx} ]; then
+	service ${exist_svcsfx} stop
+    else
+	systemctl stop ${exist_svcsfx}
+    fi
+    # check again to verify it is really dead, just to be sure
+    if pgrep -lf "${exist_dirsfx}.start.jar" >/dev/null; then
+	logerr 2 "ERROR: eXist instance \"${exist_svcsfx}\" still running after stop command"
+    fi
+else
+    logmsg "eXist instance \"${exist_svcsfx}\" not running"
+fi
+
+# rename current eXist installation dir
+logmsg "moving current eXist dir to \"exist.RESTORE\""
+mv ${EXIST_BASEDIR}/${exist_dirsfx} ${EXIST_BASEDIR}/${exist_dirsfx}.BEFORE_RESTORE
+
+# copy backed up eXist instance to installation dir
+logmsg "restoring directory for eXist instance \"${exist_svcsfx}\""
+rsync -a ${bakdir} ${EXIST_BASEDIR}/
+
+# restore init.d or systemd startup file from backup
+if [ -f $init ]; then
+    logmsg "restoring init.d script for eXist instance \"${exist_svcsfx}\""
+    cp $init /etc/init.d/${exist_svcsfx}
+fi
+if [ -f $systemd ]; then
+    logmsg "restoring systemd file for eXist instance \"${exist_svcsfx}\""
+    cp $systemd /etc/systemd/system/${exist_svcsfx}.service
+fi
+
+# remove eXist version from before the restore, unless KEEP_PREVIOUS
+if [ -z "$KEEP_PREVIOUS" ]; then
+    logmsg "removing previous eXist version from before the restore"
+    rm -rf ${EXIST_BASEDIR}/${exist_dirsfx}.BEFORE_RESTORE
+fi
+
+# move restore logfile to eXist log dir
+[ -n "$LOGFILE" ] \
+    && mv $LOGFILE ${EXIST_BASEDIR}/${exist_dirsfx}/webapp/WEB-INF/logs/exist-restore.log
