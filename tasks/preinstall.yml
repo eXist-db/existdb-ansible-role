@@ -50,8 +50,15 @@
     mode: 0775
   with_items:
     - backup
-    - backup/last
     - tmp
+
+- name: Ensure backup dir for instance user is present
+  file:
+    path: "{{ exist_home }}/backup/{{ exist_instuser }}"
+    state: directory
+    owner: "{{ exist_instuser }}"
+    group: "{{ exist_group }}"
+    mode: 0700
 
 - name: Install util scripts from files
   copy:
