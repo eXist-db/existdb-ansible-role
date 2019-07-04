@@ -185,3 +185,11 @@
     creates: "{{ exist_path }}/etc/system.properties"
   when: exist_major_version == 5
 
+- name: Ensure privacy on instance directory tree
+  file:
+    path: '{{ exist_path }}'
+    state: directory
+    recurse: yes
+    owner: '{{ exist_instuser }}'
+    group: '{{ exist_group }}'
+    mode: 'go-rwx'
