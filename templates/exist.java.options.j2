@@ -17,27 +17,46 @@
 
 # GC (default G1 GC)
 -XX:+UseG1GC
+# GC logging/debugging
 -XX:MaxGCPauseMillis=200
 {% if exist_mem_gcdebug_enable == True %}
-# GC logging/debugging
 -XX:+PrintGCDetails
 -XX:+PrintGCDateStamps
 -Xloggc:{{ exist_path }}/logs/gc-%t.log
+{% else %}
+#-XX:+PrintGCDetails
+#-XX:+PrintGCDateStamps
+#-Xloggc:{{ exist_path }}/logs/gc-%t.log
 {% endif %}
 
 # NMT (native memory tracking)
+{% if exist_mem_nmt_enable == True %}
 -XX:NativeMemoryTracking=detail
 -XX:+UnlockDiagnosticVMOptions
 -XX:+PrintNMTStatistics
+{% else %}
+#-XX:NativeMemoryTracking=detail
+#-XX:+UnlockDiagnosticVMOptions
+#-XX:+PrintNMTStatistics
+{% endif %}
 
 # string deduplication, requires Java >= 8u20 and G1 GC
+{% if exist_mem_strdedup_enable == True %}
 -XX:+UseStringDeduplication
 -XX:+PrintStringDeduplicationStatistics
+{% else %}
+#-XX:+UseStringDeduplication
+#-XX:+PrintStringDeduplicationStatistics
+{% endif %}
 
 # Java NIO cache tuning (256k) to work around high direct memory consumption
 # by java.nio
 # requires Java >= 8u102, should not be needed with Java 11
+{% if exist_mem_niocachetune_enable == True %}
 -Djdk.nio.maxCachedBufferSize=262144
+{% else %}
+#-Djdk.nio.maxCachedBufferSize=262144
+{% endif %}
 
 # tmp dir
 -Djava.io.tmpdir={{ exist_home }}/tmp

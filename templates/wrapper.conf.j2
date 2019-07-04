@@ -118,8 +118,17 @@ wrapper.java.additional.10=-XX:+PrintGCDateStamps
 wrapper.java.additional.11=-Xloggc:{{ exist_path }}/webapp/WEB-INF/logs/gc-%t.log
 {% endif %}
 
+{% if exist_mem_strdedup_enable == True %}
+wrapper.java.additional.21=-XX:+UseStringDeduplication
+wrapper.java.additional.22=-XX:+PrintStringDeduplicationStatistics
+{% endif %}
+
+# NMT cannot be used with the wrapper
+
 # Java NIO cache tuning (256k)
+{% if exist_mem_niocachetune_enable == True %}
 wrapper.java.additional.20=-Djdk.nio.maxCachedBufferSize=262144
+{% endif %}
 
 # JMX monitoring support
 {% if exist_wrapper_jmx_enable == True %}

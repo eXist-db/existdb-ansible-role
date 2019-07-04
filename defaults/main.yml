@@ -95,7 +95,10 @@ exist_mem_init_heap: 2048
 exist_mem_max_heap: 2048
 exist_mem_max_meta: 1024
 exist_mem_max_direct: 1024
-
+exist_mem_gcdebug_enable: no
+exist_mem_nmt_enable: no
+exist_mem_strdedup_enable: no
+exist_mem_niocachetune_enable: no
 
 # used to increase file descriptor limits for the user running eXist
 exist_fdset_enable: yes

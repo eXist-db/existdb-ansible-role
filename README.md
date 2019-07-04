@@ -187,6 +187,10 @@ Template parameters to modify exist conf.xml file.
     exist_mem_max_heap: 2048
     exist_mem_max_meta: 1024
     exist_mem_max_direct: 1024
+    exist_mem_gcdebug_enable: no
+    exist_mem_nmt_enable: no
+    exist_mem_strdedup_enable: no
+    exist_mem_niocachetune_enable: no
     #exist_wrapper_max_mem: 2048
     #exist_wrapper_gcdebug_enable: no
     exist_wrapper_jmx_enable: no
