@@ -171,10 +171,12 @@ exist_redhat_extra_packages:
 
 # for Debian 8
 exist_debian_extra_packages:
+  # for uuidgen, not installed by default
+  - uuid-runtime
   # for Ansible synchronize
   - rsync
   # for upload-xmlrpc script
-  - libperl-rpc-xml
+  - librpc-xml-perl
   - liblwp-protocol-https-perl
 
 # for Ubuntu xenial
