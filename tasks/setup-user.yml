@@ -39,7 +39,7 @@
   user:
     name: '{{ exist_instuser }}'
     group: '{{ exist_group }}'
-    password: '{{ exist_adminpass[inventory_hostname][exist_instname] | password_hash('sha512') }}'
+    password: "{{ exist_adminpass[inventory_hostname][exist_instname] | password_hash('sha512') }}"
   when: exist_instuser != exist_user
 
 ## increase file descriptor limits for exist instance user

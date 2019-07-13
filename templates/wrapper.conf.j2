@@ -118,6 +118,7 @@ wrapper.java.additional.10=-XX:+PrintGCDateStamps
 wrapper.java.additional.11=-Xloggc:{{ exist_path }}/webapp/WEB-INF/logs/gc-%t.log
 {% endif %}
 
+# String deduplication
 {% if exist_mem_strdedup_enable == True %}
 wrapper.java.additional.21=-XX:+UseStringDeduplication
 wrapper.java.additional.22=-XX:+PrintStringDeduplicationStatistics
@@ -152,7 +153,7 @@ wrapper.java.initmemory={{ exist_mem_init_heap }}
 
 # Maximum Java Heap Size (in MB)
 # alternative for wrapper.java.additional.<n>=-Xmx
-wrapper.java.maxmemory={{ exist_init_max_heap }}
+wrapper.java.maxmemory={{ exist_mem_max_heap }}
 
 # % of total RAM
 #wrapper.java.maxmemory.relative=30
