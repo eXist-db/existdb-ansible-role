@@ -193,3 +193,19 @@
     owner: '{{ exist_instuser }}'
     group: '{{ exist_group }}'
     mode: 'go-rwx'
+
+- name: Create symbolic link to instance in user home dir
+  file:
+    src: '{{ exist_path}}'
+    dest: '/home/{{ exist_instuser }}/{{ exist_instname }}'
+    owner: '{{ exist_instuser }}'
+    group: '{{ exist_group }}'
+    state: link
+
+- name: Drop README file for this instance in user home dir
+  template:
+    src: WELCOME.instance.j2
+    dest: '/home/{{ exist_instuser }}/WELCOME.{{ exist_instname }}.md'
+    owner: "{{ exist_instuser }}"
+    group: "{{ exist_group }}"
+    mode: 0644

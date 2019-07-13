@@ -1,0 +1,63 @@
+# Welcome!
+
+You are running eXist-db in a multi-instance setup on host
+{{ network_hostname }}.  This setup was created by exist solutions
+using the eXist-db Ansible role.
+
+* instance name:    {{ exist_instname }}
+* instance user:    {{ exist_instuser }}
+* installation dir: {{ exist_path }}
+* installed version:
+{% if defined exist_http_host %}
+* HTTP:             {{ exist_http_host }}:{{ exist_http_port }}
+* HTTPS:            {{ exist_http_host }}:{{ exist_ssl_port }}
+{% else %}
+* HTTP port:        *:{{ exist_http_port }}
+* HTTPS port:       *:{{ exist_http_port }}
+{% endif %}
+
+There is an nginx proxy in front of your eXist-db instance that listens on the
+standard HTTP (80/tcp) and HTTPS (443/tcp) ports. It proxies requests to
+{{ exist_instdns }} to the local ports of your instance.
+
+A TLS certificate for {{ exist_instdns }} has been installed in nginx.
+
+## Accessing the Instance
+
+You should have received a password for your eXist-db instance. This is
+* the admin password to access eXist-db
+* the SSH user password for shell access
+
+Access the instance with a Browser:
+* `https://{{ exist_instdns }}/exist`
+
+Access the instance with SSH:
+* `ssh {{ exist_instuser }}@{{ network_hostname }}`
+
+When logging in with SSH, you will be placed in `/home/{{ exist_instuser }}`.
+There is a symbolic link `{{ exist_instname }}` that points to the installation
+directory of your instance.
+
+## Starting/Stopping the Instance
+
+Use the commands below to manage your eXist-db instance from the shell.
+
+```
+{% if ansible_service_mgr == "systemd" %}
+    systemctl start {{ exist_instname }}
+    systemctl stop {{ exist_instname }}
+    systemctl status {{ exist_instname }}
+    systemctl restart {{ exist_instname }}
+{% else %}
+    service {{ exist_instname }} start
+    service {{ exist_instname }} stop
+    service {{ exist_instname }} status
+    service {{ exist_instname }} restart
+{% endif %}
+```
+
+## Miscellaneous
+
+{% if exist_fdset_enable | boolean %}
+The file descriptor limits for user "{{ exist_instuser }}" were raised to {{ exist_fdsoft_limit }}.
+{% endif %}
