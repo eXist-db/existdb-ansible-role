@@ -125,7 +125,7 @@
 
 - name: Set http.host in Jetty configs
   lineinfile:
-    path: "{{ exist_path }}/etc/jetty/jetty-http.xml"
+    path: "{{ exist_path }}/{{ exist_confpaths[exist_major_version]['jetty_etc'] }}/jetty-http.xml"
     regexp: '<Set name="host"><Property name="jetty.http.host"'
     line: '        <Set name="host"><Property name="jetty.http.host" deprecated="jetty.host"><Default><SystemProperty name="jetty.http.host" default="{{ exist_http_host }}"/></Default></Property></Set>'
     owner: "{{ exist_instuser }}"
@@ -135,7 +135,7 @@
 
 - name: Set ssl.host in Jetty configs
   lineinfile:
-    path: "{{ exist_path }}/etc/jetty/jetty-ssl.xml"
+    path: "{{ exist_path }}/{{ exist_confpaths[exist_major_version]['jetty_etc'] }}/jetty-ssl.xml"
     regexp: '<Set name="host"><Property name="jetty.ssl.host"'
     line: '        <Set name="host"><Property name="jetty.ssl.host" deprecated="jetty.host"><Default><SystemProperty name="jetty.ssl.host" default="{{ exist_ssl_host }}"/></Default></Property></Set>'
     owner: "{{ exist_instuser }}"
@@ -201,6 +201,7 @@
     owner: '{{ exist_instuser }}'
     group: '{{ exist_group }}'
     state: link
+    force: yes
 
 - name: Drop README file for this instance in user home dir
   template:
