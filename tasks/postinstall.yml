@@ -1,4 +1,7 @@
 ---
+- name: Re-gather facts
+  setup:
+
 - name: Install eXist-DB custom Java options file (5.x)
   template:
     src: exist.java.options.j2

@@ -4,16 +4,16 @@ You are running eXist-db in a multi-instance setup on host
 {{ network_hostname }}.  This setup was created by exist solutions
 using the eXist-db Ansible role.
 
-* instance name:    {{ exist_instname }}
-* instance user:    {{ exist_instuser }}
-* installation dir: {{ exist_path }}
-* installed version:
+* instance name:     {{ exist_instname }}
+* instance user:     {{ exist_instuser }}
+* installation dir:  {{ exist_path }}
+* installed version: {{ ansible_local[exist_instname]['exist_version'] }}
 {% if exist_http_host is defined %}
-* HTTP:             {{ exist_http_host }}:{{ exist_http_port }}
-* HTTPS:            {{ exist_http_host }}:{{ exist_ssl_port }}
+* HTTP:              {{ exist_http_host }}:{{ exist_http_port }}
+* HTTPS:             {{ exist_http_host }}:{{ exist_ssl_port }}
 {% else %}
-* HTTP port:        *:{{ exist_http_port }}
-* HTTPS port:       *:{{ exist_http_port }}
+* HTTP port:         *:{{ exist_http_port }}
+* HTTPS port:        *:{{ exist_http_port }}
 {% endif %}
 
 There is an nginx proxy in front of your eXist-db instance that listens on the
@@ -61,7 +61,8 @@ Use the commands below to manage your eXist-db instance from the shell.
 {% if exist_major_version == 5 %}
 Edit {{ exist_path }}/etc/exist.java.options and restart exist.
 {% else %}
-Edit {{ exist_path }}/{{ wrapper_conf }} and restart exist.
+Edit {{ exist_path }}/{{ exist_confpaths[exist_major_version]['wrapper_conf'] }}
+and restart exist.
 {% endif %}
 
 ## Miscellaneous
