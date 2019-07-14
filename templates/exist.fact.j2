@@ -35,12 +35,12 @@ if [ -d "$ex_path/.git" ]; then
     ex_gitsrc=true
 fi
 {% else %}
-if [ -f {{ exist_path }}/etc/conf.xml ]; then
+if [ -f $ex_path/etc/conf.xml ]; then
     ex_installed=true
-    ex_version=`grep product-version /tmp/system.properties | sed -e 's/product-version=//;'`
-    ex_built=`grep product-build /tmp/system.properties | sed -e 's/product-build=//;'`
-    ex_branch=`grep git-branch /tmp/system.properties | sed -e 's/git-branch=//;'`
-    ex_revision=`grep git-commit /tmp/system.properties | sed -e 's/git-commit=//;'`
+    ex_version=`grep product-version $ex_path/etc/system.properties | sed -e 's/product-version=//;'`
+    ex_built=`grep product-build $ex_path/etc/system.properties | sed -e 's/product-build=//;'`
+    ex_branch=`grep git-branch $ex_path/etc/system.properties | sed -e 's/git-branch=//;'`
+    ex_revision=`grep git-commit $ex_path/etc/system.properties | sed -e 's/git-commit=//;'`
     if [ -f $ex_path/data/jmxservlet.token ]; then
 	ex_jmxtoken=`grep '^token=' $ex_path/data/jmxservlet.token | sed -e 's/token=//;'`
     fi

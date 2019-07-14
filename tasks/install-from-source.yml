@@ -31,6 +31,13 @@
   include_tasks: stop-and-backup.yml
   when: exist_replace_installation
 
+- name: Pre-create src dir to ensure permissions are correct
+  file:
+    dest: '{{ exist_srcpath}}'
+    state: directory
+    owner: '{{ exist_instuser }}'
+    group: '{{ exist_group }}'
+
 - name: Clone eXist into configured directory
   become_user: "{{ exist_instuser }}"
   git:

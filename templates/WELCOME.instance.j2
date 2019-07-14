@@ -8,7 +8,7 @@ using the eXist-db Ansible role.
 * instance user:    {{ exist_instuser }}
 * installation dir: {{ exist_path }}
 * installed version:
-{% if defined exist_http_host %}
+{% if exist_http_host is defined %}
 * HTTP:             {{ exist_http_host }}:{{ exist_http_port }}
 * HTTPS:            {{ exist_http_host }}:{{ exist_ssl_port }}
 {% else %}
@@ -56,8 +56,16 @@ Use the commands below to manage your eXist-db instance from the shell.
 {% endif %}
 ```
 
+## Controlling Java Options Passed to the eXist-db Process
+
+{% if exist_major_version == 5 %}
+Edit {{ exist_path }}/etc/exist.java.options and restart exist.
+{% else %}
+Edit {{ exist_path }}/{{ wrapper_conf }} and restart exist.
+{% endif %}
+
 ## Miscellaneous
 
-{% if exist_fdset_enable | boolean %}
+{% if exist_fdset_enable | bool %}
 The file descriptor limits for user "{{ exist_instuser }}" were raised to {{ exist_fdsoft_limit }}.
 {% endif %}

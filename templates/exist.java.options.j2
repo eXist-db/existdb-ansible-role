@@ -31,11 +31,11 @@
 
 # NMT (native memory tracking)
 {% if exist_mem_nmt_enable == True %}
--XX:NativeMemoryTracking=detail
+-XX:NativeMemoryTracking=summary
 -XX:+UnlockDiagnosticVMOptions
 -XX:+PrintNMTStatistics
 {% else %}
-#-XX:NativeMemoryTracking=detail
+#-XX:NativeMemoryTracking=summary
 #-XX:+UnlockDiagnosticVMOptions
 #-XX:+PrintNMTStatistics
 {% endif %}
