@@ -42,6 +42,18 @@
     password: "{{ exist_adminpass[inventory_hostname][exist_instname] | password_hash('sha512') }}"
   when: exist_instuser != exist_user
 
+- name: Create sudoers.d fragment for instance user (systemd)
+  file:
+    content: '{{ exist_instuser }} ALL=(ALL:ALL) NOPASSWD: /bin/systemctl * {{ exist_instname }}'
+    mode: 0440
+  when: ansible_service_mgr == "systemd"
+
+- name: Create sudoers.d fragment for instance user (SysV init)
+  file:
+    content: '{{ exist_instuser }} ALL=(ALL:ALL) NOPASSWD: /sbin/service {{ exist_instname }} *'
+    mode: 0440
+  when: ansible_service_mgr != "systemd"
+
 ## increase file descriptor limits for exist instance user
 
 - name: Setup file descriptor limits for user exist from template
