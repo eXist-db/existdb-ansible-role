@@ -5,6 +5,9 @@
   file:
     path: "{{ exist_path }}/autodeploy"
     state: absent
+  tags:
+    - install
+    - xar-install
 
 - name: Ensure xar deploy dir is present (custom xar installation)
   file:
@@ -13,6 +16,9 @@
     owner: "{{ exist_instuser }}"
     group: "{{ exist_group }}"
     mode: 0755
+  tags:
+    - install
+    - xar-install
 
 - name: Prepare remote xars to install (custom xar installation)
   get_url:
@@ -21,6 +27,9 @@
     owner: "{{ exist_instuser }}"
     group: "{{ exist_group }}"
   with_items: "{{ exist_remote_xars }}"
+  tags:
+    - install
+    - xar-install
 
 - name: Prepare local xars to install (custom xar installation)
   copy:
@@ -29,10 +38,16 @@
     owner: "{{ exist_instuser }}"
     group: "{{ exist_group }}"
   with_items: "{{ exist_local_xars }}"
+  tags:
+    - install
+    - xar-install
 
 - name: Set fact for list of xars to install (custom xar installation)
   set_fact:
     xarlist: "{{ exist_remote_xars + exist_local_xars }}"
+  tags:
+    - install
+    - xar-install
 
 - name: Prepare install-xars.xql.j2 from template (custom xar installation)
   template:
@@ -41,3 +56,6 @@
     owner: "{{ exist_instuser }}"
     group: "{{ exist_group }}"
     mode: 0755
+  tags:
+    - install
+    - xar-install

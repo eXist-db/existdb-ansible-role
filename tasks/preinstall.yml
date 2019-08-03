@@ -7,6 +7,9 @@
     state: present
   with_items: "{{ exist_debian_extra_packages }}"
   when: ansible_distribution == 'Debian'
+  tags:
+    - preinstall
+    - packages
 
 - name: Ensure required packages are installed (Ubuntu)
   apt:
@@ -14,6 +17,9 @@
     state: present
   with_items: "{{ exist_ubuntu_extra_packages }}"
   when: ansible_distribution == 'Ubuntu'
+  tags:
+    - preinstall
+    - packages
 
 - name: Ensure required packages are installed (RedHat family)
   yum: 
@@ -21,6 +27,9 @@
     state: present
   with_items: "{{ exist_redhat_extra_packages }}"
   when: ansible_os_family == 'RedHat'
+  tags:
+    - preinstall
+    - packages
 
 - name: Tune kernel parameters
   template: 
@@ -29,6 +38,9 @@
   when: exist_kerneltune_enable
   notify:
     - reload sysctl
+  tags:
+    - preinstall
+    - kernel
 
 - name: Ensure scripts dir is present
   file:
@@ -40,6 +52,9 @@
     recurse: yes
   with_items:
     - scripts
+  tags:
+    - preinstall
+    - util
 
 - name: Ensure backup and tmp dirs are present
   file:
@@ -51,6 +66,9 @@
   with_items:
     - backup
     - tmp
+  tags:
+    - preinstall
+    - util
 
 - name: Ensure backup dir for instance user is present
   file:
@@ -59,6 +77,9 @@
     owner: "{{ exist_instuser }}"
     group: "{{ exist_group }}"
     mode: 0700
+  tags:
+    - preinstall
+    - util
 
 - name: Install util scripts from files
   copy:
@@ -69,6 +90,9 @@
     mode: 0751
   with_items:
     - upload-xmlrpc.pl
+  tags:
+    - preinstall
+    - util
 
 - name: Install util scripts from templates
   template: 
@@ -79,18 +103,27 @@
     mode: 0751
   with_items:
     - exist-restore.sh
+  tags:
+    - preinstall
+    - util
 
 - name: Ensure Ansible facts dir is present
   file:
     path: "/etc/ansible/facts.d"
     state: directory
     recurse: yes
+  tags:
+    - always
 
 - name: Install fact gathering script
   template: 
     src: exist.fact.j2
     dest: '/etc/ansible/facts.d/{{ exist_instname }}.fact'
     mode: 0755
+  tags:
+    - always
 
 - name: Re-gather facts to run the fact gathering script
   setup:
+  tags:
+    - always

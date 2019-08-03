@@ -2,16 +2,20 @@
 - name: Set facts for this exist instance
   set_fact:
     exist_path: "{{ exist_home }}/{{ exist_instname }}"
+  tags: always
 
 - name: Debug0
   debug:
     msg: 'exist_path: {{ exist_path }} exist_instname: {{ exist_instname }} exist_instuser: {{ exist_instuser }}'
+  tags: always
 
 - name: Include user setup tasks
   include_tasks: setup-user.yml
+  tags: always
 
 - name: Include pre-installation tasks
   include_tasks: preinstall.yml
+  tags: always
 
 - name: Set defaults if no facts are known a about this eXist instance
   set_fact:
@@ -20,6 +24,7 @@
     exist_current_gitsrc: false
     exist_current_revision: ""
   when: exist_instname not in ansible_local
+  tags: always
 
 - name: Set facts for this eXist instance
   set_fact:
@@ -28,26 +33,33 @@
     exist_current_gitsrc: "{{ ansible_local[exist_instname]['exist_gitsrc'] }}"
     exist_current_revision: "{{ ansible_local[exist_instname]['exist_revision'] }}"
   when: exist_instname in ansible_local
+  tags: always
 
 - name: Include tasks to install exist from source
   include_tasks: install-from-source.yml
   when: exist_install_method == "source"
+  tags: always
 
 - name: Include tasks to install exist from pre-packaged archive file
   include_tasks: install-archive.yml
   when: exist_install_method == "remote_archive" or exist_install_method == "local_archive"
+  tags: always
 
 - name: Include custom xar installation tasks (eXist 4.x)
   include_tasks: custom-xar-install.yml
   when: exist_install_custom_xars and exist_major_version == 4
+  tags: always
 
 - name: Include custom xar installation tasks (eXist 5.x)
   fail:
     msg: 'Custom Xar installation currently not supported on 5.x'
   when: exist_install_custom_xars and exist_major_version == 5
+  tags: always
 
 - name: Include post-installation pre-startup tasks
   include_tasks: postinstall.yml
+  tags: always
 
 - name: Include startup exist and post-startup tasks
   include_tasks: startup.yml
+  tags: always

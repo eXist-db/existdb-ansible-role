@@ -5,15 +5,24 @@
   set_fact:
     exist_srcpath: '{{ exist_path }}'
   when: exist_major_version == 4
+  tags:
+    - install
+    - src-install
 
 - name: Set srcpath fact (5.x)
   set_fact:
     exist_srcpath: '{{ exist_path }}-v5source'
   when: exist_major_version == 5
+  tags:
+    - install
+    - src-install
 
 - name: Determine git branch revision
   shell: "cd {{ exist_srcpath }}; git show-ref -s --abbrev --heads {{ exist_repo_version }} || true"
   register: git_revision
+  tags:
+    - install
+    - src-install
 
 - name: Set fact whether to replace an installed eXist
   set_fact:
@@ -22,14 +31,22 @@
   when:
     - exist_is_installed
     - git_revision.stdout != ansible_local[exist_instname]['exist_revision']
+  tags:
+    - install
+    - src-install
 
 - name: Debug1
   debug:
     msg: "installed: {{ exist_is_installed }} running: {{ exist_is_running }} gitsrc: {{ exist_current_gitsrc }} rev: {{ exist_current_revision }} replace: {{ exist_replace_installation }}"
+  tags:
+    - install
+    - src-install
 
 - name: Include stop and backup tasks if installing a different eXist
   include_tasks: stop-and-backup.yml
   when: exist_replace_installation
+  tags:
+    - always
 
 - name: Pre-create src dir to ensure permissions are correct
   file:
@@ -37,6 +54,9 @@
     state: directory
     owner: '{{ exist_instuser }}'
     group: '{{ exist_group }}'
+  tags:
+    - install
+    - src-install
 
 - name: Clone eXist into configured directory
   become_user: "{{ exist_instuser }}"
@@ -49,11 +69,18 @@
     force: "{{ exist_repo_force }}"
     update: "{{ exist_repo_update }}"
   when: not exist_is_installed or exist_replace_installation
+  tags:
+    - install
+    - src-install
 
 - name: Include build tasks (4.x)
   include_tasks: build-v4.yml
   when: exist_major_version == 4
+  tags:
+    - always
 
 - name: Include build tasks (5.x)
   include_tasks: build-v5.yml
   when: exist_major_version == 5
+  tags:
+    - always

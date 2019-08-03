@@ -7,6 +7,9 @@
     enabled: yes
     state: restarted
     #daemon-reload: true
+  tags:
+    - config
+    - runtime-config
 
 # we need to wait until eXist becomes ready.  starting eXist from the
 # wrapper will return quickly, so this playbook moves on.  But eXist may
@@ -17,6 +20,9 @@
   wait_for:
     port: "{{ exist_http_port }}"
     timeout: "{{ exist_startup_timeout }}"
+  tags:
+    - config
+    - runtime-config
 
 # if .password-set file is present, register password_set_file var,
 # so we can check whether the password was already set
@@ -24,6 +30,9 @@
   stat:
     path: "{{ exist_path }}/{{ exist_confpaths[exist_major_version]['data_basedir'] }}data/.password-set"
   register: password_set_file
+  tags:
+    - config
+    - runtime-config
 
 # set-adminpass.xql may contain sensitive information, so gets installed
 # with root access only, and gets removed afterwards
@@ -34,18 +43,26 @@
     owner: root
     mode: 0600
   when: not password_set_file.stat.exists
+  tags:
+    - config
+    - runtime-config
 
 - name: Set admin password (exec set-adminpass.xql)
   shell: 'bin/client.sh -u admin -P "" -F set-adminpass.xql -ouri=xmldb:exist://localhost:{{ exist_http_port }}/exist/xmlrpc && touch {{ exist_confpaths[exist_major_version]["data_basedir"] }}data/.password-set'
   args:
     chdir: "{{ exist_path }}"
   when: not password_set_file.stat.exists
+  tags:
+    - config
+    - runtime-config
 
 - name: Install custom xar files (exec install-xars.xql)
   shell: 'bin/client.sh -u admin -P "{{ exist_adminpass[inventory_hostname][exist_instname] }}" -F install-xars.xql -ouri=xmldb:exist://localhost:{{ exist_http_port }}/exist/xmlrpc'
   args:
     chdir: "{{ exist_path }}"
   when: exist_install_custom_xars
+  tags:
+    - xar-install
 
 # users-and-groups.xql may contain sensitive information, so gets installed
 # with root access only, and gets removed afterwards
@@ -55,11 +72,17 @@
     dest: "{{ exist_path }}/users-and-groups.xql"
     owner: root
     mode: 0600
+  tags:
+    - config
+    - runtime-config
 
 - name: Run post-install/hardening (exec users-and-groups.xql)
   shell: 'bin/client.sh -u admin -P "{{ exist_adminpass[inventory_hostname][exist_instname] }}" -p {{ exist_http_port }} -F users-and-groups.xql -ouri=xmldb:exist://localhost:{{ exist_http_port }}/exist/xmlrpc'
   args:
     chdir: "{{ exist_path }}"
+  tags:
+    - config
+    - runtime-config
 
 - name: Ensure post-install scripts are absent after install
   file:
@@ -69,3 +92,6 @@
     - set-adminpass.xql
     - users-and-groups.xql
     - install-xars.xql
+  tags:
+    - config
+    - runtime-config

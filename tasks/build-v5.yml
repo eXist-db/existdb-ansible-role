@@ -7,12 +7,20 @@
   shell: "MAVEN_OPTS='-Djava.io.tmpdir={{ exist_home }}/tmp' /usr/local/bin/mvn clean package -D skipTests -P '!mac-dmg-on-unix' >build.log 2>&1"
   args:
     chdir: "{{ exist_srcpath }}"
+  tags:
+    - install
+    - src-install
+    - exist5
 
 - name: Locate compiled eXist archive
   find:
     paths: "{{ exist_srcpath }}/exist-distribution/target"
     patterns: "exist-distribution*unix.tar.bz2"
   register: compiled_archive
+  tags:
+    - install
+    - src-install
+    - exist5
 
 - name: Copy compiled eXist archive to archive directory on the local Ansible host
   copy:
@@ -24,6 +32,10 @@
   #with_fileglob:
   #  - "{{ exist_srcpath }}/exist-distribution/target/exist-distribution*unix.tar.bz2"
   #delegate_to: 127.0.0.1
+  tags:
+    - install
+    - src-install
+    - exist5
 
 - name: Install exist archive
   unarchive:
@@ -39,3 +51,7 @@
   #with_fileglob:
   #  - "{{ exist_srcpath }}/exist-distribution/target/exist-distribution*unix.tar.bz2"
   when: not exist_is_installed or exist_replace_installation
+  tags:
+    - install
+    - src-install
+    - exist5

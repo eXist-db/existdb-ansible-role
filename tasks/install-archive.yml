@@ -6,6 +6,9 @@
     owner: "{{ exist_instuser }}"
     group: "{{ exist_group }}"
   when: exist_install_method == "remote_archive"
+  tags:
+    - install
+    - arch-install
 
 - name: Push eXist archive to host (install local archive)
   copy:
@@ -14,11 +17,18 @@
     owner: "{{ exist_instuser }}"
     group: "{{ exist_group }}"
   when: exist_install_method == "local_archive"
+  tags:
+    - install
+    - arch-install
 
 - name: Determine source code revision in archive to install (4.x)
   shell: "tar zxf {{ exist_home }}/tmp/{{ exist_archive }} {{ exist_instname }}/VERSION.txt -O | grep scm.revision | sed -e 's/scm.revision=//;'"
   register: archive_revision
   when: exist_major_version == 4
+  tags:
+    - install
+    - arch-install
+    - exist4
 
 - name: Extract exist-core jar from archive to install (5.x)
   unarchive:
@@ -29,11 +39,19 @@
     group: "{{ exist_group }}"
     extra_opts: [ '--transform=s:^[^/]\+:{{ exist_instname }}:;', '*exist-core*jar' ]
   when: exist_major_version == 5
+  tags:
+    - install
+    - arch-install
+    - exist5
 
 - name: Determine source code revision in archive to install (5.x)
   shell: "unzip -p {{ exist_home }}/tmp/{{ exist_instname }}/lib/exist-core*jar org/exist/system.properties | grep git-commit | sed -e 's/git-commit=//;'"
   register: archive_revision
   when: exist_major_version == 5
+  tags:
+    - install
+    - arch-install
+    - exist5
 
 - name: Set fact whether to replace an installed eXist
   set_fact:
@@ -42,14 +60,22 @@
   when:
     - exist_is_installed
     - archive_revision.stdout != ansible_local[exist_instname]['exist_revision']
+  tags:
+    - install
+    - arch-install
 
 - name: Debug1
   debug:
     msg: "installed: {{ exist_is_installed }} running: {{ ansible_local[exist_instname]['exist_running'] }} gitsrc: {{ ansible_local[exist_instname]['exist_gitsrc'] }} rev: {{ ansible_local[exist_instname]['exist_revision'] }} remote_ref: {{ archive_revision.stdout }} replace: {{ exist_replace_installation }}"
+  tags:
+    - install
+    - arch-install
 
 - name: Include stop and backup tasks if installing a different eXist
   include_tasks: stop-and-backup.yml
   when: exist_replace_installation
+  tags:
+    - always
 
 - name: Install exist archive
   unarchive:
@@ -62,3 +88,6 @@
     #creates: "{{ exist_path }}/etc/conf.xml"  # 5.x
     extra_opts: [ '--transform=s:^[^/]\+:{{ exist_instname }}:;' ]
   when: not exist_is_installed or exist_replace_installation
+  tags:
+    - install
+    - arch-install

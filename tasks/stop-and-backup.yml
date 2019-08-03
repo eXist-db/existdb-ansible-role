@@ -3,6 +3,8 @@
   service:
     name: "{{ exist_instname }}"
     state: stopped
+  tags:
+    - backup
 
 - name: Calculate current timestamp
   command: "date +'%Y%m%d%H%M'"
@@ -10,6 +12,8 @@
   when:
     - exist_is_installed
     - exist_backup_previnstall
+  tags:
+    - backup
 
 - name: Set current backup directory name
   set_fact:
@@ -17,6 +21,8 @@
   when:
     - exist_is_installed
     - exist_backup_previnstall
+  tags:
+    - backup
 
 - name: Backup installed exist
   become: true
@@ -27,6 +33,8 @@
   when:
     - exist_is_installed
     - exist_backup_previnstall
+  tags:
+    - backup
 
 - name: Backup eXist-DB init script (SysV init)
   become_user: "{{ exist_instuser }}"
@@ -38,6 +46,8 @@
     - exist_is_installed
     - exist_backup_previnstall
     - ansible_service_mgr != "systemd"
+  tags:
+    - backup
 
 - name: Backup eXist-DB service file (systemd)
   become_user: "{{ exist_instuser }}"
@@ -49,3 +59,5 @@
     - exist_is_installed
     - exist_backup_previnstall
     - ansible_service_mgr == "systemd"
+  tags:
+    - backup

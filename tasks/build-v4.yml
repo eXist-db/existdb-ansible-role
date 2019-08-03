@@ -5,3 +5,7 @@
   args:
     chdir: "{{ exist_path }}"
   when: not exist_is_installed or exist_replace_installation
+  tags:
+    - install
+    - src-install
+    - exist4

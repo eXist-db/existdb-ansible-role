@@ -1,6 +1,8 @@
 ---
 - name: Re-gather facts
   setup:
+  tags:
+    - config
 
 - name: Install eXist-DB custom Java options file (5.x)
   template:
@@ -12,6 +14,9 @@
   when: exist_major_version == 5
   notify:
     - restart eXist
+  tags:
+    - config
+    - exist5
 
 - name: Install eXist-DB service startup script (5.x)
   template:
@@ -23,6 +28,9 @@
   when: exist_major_version == 5
   notify:
     - restart eXist
+  tags:
+    - config
+    - exist5
 
 # init script calling YAJSW wrapper
 - name: Install eXist-DB init script (SysV init, 4.x)
@@ -33,6 +41,9 @@
   when: exist_major_version == 4 and ansible_service_mgr != "systemd"
   notify:
     - restart eXist
+  tags:
+    - config
+    - exist4
 
 # init script calling bin/service.sh
 - name: Install eXist-DB init script (SysV init, 5.x)
@@ -43,6 +54,9 @@
   when: exist_major_version == 5 and ansible_service_mgr != "systemd"
   notify:
     - restart eXist
+  tags:
+    - config
+    - exist5
 
 # systemd service file calling YAJSW wrapper
 - name: Install eXist-DB service file (systemd, 4.x)
@@ -53,6 +67,9 @@
   when: exist_major_version == 4 and ansible_service_mgr == "systemd"
   notify:
     - restart eXist
+  tags:
+    - config
+    - exist4
 
 # systemd service file calling bin/service.sh
 - name: Install eXist-DB service file (systemd, 5.x)
@@ -63,11 +80,16 @@
   when: exist_major_version == 5 and ansible_service_mgr == "systemd"
   notify:
     - restart eXist
+  tags:
+    - config
+    - exist5
 
 # to initialize new systemd service files (using a handler runs too late)
 - name: Reload systemd
   command: "systemctl daemon-reload"
   when: ansible_service_mgr == "systemd"
+  tags:
+    - config
 
 ## setup config files before startup
 
@@ -81,6 +103,9 @@
   when: exist_major_version == 4 and exist_wrapperconf_from_template
   notify:
     - restart eXist
+  tags:
+    - config
+    - exist4
 
 - name: Setup logging conf from template
   template:
@@ -92,6 +117,8 @@
   when: exist_logconf_from_template
   notify:
     - restart eXist
+  tags:
+    - config
 
 - name: Setup eXist conf.xml from template
   template: 
@@ -103,6 +130,8 @@
   when: exist_confxml_from_template
   notify:
     - restart eXist
+  tags:
+    - config
 
 - name: Setup eXist web.xml from template
   template:
@@ -114,6 +143,8 @@
   when: exist_webxml_from_template
   notify:
     - restart eXist
+  tags:
+    - config
 
 - name: Setup eXist client.properties from template
   template: 
@@ -125,6 +156,8 @@
   when: exist_clientprops_from_template
   notify:
     - restart eXist
+  tags:
+    - config
 
 - name: Set http.host in Jetty configs
   lineinfile:
@@ -135,6 +168,8 @@
     group: "{{ exist_group }}"
     mode: '0644'
   when: exist_http_host is defined
+  tags:
+    - config
 
 - name: Set ssl.host in Jetty configs
   lineinfile:
@@ -145,10 +180,14 @@
     group: "{{ exist_group }}"
     mode: '0644'
   when: exist_ssl_host is defined
+  tags:
+    - config
 
 #- name: Debug2
 #  debug:
 #    msg: "installed: {{ ansible_local[exist_instname]['exist_installed'] }} running: {{ ansible_local[exist_instname]['exist_running'] }} gitsrc: {{ ansible_local[exist_instname]['exist_gitsrc'] }} rev: {{ ansible_local[exist_instname]['exist_revision'] }} archive_rev: {{ archive_revision.stdout }} replace: {{ exist_replace_installation }}"
+#  tags:
+#    - config
 
 - name: Restore data directory from previous installation
   synchronize: 
@@ -158,6 +197,8 @@
   when:
     - exist_replace_installation
     - exist_restore_prevdata
+  tags:
+    - restore
 
 # if jmxservlet.token file is present, register jmxtoken_file var,
 # so we can check whether the token was already created
@@ -165,11 +206,15 @@
   stat:
     path: "{{ exist_path }}/{{ exist_confpaths[exist_major_version]['jmxservlet_token'] }}"
   register: jmxtoken_file
+  tags:
+    - config
 
 - name: Generate uuid for JMX token
   command: uuidgen
   register: uuidgen
   when: not jmxtoken_file.stat.exists
+  tags:
+    - config
 
 - name: Setup JMX token from template
   template:
@@ -181,12 +226,17 @@
   when: not jmxtoken_file.stat.exists
   notify:
     - restart eXist
+  tags:
+    - config
 
 - name: Extract system.properties file for use with Ansible fact script
   shell: "unzip -qjd {{ exist_path }}/etc {{ exist_path }}/lib/exist-core*jar org/exist/system.properties; chown {{ exist_instuser }}:{{ exist_group }} {{ exist_path }}/etc/system.properties"
   args:
     creates: "{{ exist_path }}/etc/system.properties"
   when: exist_major_version == 5
+  tags:
+    - config
+    - exist5
 
 - name: Ensure privacy on instance directory tree
   file:
@@ -196,6 +246,8 @@
     owner: '{{ exist_instuser }}'
     group: '{{ exist_group }}'
     mode: 'go-rwx'
+  tags:
+    - config
 
 - name: Create symbolic link to instance in user home dir
   file:
@@ -205,6 +257,9 @@
     group: '{{ exist_group }}'
     state: link
     force: yes
+  tags:
+    - config
+    - userdoc
 
 - name: Drop README file for this instance in user home dir
   template:
@@ -213,3 +268,6 @@
     owner: "{{ exist_instuser }}"
     group: "{{ exist_group }}"
     mode: 0644
+  tags:
+    - config
+    - userdoc
