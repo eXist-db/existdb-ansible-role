@@ -43,13 +43,15 @@
   when: exist_instuser != exist_user
 
 - name: Create sudoers.d fragment for instance user (systemd)
-  file:
+  copy:
+    dest: '/etc/sudoers.d/{{ exist_instuser }}'
     content: '{{ exist_instuser }} ALL=(ALL:ALL) NOPASSWD: /bin/systemctl * {{ exist_instname }}'
     mode: 0440
   when: ansible_service_mgr == "systemd"
 
 - name: Create sudoers.d fragment for instance user (SysV init)
-  file:
+  copy:
+    dest: '/etc/sudoers.d/{{ exist_instuser }}'
     content: '{{ exist_instuser }} ALL=(ALL:ALL) NOPASSWD: /sbin/service {{ exist_instname }} *'
     mode: 0440
   when: ansible_service_mgr != "systemd"
