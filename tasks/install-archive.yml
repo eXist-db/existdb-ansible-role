@@ -79,7 +79,7 @@
     exist_replace_installation: yes
   # if exist is installed AND the archive revision is different from installed
   when:
-    - exist_is_installed
+    - exist_is_installed|bool
     - exist_archive_revision != ansible_local[exist_instname]['exist_revision']
   tags:
     - install
@@ -94,7 +94,7 @@
 
 - name: Include stop and backup tasks if installing a different eXist
   include_tasks: stop-and-backup.yml
-  when: exist_replace_installation
+  when: exist_replace_installation|bool
   tags:
     - always
 
@@ -108,7 +108,7 @@
     #creates: "{{ exist_path }}/VERSION.txt"   # 4.x
     #creates: "{{ exist_path }}/etc/conf.xml"  # 5.x
     extra_opts: [ '--transform=s:^[^/]\+:{{ exist_instname }}:;' ]
-  when: not exist_is_installed or exist_replace_installation
+  when: not exist_is_installed|bool or exist_replace_installation|bool
   tags:
     - install
     - arch-install

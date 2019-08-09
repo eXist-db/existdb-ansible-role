@@ -60,7 +60,7 @@
   shell: 'bin/client.sh -u admin -P "{{ exist_adminpass[inventory_hostname][exist_instname] }}" -F install-xars.xql -ouri=xmldb:exist://localhost:{{ exist_http_port }}/exist/xmlrpc'
   args:
     chdir: "{{ exist_path }}"
-  when: exist_install_custom_xars
+  when: exist_install_custom_xars|bool
   tags:
     - xar-install
 
