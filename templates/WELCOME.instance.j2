@@ -10,10 +10,13 @@ using the eXist-db Ansible role.
 * installed version: {{ ansible_local[exist_instname]['exist_version'] }}
 {% if exist_http_host is defined %}
 * HTTP:              {{ exist_http_host }}:{{ exist_http_port }}
-* HTTPS:             {{ exist_http_host }}:{{ exist_ssl_port }}
 {% else %}
 * HTTP port:         *:{{ exist_http_port }}
-* HTTPS port:        *:{{ exist_http_port }}
+{% endif %}
+{% if exist_ssl_host is defined %}
+* HTTPS:             {{ exist_http_host }}:{{ exist_ssl_port }}
+{% else %}
+* HTTPS port:        *:{{ exist_ssl_port }}
 {% endif %}
 
 There is an nginx proxy in front of your eXist-db instance that listens on the
@@ -44,15 +47,15 @@ Use the commands below to manage your eXist-db instance from the shell.
 
 ```
 {% if ansible_service_mgr == "systemd" %}
-    systemctl start {{ exist_instname }}
-    systemctl stop {{ exist_instname }}
-    systemctl status {{ exist_instname }}
-    systemctl restart {{ exist_instname }}
+    sudo systemctl start {{ exist_instname }}
+    sudo systemctl stop {{ exist_instname }}
+    sudo systemctl status {{ exist_instname }}
+    sudo systemctl restart {{ exist_instname }}
 {% else %}
-    service {{ exist_instname }} start
-    service {{ exist_instname }} stop
-    service {{ exist_instname }} status
-    service {{ exist_instname }} restart
+    sudo service {{ exist_instname }} start
+    sudo service {{ exist_instname }} stop
+    sudo service {{ exist_instname }} status
+    sudo service {{ exist_instname }} restart
 {% endif %}
 ```
 
