@@ -1,0 +1,5 @@
+{% if ansible_service_mgr == "systemd" %}
+{{ exist_instuser }} ALL=(ALL:ALL) NOPASSWD: /bin/systemctl (start|stop|restart|status) {{ exist_instname }}
+{% else %}
+{{ exist_instuser }} ALL=(ALL:ALL) NOPASSWD: /sbin/service {{ exist_instname }}
+{% endif %}

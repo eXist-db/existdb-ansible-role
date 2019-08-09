@@ -57,22 +57,11 @@
     - preinstall
     - instuser
 
-- name: Create sudoers.d fragment for instance user (systemd)
-  copy:
+- name: Create sudoers.d fragment for instance user
+  template:
+    src: sudoers.instuser.j2
     dest: '/etc/sudoers.d/{{ exist_instuser }}'
-    content: '{{ exist_instuser }} ALL=(ALL:ALL) NOPASSWD: /bin/systemctl * {{ exist_instname }}'
     mode: 0440
-  when: ansible_service_mgr == "systemd"
-  tags:
-    - preinstall
-    - instuser
-
-- name: Create sudoers.d fragment for instance user (SysV init)
-  copy:
-    dest: '/etc/sudoers.d/{{ exist_instuser }}'
-    content: '{{ exist_instuser }} ALL=(ALL:ALL) NOPASSWD: /sbin/service {{ exist_instname }} *'
-    mode: 0440
-  when: ansible_service_mgr != "systemd"
   tags:
     - preinstall
     - instuser
