@@ -206,7 +206,7 @@
     state: link
     force: yes
 
-- name: Drop README file for this instance in user home dir
+- name: Drop WELCOME file for this instance in user home dir
   template:
     src: WELCOME.instance.j2
     dest: '/home/{{ exist_instuser }}/WELCOME.{{ exist_instname }}.md'
