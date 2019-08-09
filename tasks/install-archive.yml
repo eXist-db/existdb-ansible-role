@@ -21,8 +21,10 @@
     - install
     - arch-install
 
+# need to jump hoops because the top level dir name in the archive is not
+# predictable
 - name: Determine source code revision in archive to install (4.x)
-  shell: "tar zxf {{ exist_home }}/tmp/{{ exist_archive }} {{ exist_instname }}/VERSION.txt -O | grep scm.revision | sed -e 's/scm.revision=//;'"
+  shell: "vtxt=`tar ztf {{ exist_home }}/tmp/{{ exist_archive }} | grep -E 'VERSION.txt$'`; tar zxf {{ exist_home }}/tmp/{{ exist_archive }} $vtxt -O | grep scm.revision | sed -e 's/scm.revision=//;'"
   register: archive_revision
   when: exist_major_version == 4
   tags:
@@ -30,6 +32,16 @@
     - arch-install
     - exist4
 
+- name: Set exist_archive_revision fact
+  set_fact:
+    exist_archive_revision: "{{ archive_revision.stdout }}"
+  when: exist_major_version == 4
+  tags:
+    - install
+    - arch-install
+    - exist4
+
+# need to jump hoops because the relevant info is packed inside a jar file
 - name: Extract exist-core jar from archive to install (5.x)
   unarchive:
     src: "{{ exist_home }}/tmp/{{ exist_archive }}"
@@ -53,20 +65,29 @@
     - arch-install
     - exist5
 
+- name: Set exist_archive_revision fact
+  set_fact:
+    exist_archive_revision: "{{ archive_revision.stdout }}"
+  when: exist_major_version == 5
+  tags:
+    - install
+    - arch-install
+    - exist5
+
 - name: Set fact whether to replace an installed eXist
   set_fact:
     exist_replace_installation: yes
   # if exist is installed AND the archive revision is different from installed
   when:
     - exist_is_installed
-    - archive_revision.stdout != ansible_local[exist_instname]['exist_revision']
+    - exist_archive_revision != ansible_local[exist_instname]['exist_revision']
   tags:
     - install
     - arch-install
 
 - name: Debug1
   debug:
-    msg: "installed: {{ exist_is_installed }} running: {{ ansible_local[exist_instname]['exist_running'] }} gitsrc: {{ ansible_local[exist_instname]['exist_gitsrc'] }} rev: {{ ansible_local[exist_instname]['exist_revision'] }} remote_ref: {{ archive_revision.stdout }} replace: {{ exist_replace_installation }}"
+    msg: "installed: {{ exist_is_installed }} running: {{ ansible_local[exist_instname]['exist_running'] }} gitsrc: {{ ansible_local[exist_instname]['exist_gitsrc'] }} rev: {{ ansible_local[exist_instname]['exist_revision'] }} remote_ref: {{ exist_archive_revision }} replace: {{ exist_replace_installation }}"
   tags:
     - install
     - arch-install
