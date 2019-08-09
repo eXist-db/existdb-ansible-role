@@ -52,7 +52,7 @@
     name: '{{ exist_instuser }}'
     group: '{{ exist_group }}'
     password: "{{ exist_adminpass[inventory_hostname][exist_instname] | password_hash('sha512') }}"
-  when: exist_instuser != exist_user
+  when: exist_instuser != exist_user and not exist_instuser in exist_prohibit_usermod
   tags:
     - preinstall
     - instuser
@@ -62,6 +62,7 @@
     src: sudoers.instuser.j2
     dest: '/etc/sudoers.d/{{ exist_instuser }}'
     mode: 0440
+  when: exist_instuser != exist_user and not exist_instuser in exist_prohibit_usermod
   tags:
     - preinstall
     - instuser
