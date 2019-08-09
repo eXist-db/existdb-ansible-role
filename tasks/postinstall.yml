@@ -191,7 +191,7 @@
 
 - name: Restore data directory from previous installation
   synchronize: 
-    src: "{{ exist_home }}/backup/last/exist/webapp/WEB-INF/data"
+    src: "{{ exist_home }}/backup/{{ exist_instuser }}/{{ exist_instname }}.last/{{ exist_instname }}/webapp/WEB-INF/data"
     dest: "{{ exist_path }}/webapp/WEB-INF/"
   delegate_to: "{{ inventory_hostname }}"
   when:
