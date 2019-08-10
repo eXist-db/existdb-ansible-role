@@ -76,16 +76,18 @@ exist_confpaths:
     web_xml: 'webapp/WEB-INF/web.xml'
     log4j2_xml: 'tools/yajsw/conf/log4j2.xml'
     client_properties: 'client.properties'
-    data_basedir: 'webapp/WEB-INF/'
-    jmxservlet_token: 'webapp/WEB-INF/data/jmxservlet.token'
+    data_dir: 'webapp/WEB-INF/data'
+    log_dir: 'webapp/WEB-INF/logs'
+    #jmxservlet_token: 'webapp/WEB-INF/data/jmxservlet.token'
     jetty_etc: 'tools/jetty/etc'
   5:
     conf_xml: 'etc/conf.xml'
     web_xml: 'etc/webapp/WEB-INF/web.xml'
     log4j2_xml: 'etc/log4j2.xml'
     client_properties: 'etc/client.properties'
-    data_basedir: ''
-    jmxservlet_token: 'UNKNOWN'
+    data_dir: 'data'
+    log_dir: 'logs'
+    #jmxservlet_token: 'UNKNOWN'
     jetty_etc: 'etc/jetty'
 
 # memory settings (renamed)
@@ -204,4 +206,4 @@ exist_ubuntu_extra_packages:
   - liblwp-protocol-https-perl
 
 # defaults for internally used facts (this is nothing to configure)
-exist_replace_installation: no
+#exist_replace_installation: no

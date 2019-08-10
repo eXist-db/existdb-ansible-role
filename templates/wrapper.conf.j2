@@ -115,7 +115,7 @@ wrapper.java.additional.8=-Djava.io.tmpdir={{ exist_home }}/tmp
 {% if exist_mem_gcdebug_enable == True %}
 wrapper.java.additional.9=-XX:+PrintGCDetails
 wrapper.java.additional.10=-XX:+PrintGCDateStamps
-wrapper.java.additional.11=-Xloggc:{{ exist_path }}/webapp/WEB-INF/logs/gc-%t.log
+wrapper.java.additional.11=-Xloggc:{{ exist_logdir }}/gc-%t.log
 {% endif %}
 
 # String deduplication
@@ -177,7 +177,7 @@ wrapper.java.maxmemory={{ exist_mem_max_heap }}
 wrapper.console.loglevel=INFO
 
 # Log file to use for wrapper output logging.
-wrapper.logfile={{ exist_path }}/webapp/WEB-INF/logs/wrapper.log
+wrapper.logfile={{ exist_logdir }}/wrapper.log
 
 # Format of output for the log file.  (See docs for formats)
 #wrapper.logfile.format=LPTM

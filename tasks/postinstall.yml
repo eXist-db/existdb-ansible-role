@@ -204,7 +204,8 @@
 # so we can check whether the token was already created
 - name: Check whether token has already been created
   stat:
-    path: "{{ exist_path }}/{{ exist_confpaths[exist_major_version]['jmxservlet_token'] }}"
+    #path: "{{ exist_path }}/{{ exist_confpaths[exist_major_version]['jmxservlet_token'] }}"
+    path: "{{ exist_datadir }}/jmxservlet.token"
   register: jmxtoken_file
   tags:
     - config
@@ -219,7 +220,8 @@
 - name: Setup JMX token from template
   template:
     src: jmxservlet.token.j2
-    dest: "{{ exist_path }}/{{ exist_confpaths[exist_major_version]['jmxservlet_token'] }}"
+    #dest: "{{ exist_path }}/{{ exist_confpaths[exist_major_version]['jmxservlet_token'] }}"
+    dest: "{{ exist_datadir }}/jmxservlet.token"
     owner: "{{ exist_instuser }}"
     group: "{{ exist_group }}"
     mode: 0644

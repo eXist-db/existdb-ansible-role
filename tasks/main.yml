@@ -2,6 +2,8 @@
 - name: Set facts for this exist instance
   set_fact:
     exist_path: "{{ exist_home }}/{{ exist_instname }}"
+    exist_datadir: "{{ exist_home }}/{{ exist_instname }}/{{ exist_confpaths[exist_major_version]['data_dir'] }}"
+    exist_logdir: "{{ exist_home }}/{{ exist_instname }}/{{ exist_confpaths[exist_major_version]['log_dir'] }}"
   tags: always
 
 - name: Debug0
