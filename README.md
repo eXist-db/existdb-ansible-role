@@ -118,7 +118,7 @@ details.
     exist_mem_max_meta: 1024
     exist_mem_max_direct: 1024
 
-Memory settings for this eXist-db instance. The map to the Java flags `-Xms`,
+Memory settings for this eXist-db instance. They map to the Java flags `-Xms`,
 `-Xmx`, `-XX:MaxMetaspaceSize` and `-XX:MaxDirectMemorySize`.
 
     exist_mem_g1gc_pausegoal: 200
@@ -292,13 +292,19 @@ this only once.
 
 Admin passwords are kept in a variable `exist_adminpass` which is a dict of
 key/value pairs, where the keys are the inventory hostnames of the servers and
-the values are the eXist admin password strings for each server, like this:
+the values are dicts of key/value pairs, where the key is the exist instance
+name and the value is the eXist admin password strings for each server, like
+this:
 
 ```
 exist_adminpass:
-  myserver1: MySecretPass
-  myserver2: MyOtherPass
-  myserver3: ""
+  myserver1:
+    myinstanceA: MySecretPass
+    myinstanceB: DifferentPass
+  myserver2:
+    exist: MyDefaultPass
+  myserver3:
+    unprotected: ""
 ```
 
 It is also possible to pre-set passwords for standard eXist user accounts or to

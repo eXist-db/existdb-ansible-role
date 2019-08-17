@@ -96,7 +96,7 @@ exist_kerneltune_cachepressure: 50
 exist_syslog_enable: no
 exist_syslog_loghost: 127.0.0.1
 
-# list of (pre-existing) Unix users that this role should not modify.role
+# list of (pre-existing) Unix users that this role should not modify
 exist_prohibit_usermod: []
 
 # defaults for config file settings
@@ -133,9 +133,12 @@ exist_force_xar_install: "false"
 #
 #exist_adminpass:
 #  myserver1:
-#    myinstance1: MySecretPass
+#    myinstanceA: MySecretPass
+#    myinstanceB: DifferentPass
 #  myserver2:
-#    myinstance2: MyOtherPass
+#    exist: MyDefaultPass
+#  myserver3:
+#    unprotected: ""
 #
 # NOTE: the last entry for each host/instance MUST NOT have a trailing comma!!
 #exist_userpass_map:
@@ -161,7 +164,6 @@ exist_confpaths:
     client_properties: 'client.properties'
     data_dir: 'webapp/WEB-INF/data'
     log_dir: 'webapp/WEB-INF/logs'
-    #jmxservlet_token: 'webapp/WEB-INF/data/jmxservlet.token'
     jetty_etc: 'tools/jetty/etc'
   5:
     conf_xml: 'etc/conf.xml'
@@ -170,7 +172,6 @@ exist_confpaths:
     client_properties: 'etc/client.properties'
     data_dir: 'data'
     log_dir: 'logs'
-    #jmxservlet_token: 'UNKNOWN'
     jetty_etc: 'etc/jetty'
 
 # for CentOS 7, Amazon Linux
@@ -202,6 +203,3 @@ exist_ubuntu_extra_packages:
   # for upload-xmlrpc script
   - librpc-xml-perl
   - liblwp-protocol-https-perl
-
-# defaults for internally used facts (this is nothing to configure)
-#exist_replace_installation: no
