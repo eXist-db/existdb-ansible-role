@@ -1,10 +1,13 @@
 # Ansible Role: exist DB
 
-**NOTE** this a **beta release**. See "In the Works" below. Some warts might
-be included.
-
 This is an Ansible role to install and configure eXist DB
 (http://exist-db.org/).
+
+The current version is 1.0RC1 (Aug 10 2019). This release supports
+**eXist-db 5.x** and **multiple eXist-db instances** on a single host.
+For a list of changes since the public beta release, please see WHATSNEW.md.
+
+## Overview
 
 This role allows to install exist by
 * pulling from the git repo and building from source
@@ -14,7 +17,7 @@ This role allows to install exist by
 Installations methods can be switched by re-running Ansible.
 
 This role installs exist and performs all necessary tasks to run on a server
-(create user, install system service, misc setup).
+(create user, install system service, miscellaneous setup).
 
 Various config files get modified before starting exist (wrapper.conf, 
 conf.xml, web.xml, client.properties), this is configurable and may be used to
@@ -22,9 +25,7 @@ tune behavioral and performance parameters.
 
 By default, the exist/autodeploy directory is left untouched, so any xar files
 there get installed at first startup. This can be overridden to pre-install a
-defined set of xar packages for each host. This is EXPERIMENTAL and likely to
-change. Works for us on large sites where dev/staging/prod servers get a
-different set of >20 xar packages pre-installed.
+defined set of xar packages for each host.
 
 When upgrading or replacing a running exist DB (either by installing a newer
 or different archive, or switching install methods between source/archive
@@ -49,8 +50,6 @@ This is a list of features coming soon. Most of this is either prepared but
 not fully tested, or already in use at customer sites so that customer
 specific settings need to get factored out yet.
 
-- multiple exist instances on the same host, with different install dirs,
-  service names and IP:port configs;
 - some config files such as conf.xml vary among distributions, so
   templating is not optimal; and these configs might get so special that it's
   hard to template at all;
@@ -67,44 +66,80 @@ Available variables are listed below, along with default values (see `defaults/m
     exist_group: existdb
     exist_home: /usr/local/existdb
 
-Settings for the user that runs exist DB. This is a system user, logins are
-not allowed. You should create a separate user to manage exist at the shell
-level.
+Settings for the user that usually runs exist DB. This is a system user,
+logins are not allowed. A separate user should be created to manage exist at
+the shell level, this is outside the scope of this role.
 
-    exist_dir: exist
-    exist_suffix: ""
+    exist_instname: 'exist'
+    #exist_instname: 'exist-test'
+    #exist_instname: 'exist-prod'
 
-Exist DB gets installed into a directory named `exist_dir` inside the directory
-`exist_home` (default: /usr/local/existdb/exist).
+The instance name of this eXist-db. If you are not running multiple instances
+the default resembles the standard installation. If you **are** running
+multiple instances, this variable distinguishes one instance from the others.
 
-The `exist_suffix` allows to run multiple instances of exist DB on the same
-host, see "Multiple Instances" below. If you run only a single exist instance
-on the host, leave this parameter empty.
+This variable is used to name the installation directory below `exist_home`.
+It is also used as the system service name (systemd or SysV init).
+
+    exist_instuser: 'existdb'
+    #exist_instuser: 'tester'
+    #exist_instuser: 'customer1'
+
+The user that runs this eXist-db instance. If you are not running multiple
+instances the default is to run eXist as user `existdb` just like the standard
+installation. If you **are** running multiple instances, this variable can be
+used to run each eXist-db instance under a separate user.
+
+The specified Unix user gets created by this role if it does not exist yet.
 
     exist_http_port: 8080
     exist_ssl_port: 8443
+    #exist_http_host: '127.0.0.1'
+    #exist_ssl_host: '127.0.0.1'
 
-Ports to use for unencrypted and TLS encrypted HTTP.
-[XXX convention how to disable HTTP?]
+Ports and IP bindings to use for unencrypted and TLS encrypted HTTP. The
+defaults resemble a standard installation.
 
-    exist_startup_timeout: 300
+By default, eXist-db will bind to the given ports on all interfaces. You can
+restrict the binding to a certain IP and network interface by explicitly
+setting the `exist_http_host` and `exist_ssl_host` variables. A common use case
+is to bind eXist-db to localhost only (thus not providing service on public IP
+adresses) and use a frontend proxy such as `nginx` to provide public service.
 
-How long to wait for exist to come up before raising an error (because we need
-to proceed with exist running). If large Xars get installed by autodeploy,
-this value may need to be increased.
+    exist_mem_init_heap: 2048
+    exist_mem_max_heap: 2048
+    exist_mem_max_meta: 1024
+    exist_mem_max_direct: 1024
 
-    exist_service: eXist-db
+Memory settings for this eXist-db instance. The map to the Java flags `-Xms`,
+`-Xmx`, `-XX:MaxMetaspaceSize` and `-XX:MaxDirectMemorySize`.
 
-Service name for SysV/init.d or systemd. Rarely needs to be changed. Gets
-`exist_suffix` appended automatically when using multiple exist instances.
+    exist_mem_gcdebug_enable: no
+    exist_mem_nmt_enable: no
+    exist_mem_strdedup_enable: no
+    exist_mem_niocachetune_enable: no
+
+Special memory settings suited for high-load installations.
+`exist_mem_gcdebug_enable` enables GC logging for memory usage analysis.
+`exist_mem_nmt_enable` enable Java Native Memory Tracking. **NOTE** use only
+with exist 5.x. The YAJSW wrapper used in exist 4.x will crash if enabled.
+`exist_mem_strdedup_enable` enables Java String Deduplication.
+`exist_mem_niocachetune_enable` works around a bug in java.nio that may lead
+to excessive memory usage in Java version < 11. This issue appears only in
+high load environments.
+
+    exist_major_version: 4
+
+You need to explicitly specify whether you are going to install an eXist-db 4.x
+or 5.x version. There is currently no auto-detection.
 
     exist_install_method: source
 
 How to install exist. Can be `source` (git clone official existdb repository
-and run `build.sh` on the server to install), `remote_archive` (pre-packaged
-archive file downloaded from remote server), `local_archive` (pre-packaged
-archive present on the Ansible host) or `none` (do not install or modify
-eXist). Default is to install from source.
+and run `ant` or `maven` on the server to install), `remote_archive`
+(pre-packaged archive file downloaded from remote server), `local_archive`
+(pre-packaged archive present on the Ansible host) or `none` (do not install
+or modify eXist). Default is to install from source.
 
 If you can not or do not want to build locally, prepare a pre-packaged archive
 for download and use `remote_archive`. If policy or firewalling does not allow
@@ -117,7 +152,7 @@ untouched (eg to run other parts of this role only).
     exist_repo_force: yes
 
 Settings for installing from source. The default is to track the HEAD branch
-of the exist official Github repository.
+of the exist official Github repository (4.x branch).
 
     exist_archive: "eXist-4.2.0-201806071027.tar.gz"
 
@@ -137,8 +172,13 @@ directory `exist_local_archive_dir` on the Ansible host.
     exist_restore_prevdata: yes
 
 Whether to create a backup when installing a different eXist version, and
-whether to restore the previous `webapp/WEB_INF/data` directory in the new
-installation.
+whether to restore the previous data directory in the new installation.
+
+    exist_startup_timeout: 300
+
+How long to wait for exist to come up before raising an error (because we need
+to proceed with exist running). If large Xars get installed by autodeploy,
+this value may need to be increased.
 
     exist_wrapperconf_from_template: yes
     exist_logconf_from_template: no
@@ -146,8 +186,8 @@ installation.
     exist_webxml_from_template: yes
     exist_confxml_from_template: no
 
-Whether to create certain config files from template.
-XXX Not fully supported for conf.xml.
+Whether to create certain config files from template. Not fully supported for
+conf.xml, leave that disabled!
 
     exist_fdset_enable: yes
     exist_fdsoft_limit: 8192
@@ -155,18 +195,36 @@ XXX Not fully supported for conf.xml.
 
 Increase the OS limit of open file descriptors per process beyond the common
 OS default of 1024, otherwise busy sites may experience problems when hitting
-this limit.
+this limit. The fdhard limit is actually not used, we set both for consistency.
 
     exist_kerneltune_enable: no
     exist_kerneltune_swappiness: 10
     exist_kerneltune_cachepressure: 50
 
-Kernel memory tuning parameters.  XXX EXPERIMENTAL
+Kernel memory tuning parameters. This helps a little (but not much) on highly
+loaded systems that run out of memory and start swapping. If some memory of an
+eXist-db process gets swapped out, performance will drop dramatically. These
+settings instruct the kernel to try to avoid swapping if possible.
 
     exist_syslog_enable: no
     exist_syslog_loghost: 127.0.0.1
 
 Settings for logging to a remote syslog server. See "Logging" below.
+
+    exist_prohibit_usermod: []
+
+By default, this role will create the `exist_instuser` Unix user and set the
+password specified in the vault. List Unix user names that this role must not
+touch. This is useful if the `exist_instuser` Unix user already exists and has
+a valid password already.
+
+    exist_wrapper_relclasspath: "classes"
+    exist_wrapper_loglevel: INFO
+    exist_wrapper_startup_timeout: 90
+    exist_wrapper_shutdown_timeout: 90
+    exist_wrapper_ping_timeout: 90
+
+Template parameters to modify exist tools/yajsw/conf/wrapper.conf file.
 
     exist_confxml_dbconn_cachesize: "256M"
     exist_confxml_trigger_xquerystartup_enable: no
@@ -181,26 +239,6 @@ Settings for logging to a remote syslog server. See "Logging" below.
     exist_confxml_serializer_indent: "yes"
 
 Template parameters to modify exist conf.xml file.
-
-    # memory settings (renamed)
-    exist_mem_init_heap: 2048
-    exist_mem_max_heap: 2048
-    exist_mem_max_meta: 1024
-    exist_mem_max_direct: 1024
-    exist_mem_gcdebug_enable: no
-    exist_mem_nmt_enable: no
-    exist_mem_strdedup_enable: no
-    exist_mem_niocachetune_enable: no
-    #exist_wrapper_max_mem: 2048
-    #exist_wrapper_gcdebug_enable: no
-    exist_wrapper_jmx_enable: no
-    exist_wrapper_jmx_port: 9911
-    exist_wrapper_loglevel: INFO
-    exist_wrapper_startup_timeout: 90
-    exist_wrapper_shutdown_timeout: 90
-    exist_wrapper_ping_timeout: 90
-
-Template parameters to modify exist tools/yajsw/conf/wrapper.conf file.
 
     exist_webxml_initparam_hidden: "false"
 
@@ -334,11 +372,21 @@ restore the default behavior:
 
 ## Performance Tuning
 
-Increase memory for the exist process beyond 2GB default (unit is MB):
+Increase memory for the exist process beyond 2GB default (unit is MB). Set
+min and max to the same amount to help the G1GC garbage collector to size its
+region space:
 
+    exist_mem_min_heap: 16384
     exist_mem_max_heap: 16384
 
-Ensure file descriptor limits are increased:
+If you encounter exceptions relating to out of `Metaspace` or `DirectMemory`
+you may want to increase these values:
+
+    exist_mem_max_meta: 1024
+    exist_mem_max_direct: 1024
+
+Ensure file descriptor limits are increased, otherwise you may get an "out of
+file descriptors" exception on loaded systems:
 
     exist_fdset_enable: yes
     exist_fdsoft_limit: 8192

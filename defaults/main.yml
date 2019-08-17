@@ -3,14 +3,6 @@
 exist_user: existdb
 exist_group: existdb
 exist_home: /usr/local/existdb
-exist_dir: exist
-exist_service: eXist-db
-# for reference, but don't force anyone to localhost by default
-#exist_http_host: '127.0.0.1'
-#exist_ssl_host: '127.0.0.1'
-exist_http_port: 8080
-exist_ssl_port: 8443
-exist_startup_timeout: 300
 
 # for multiple eXist-db instances on a single host, assign an individual
 # instance name to each one. No spaces, umlauts or special chars!
@@ -26,11 +18,28 @@ exist_instuser: 'existdb'
 #exist_instuser: 'tester'
 #exist_instuser: 'customer1'
 
+# for reference, but don't force anyone to localhost by default
+#exist_http_host: '127.0.0.1'
+#exist_ssl_host: '127.0.0.1'
+exist_http_port: 8080
+exist_ssl_port: 8443
+
+# memory settings
+exist_mem_init_heap: 2048
+exist_mem_max_heap: 2048
+exist_mem_max_meta: 1024
+exist_mem_max_direct: 1024
+
+# special memory/GC settings
+exist_mem_gcdebug_enable: no
+exist_mem_nmt_enable: no
+exist_mem_strdedup_enable: no
+exist_mem_niocachetune_enable: no
+
 # because eXist-db 5.0 introduces many changes in its filesystem layout that
 # affect Ansible operation, we use this variable as an indicator for Ansible
 # processing. Expected values:
 # - 4     eXist-db 4.x
-# - 4.99  eXist-db 5.0 transitional (before layout changes)
 # - 5     eXist-db 5.x
 exist_major_version: 4
 
@@ -59,6 +68,9 @@ exist_backup_previnstall: yes
 # whether to restore the previous data directory after re-installation
 exist_restore_prevdata: yes
 
+# how long to wait for exist to come up before raising an error
+exist_startup_timeout: 300
+
 # which config files to generate from Ansible
 exist_wrapperconf_from_template: yes
 exist_logconf_from_template: no
@@ -67,50 +79,12 @@ exist_webxml_from_template: yes
 # XXX these are not fully supported yet, leave as is!
 exist_confxml_from_template: no
 
-# relative paths to config files and dirs, different for eXist 4.x and 5.x
-# indexed by exist_major_version (4 or 5)
-exist_confpaths:
-  4:
-    wrapper_conf: 'tools/yajsw/conf/wrapper.conf'
-    conf_xml: 'conf.xml'
-    web_xml: 'webapp/WEB-INF/web.xml'
-    log4j2_xml: 'tools/yajsw/conf/log4j2.xml'
-    client_properties: 'client.properties'
-    data_dir: 'webapp/WEB-INF/data'
-    log_dir: 'webapp/WEB-INF/logs'
-    #jmxservlet_token: 'webapp/WEB-INF/data/jmxservlet.token'
-    jetty_etc: 'tools/jetty/etc'
-  5:
-    conf_xml: 'etc/conf.xml'
-    web_xml: 'etc/webapp/WEB-INF/web.xml'
-    log4j2_xml: 'etc/log4j2.xml'
-    client_properties: 'etc/client.properties'
-    data_dir: 'data'
-    log_dir: 'logs'
-    #jmxservlet_token: 'UNKNOWN'
-    jetty_etc: 'etc/jetty'
-
-# memory settings (renamed)
-#exist_wrapper_init_mem: 2048
-#exist_wrapper_max_mem: 2048
-#exist_wrapper_max_meta: 1024
-#exist_wrapper_max_direct: 1024
-#exist_wrapper_gcdebug_enable: no
-exist_mem_init_heap: 2048
-exist_mem_max_heap: 2048
-exist_mem_max_meta: 1024
-exist_mem_max_direct: 1024
-exist_mem_gcdebug_enable: no
-exist_mem_nmt_enable: no
-exist_mem_strdedup_enable: no
-exist_mem_niocachetune_enable: no
-
 # used to increase file descriptor limits for the user running eXist
 exist_fdset_enable: yes
 exist_fdsoft_limit: 8192
 exist_fdhard_limit: 16384
 
-# used for kernel memory tuning for edge cases  XXX EXPERIMENTAL
+# used for kernel memory tuning for edge cases
 exist_kerneltune_enable: no
 exist_kerneltune_swappiness: 10
 exist_kerneltune_cachepressure: 50
@@ -119,6 +93,37 @@ exist_kerneltune_cachepressure: 50
 # logging to local files only.
 exist_syslog_enable: no
 exist_syslog_loghost: 127.0.0.1
+
+# list of (pre-existing) Unix users that this role should not modify.role
+exist_prohibit_usermod: []
+
+# defaults for config file settings
+exist_wrapper_relclasspath: "classes"
+exist_wrapper_loglevel: INFO
+exist_wrapper_startup_timeout: 90
+exist_wrapper_shutdown_timeout: 90
+exist_wrapper_ping_timeout: 90
+exist_confxml_dbconn_cachesize: "256M"
+exist_confxml_trigger_xquerystartup_enable: no
+exist_confxml_trigger_autodeploy_enable: yes
+exist_confxml_pool_max: 20
+exist_confxml_recovery_enabled: "yes"
+exist_confxml_recovery_consistency_check: "yes"
+exist_confxml_job_check1_enable: no
+exist_confxml_job_check1_backup: "yes"
+exist_confxml_job_twitter_enable: no
+exist_confxml_job_cleansso_enable: no
+exist_confxml_serializer_indent: "yes"
+exist_webxml_initparam_hidden: "true"
+
+# custom xar installation
+exist_install_custom_xars: no
+exist_xarbaseurl: "http://demo.exist-db.org/exist/apps/public-repo/public/"
+exist_remote_xars: []
+exist_local_xars: []
+exist_xarprivdir: /tmp
+exist_force_xar_install: "false"
+
 
 # admin password and user accounts/passwords.  these are confidential and
 # should be kept in an Ansible vault, not in this file.  Listed here for
@@ -143,37 +148,28 @@ exist_syslog_loghost: 127.0.0.1
 #      map:entry("guest", "guestpass"),
 #      map:entry("extrauser", "secret")
 
-exist_prohibit_usermod: []
-
-# defaults for config file settings
-exist_wrapper_relclasspath: "classes"
-exist_wrapper_jmx_enable: no
-exist_wrapper_jmx_port: 9911
-exist_wrapper_loglevel: INFO
-exist_wrapper_startup_timeout: 90
-exist_wrapper_shutdown_timeout: 90
-exist_wrapper_ping_timeout: 90
-exist_confxml_dbconn_cachesize: "256M"
-exist_confxml_trigger_xquerystartup_enable: no
-exist_confxml_trigger_autodeploy_enable: yes
-exist_confxml_pool_max: 20
-exist_confxml_recovery_enabled: "yes"
-exist_confxml_recovery_consistency_check: "yes"
-exist_confxml_job_check1_enable: no
-exist_confxml_job_check1_backup: "yes"
-exist_confxml_job_twitter_enable: no
-exist_confxml_job_cleansso_enable: no
-exist_confxml_serializer_indent: "yes"
-exist_webxml_initparam_hidden: "true"
-
-exist_install_custom_xars: no
-exist_xarbaseurl: "http://demo.exist-db.org/exist/apps/public-repo/public/"
-exist_remote_xars: []
-exist_local_xars: []
-exist_xarprivdir: /tmp
-exist_force_xar_install: "false"
-
-exist_monex_enable: no
+# relative paths to config files and dirs, different for eXist 4.x and 5.x
+# indexed by exist_major_version (4 or 5)
+exist_confpaths:
+  4:
+    wrapper_conf: 'tools/yajsw/conf/wrapper.conf'
+    conf_xml: 'conf.xml'
+    web_xml: 'webapp/WEB-INF/web.xml'
+    log4j2_xml: 'tools/yajsw/conf/log4j2.xml'
+    client_properties: 'client.properties'
+    data_dir: 'webapp/WEB-INF/data'
+    log_dir: 'webapp/WEB-INF/logs'
+    #jmxservlet_token: 'webapp/WEB-INF/data/jmxservlet.token'
+    jetty_etc: 'tools/jetty/etc'
+  5:
+    conf_xml: 'etc/conf.xml'
+    web_xml: 'etc/webapp/WEB-INF/web.xml'
+    log4j2_xml: 'etc/log4j2.xml'
+    client_properties: 'etc/client.properties'
+    data_dir: 'data'
+    log_dir: 'logs'
+    #jmxservlet_token: 'UNKNOWN'
+    jetty_etc: 'etc/jetty'
 
 # for CentOS 7, Amazon Linux
 exist_redhat_extra_packages:
