@@ -131,15 +131,6 @@ wrapper.java.additional.22=-XX:+PrintStringDeduplicationStatistics
 wrapper.java.additional.20=-Djdk.nio.maxCachedBufferSize=262144
 {% endif %}
 
-# JMX monitoring support
-{% if exist_wrapper_jmx_enable == True %}
-wrapper.java.additional.12=-Dcom.sun.management.jmxremote
-wrapper.java.jmx=true
-wrapper.java.additional.jmx.1=-Dcom.sun.management.jmxremote.port={{ exist_wrapper_jmx_port }}
-wrapper.java.additional.jmx.2=-Dcom.sun.management.jmxremote.authenticate=false
-wrapper.java.additional.jmx.3=-Dcom.sun.management.jmxremote.ssl=false
-{% endif %}
-
 # Application parameters.  Add parameters as needed starting from 1
 wrapper.app.parameter.1=jetty
 wrapper.app.parameter.2=tools/jetty/etc/standard.enabled-jetty-configs
@@ -297,8 +288,7 @@ wrapper.on_exit.default=SHUTDOWN
 # eventl. change port and server name
 #********************************************************************
 # Enable wrapper JMX
-{% if exist_wrapper_jmx_enable == True %}
-wrapper.jmx = true
+wrapper.jmx = false
 
 # JMX RMI port. default is 1099
 #wrapper.jmx.rmi.port =
@@ -307,7 +297,6 @@ wrapper.jmx = true
 # mandatory if accessing from remote server
 #wrapper.jmx.rmi.user =
 #wrapper.jmx.rmi.password =
-{% endif %}
 
 #********************************************************************
 # Wrapper timeouts
