@@ -1,8 +1,8 @@
 # Welcome!
 
 You are running eXist-db in a multi-instance setup on host
-{{ network_hostname }}.  This setup was created by exist solutions
-using the eXist-db Ansible role.
+{{ network_hostname }}.  This setup was created using
+the eXist-db Ansible role.
 
 * instance name:     {{ exist_instname }}
 * instance user:     {{ exist_instuser }}
@@ -26,6 +26,7 @@ using the eXist-db Ansible role.
 * HTTPS port:        *:{{ exist_ssl_port }}
 {% endif %}
 {% endif %}
+* Log dir:           {{ exist_logdir }}
 
 There is an nginx proxy in front of your eXist-db instance that listens on the
 standard HTTP (80/tcp) and HTTPS (443/tcp) ports. It proxies requests to
