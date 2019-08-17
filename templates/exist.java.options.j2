@@ -27,7 +27,7 @@
 
 # GC (default G1 GC)
 -XX:+UseG1GC
--XX:MaxGCPauseMillis=200
+-XX:MaxGCPauseMillis={{ exist_mem_g1gc_pausegoal }}
 # GC logging/debugging
 {% if exist_mem_gcdebug_enable == True %}
 -XX:+PrintGCDetails

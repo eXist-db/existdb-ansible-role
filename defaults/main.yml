@@ -31,6 +31,7 @@ exist_mem_max_meta: 1024
 exist_mem_max_direct: 1024
 
 # special memory/GC settings
+exist_mem_g1gc_pausegoal: 200
 exist_mem_gcdebug_enable: no
 exist_mem_nmt_enable: no
 exist_mem_strdedup_enable: no
