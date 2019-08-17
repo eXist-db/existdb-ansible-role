@@ -73,6 +73,7 @@ exist_startup_timeout: 300
 
 # which config files to generate from Ansible
 exist_wrapperconf_from_template: yes
+exist_jettyconf_from_template: yes
 exist_logconf_from_template: no
 exist_clientprops_from_template: yes
 exist_webxml_from_template: yes

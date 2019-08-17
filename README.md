@@ -100,11 +100,18 @@ The specified Unix user gets created by this role if it does not exist yet.
 Ports and IP bindings to use for unencrypted and TLS encrypted HTTP. The
 defaults resemble a standard installation.
 
+For multi-instance installations, each eXist-db instance requires unique HTTP
+and SSL port numbers.
+
 By default, eXist-db will bind to the given ports on all interfaces. You can
 restrict the binding to a certain IP and network interface by explicitly
 setting the `exist_http_host` and `exist_ssl_host` variables. A common use case
 is to bind eXist-db to localhost only (thus not providing service on public IP
 adresses) and use a frontend proxy such as `nginx` to provide public service.
+
+To explicitly disable HTTP, you may set `exist_http_port: 0`. This has some
+implications, see below "Restricting HTTP/HTTPS to Ports or IP Adresses" for
+details.
 
     exist_mem_init_heap: 2048
     exist_mem_max_heap: 2048
@@ -181,6 +188,7 @@ to proceed with exist running). If large Xars get installed by autodeploy,
 this value may need to be increased.
 
     exist_wrapperconf_from_template: yes
+    exist_jettyconf_from_template: yes
     exist_logconf_from_template: no
     exist_clientprops_from_template: yes
     exist_webxml_from_template: yes
@@ -320,6 +328,41 @@ otherwise you will get a syntax error.
 **IMPORTANT** Since the passwords are clear text, they should not be set in a
 playbook, but stored in an encrypted Ansible vault instead. In the example
 playbook below, this vault file is referenced as `inventory/my_vault.yml`.
+
+## Restricting HTTP/HTTPS to Ports or IP Adresses
+
+By default, eXist-db will bind to ports specified in `exist_http_port` and
+`exist_ssl_port` on all interfaces of the server, including localhost. On an
+Internet connected server, this exposes the eXist-db instance to the world,
+which may or may not be what you intended.
+
+Exist Solutions recommends to run eXist-db behind a lightweight frontend proxy
+such as `nginx` running on the same server. This gives much better access
+control, certificate handling, URL rewriting and logging options than
+eXist-db/Jetty can provide.
+
+In this scenario, you would specify `exist_http_host: '127.0.0.1'` and
+`exist_ssl_host: '127.0.0.1'` to bind exist to the loopback interface only.
+Then you configure the proxy to listen on the standard HTTP/HTTPS port and
+forward requests to the exist instance running on 127.0.0.1:xxxx.
+
+This provides a simple way to disable HTTP for an exist server (and serve SSL
+only): let exist bind its HTTP port to localhost only (so it's not reachable
+without proxy); do not proxy HTTP requests to exist; redirect HTTP to HTTPS
+URLs in the proxy.
+
+### Disabling HTTP entirely
+
+Regulations or policies may require that unencrypted HTTP is disabled
+completely. This can be achieved by setting `exist_http_port: 0`.
+
+Note this has some implications, as some eXist-db components might default to
+HTTP and fail. This role will adjust the admin client config file
+`client.properties` to use SSL. Other config files may need attention.
+
+In theory, you could also disable the SSL/TLS listener by setting
+`exist_ssl_port: 0`. In practice, this will break exist 4.x installations
+because of interactions with the YAJSW wrapper. Just don't.
 
 ## Backup and Restore
 

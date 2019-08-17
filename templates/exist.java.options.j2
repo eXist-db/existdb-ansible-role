@@ -4,21 +4,31 @@
 # comments and whitespace lines get stripped before applying options
 
 # HTTP/TLS ports
+{% if exist_http_port > 0 %}
 -Djetty.port={{ exist_http_port }}
+{% else %}
+#-Djetty.port=
+{% endif %}
+{% if exist_ssl_port > 0 %}
 -Djetty.ssl.port={{ exist_ssl_port }}
+{% else %}
+#-Djetty.ssl.port=
+{% endif %}
 
 # initial and max Java heap memory
+# set to same amount to improve G1GC region sizing
 -Xms{{ exist_mem_init_heap }}m
 -Xmx{{ exist_mem_max_heap }}m
 
 # max Java metaspace and direct memory sizes
+# if not limited, both default to -Xmx value
 -XX:MaxMetaspaceSize={{ exist_mem_max_meta }}m
 -XX:MaxDirectMemorySize={{ exist_mem_max_direct }}m
 
 # GC (default G1 GC)
 -XX:+UseG1GC
-# GC logging/debugging
 -XX:MaxGCPauseMillis=200
+# GC logging/debugging
 {% if exist_mem_gcdebug_enable == True %}
 -XX:+PrintGCDetails
 -XX:+PrintGCDateStamps

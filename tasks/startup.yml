@@ -15,11 +15,23 @@
 # wrapper will return quickly, so this playbook moves on.  But eXist may
 # still be busy with autodeploy installation, so the following tasks might
 # fail.  Explicitly wait until eXist port becomes ready.
-# NOTE: make sure the port you wait for is not bound by another application
-- name: Wait for eXist to become ready
+
+- name: Wait for eXist HTTP port to become ready
   wait_for:
+    host: "{{ exist_http_host | default('localhost') }}"
     port: "{{ exist_http_port }}"
     timeout: "{{ exist_startup_timeout }}"
+  when: exist_http_port > 0
+  tags:
+    - config
+    - runtime-config
+
+- name: Wait for eXist SSL port to become ready
+  wait_for:
+    host: "{{ exist_ssl_host | default('localhost') }}"
+    port: "{{ exist_ssl_port }}"
+    timeout: "{{ exist_startup_timeout }}"
+  when: exist_http_port == 0
   tags:
     - config
     - runtime-config

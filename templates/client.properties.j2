@@ -4,13 +4,31 @@ driver=org.exist.xmldb.DatabaseImpl
 ## Configure XMLRPC URI
 ## uncomment one "uri=" and one "ssl-enable=" line
 
+{% if exist_http_port > 0 %}
 ## Default XMLRPC (HTTP)
+{% if exist_http_host is defined %}
+uri=xmldb:exist://{{ exist_http_host }}:{{ exist_http_port }}/exist/xmlrpc
+{% else %}
 uri=xmldb:exist://localhost:{{ exist_http_port }}/exist/xmlrpc
+{% endif %}
 ssl-enable=false
 
 ## Secure XMLRPC (HTTPS)
 #uri=xmldb:exist://localhost:{{ exist_ssl_port }}/exist/xmlrpc
 #ssl-enable=true
+{% else %}
+## Default XMLRPC (HTTP)
+#uri=xmldb:exist://localhost:{{ exist_http_port }}/exist/xmlrpc
+#ssl-enable=false
+
+## Secure XMLRPC (HTTPS)
+{% if exist_ssl_host is defined %}
+uri=xmldb:exist://{{ exist_ssl_host }}:{{ exist_ssl_port }}/exist/xmlrpc
+{% else %}
+uri=xmldb:exist://localhost:{{ exist_ssl_port }}/exist/xmlrpc
+{% endif %}
+ssl-enable=true
+{% endif %}
 
 ## URI for stand-alone server
 #uri=xmldb:exist://localhost:8088/xmlrpc

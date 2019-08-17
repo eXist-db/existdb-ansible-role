@@ -25,6 +25,7 @@
     exist_is_running: false
     exist_current_gitsrc: false
     exist_current_revision: ""
+    exist_replace_installation: false
   when: exist_instname not in ansible_local
   tags: always
 
@@ -34,6 +35,7 @@
     exist_is_running: "{{ ansible_local[exist_instname]['exist_running'] }}"
     exist_current_gitsrc: "{{ ansible_local[exist_instname]['exist_gitsrc'] }}"
     exist_current_revision: "{{ ansible_local[exist_instname]['exist_revision'] }}"
+    exist_replace_installation: false
   when: exist_instname in ansible_local
   tags: always
 

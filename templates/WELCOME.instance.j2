@@ -8,15 +8,23 @@ using the eXist-db Ansible role.
 * instance user:     {{ exist_instuser }}
 * installation dir:  {{ exist_path }}
 * installed version: {{ ansible_local[exist_instname]['exist_version'] }}
+{% if exist_http_port == 0 %}
+* HTTP port:         DISABLED
+{% else %}
 {% if exist_http_host is defined %}
-* HTTP:              {{ exist_http_host }}:{{ exist_http_port }}
+* HTTP port:         {{ exist_http_host }}:{{ exist_http_port }}
 {% else %}
 * HTTP port:         *:{{ exist_http_port }}
 {% endif %}
+{% endif %}
+{% if exist_ssl_port == 0 %}
+* HTTPS port:        DISABLED
+{% else %}
 {% if exist_ssl_host is defined %}
-* HTTPS:             {{ exist_http_host }}:{{ exist_ssl_port }}
+* HTTPS port:        {{ exist_http_host }}:{{ exist_ssl_port }}
 {% else %}
 * HTTPS port:        *:{{ exist_ssl_port }}
+{% endif %}
 {% endif %}
 
 There is an nginx proxy in front of your eXist-db instance that listens on the

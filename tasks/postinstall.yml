@@ -159,6 +159,19 @@
   tags:
     - config
 
+- name: Setup Jetty standard.enabled-jetty-configs file from template
+  template: 
+    src: standard.enabled-jetty-configs.j2
+    dest: "{{ exist_path }}/{{ exist_confpaths[exist_major_version]['jetty_etc'] }}/standard.enabled-jetty-configs"
+    owner: "{{ exist_instuser }}"
+    group: "{{ exist_group }}"
+    mode: 0644
+  when: exist_jettyconf_from_template|bool
+  notify:
+    - restart eXist
+  tags:
+    - config
+
 - name: Set http.host in Jetty configs
   lineinfile:
     path: "{{ exist_path }}/{{ exist_confpaths[exist_major_version]['jetty_etc'] }}/jetty-http.xml"
@@ -167,7 +180,9 @@
     owner: "{{ exist_instuser }}"
     group: "{{ exist_group }}"
     mode: '0644'
-  when: exist_http_host is defined
+  when:
+    - exist_http_host is defined
+    - exist_jettyconf_from_template|bool
   tags:
     - config
 
@@ -179,7 +194,9 @@
     owner: "{{ exist_instuser }}"
     group: "{{ exist_group }}"
     mode: '0644'
-  when: exist_ssl_host is defined
+  when:
+    - exist_ssl_host is defined
+    - exist_jettyconf_from_template|bool
   tags:
     - config
 

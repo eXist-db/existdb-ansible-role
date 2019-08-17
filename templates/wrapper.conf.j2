@@ -97,8 +97,16 @@ wrapper.java.library.path.1=lib
 wrapper.java.additional.1=-Dfile.encoding=UTF-8
 wrapper.java.additional.2=-Dexist.home=.
 wrapper.java.additional.3=-Djetty.home=tools/jetty
+{% if exist_http_port > 0 %}
 wrapper.java.additional.14=-Djetty.port={{ exist_http_port }}
+{% else %}
+#wrapper.java.additional.14=-Djetty.port=
+{% endif %}
+{% if exist_ssl_port > 0 %}
 wrapper.java.additional.15=-Djetty.ssl.port={{ exist_ssl_port }}
+{% else %}
+#wrapper.java.additional.15=-Djetty.ssl.port=
+{% endif %}
 # log4j configuration is read from the conf directory of the wrapper
 wrapper.java.additional.4=-Dlog4j.configurationFile=file:tools/yajsw/conf/log4j2.xml
 # force headless mode
