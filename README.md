@@ -3,7 +3,7 @@
 This is an Ansible role to install and configure eXist DB
 (http://exist-db.org/).
 
-The current version is 1.0RC1 (Aug 10 2019). This release supports
+The current version is 1.0RC1 (Aug 17 2019). This release supports
 **eXist-db 5.x** and **multiple eXist-db instances** on a single host.
 For a list of changes since the public beta release, please see WHATSNEW.md.
 
@@ -250,7 +250,7 @@ Template parameters to modify exist tools/yajsw/conf/wrapper.conf file.
 
 Template parameters to modify exist conf.xml file.
 
-    exist_webxml_initparam_hidden: "false"
+    exist_webxml_initparam_hidden: "true"
 
 Template parameters to modify exist webapp/WEB-INF/web.xml file.
 
@@ -287,8 +287,8 @@ directory on the Ansible host.
 In a fresh install, we set the admin password right after starting eXist for
 the first time. To do this, eXist needs to be running with the empty default
 password first, but this exposure should not last longer than a few seconds.
-We keep a marker file `$EXIST_HOME/webapp/WEB-INF/data/.password-set` so we do
-this only once.
+We keep a marker file `{{ exist_datadir }}/.password-set` so we do this only
+once.
 
 Admin passwords are kept in a variable `exist_adminpass` which is a dict of
 key/value pairs, where the keys are the inventory hostnames of the servers and
@@ -312,23 +312,24 @@ pre-install additional user accounts with passwords like this:
 
 ```
 exist_userpass_map:
-  myserver1: |
-    map:entry("eXide", "thispassword"),
-    map:entry("guest", "guestpass"),
-    map:entry("SYSTEM", "wonttell")
-  myserver2: |
-    map:entry("eXide", "thatpassword"),
-    map:entry("guest", "guestpass"),
-    map:entry("extrauser", "secret")
-  myserver3: ""
+  myserver1:
+    myinstanceA:
+      "eXide": "thispassword"
+      "guest": "guestpass"
+      "SYSTEM": "wonttell"
+  myserver2:
+    myinstanceB:
+      "eXide": "thatpassword"
+      "guest": "guestpass"
+      "extrauser": "secret"
+  myserver3: {}
 ```
 
 As with the `exist_adminpass` variable, `exist_userpass_map` holds a dict with
-inventory hostnames as the key. Values are literal XQuery sequence fragments.
-**NOTE** for this reason, all entries except the last one need a trailing
-comma, otherwise you will get a syntax error.
+inventory hostnames as the key. Values are dicts itself with the exist instance
+name as the key, and a dict of usernames/passwords as the value.
 
-As shown for `myserver3`, use an empty string if you don't want to modify user
+As shown for `myserver3`, use an empty dict if you don't want to modify user
 accounts, or if you really want to use an empty admin password. But both
 variables need a key/value pair for each eXist server managed with Ansible,
 otherwise you will get a syntax error.
@@ -487,7 +488,7 @@ Role default vars are overridden below the `role:` line.
 
 ## License
 
-MIT / BSD
+LGPL v2
 
 ## Author Information
 
