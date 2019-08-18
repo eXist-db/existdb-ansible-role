@@ -217,11 +217,21 @@
   tags:
     - restore
 
+# a freshly installed does not have the exist_data directory until started for
+# the first time, but the jmxservlet tasks below require this dir
+- name: Ensure exist_datadir directory is present
+  file:
+    path: '{{ exist_datadir }}'
+    state: directory
+    owner: '{{ exist_instuser }}'
+    group: '{{ exist_group }}'
+  tags:
+    - config
+
 # if jmxservlet.token file is present, register jmxtoken_file var,
 # so we can check whether the token was already created
 - name: Check whether token has already been created
   stat:
-    #path: "{{ exist_path }}/{{ exist_confpaths[exist_major_version]['jmxservlet_token'] }}"
     path: "{{ exist_datadir }}/jmxservlet.token"
   register: jmxtoken_file
   tags:
@@ -237,7 +247,6 @@
 - name: Setup JMX token from template
   template:
     src: jmxservlet.token.j2
-    #dest: "{{ exist_path }}/{{ exist_confpaths[exist_major_version]['jmxservlet_token'] }}"
     dest: "{{ exist_datadir }}/jmxservlet.token"
     owner: "{{ exist_instuser }}"
     group: "{{ exist_group }}"
