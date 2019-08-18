@@ -6,5 +6,21 @@ galaxy_info:
   company: Exist Solutions GmbH
   license: GPLv2
   min_ansible_version: 2.4
-  # platforms: []
-  # galaxy_tags: []
+
+  platforms:
+  - name: Amazon
+    versions:
+    - 2018.03
+  - name: CentOS
+    versions:
+    - 7
+  - name: Debian
+    versions:
+    - jessie
+  - name: Ubuntu
+    versions:
+    - xenial
+
+  galaxy_tags:
+  - exist
+  - XML
