@@ -397,8 +397,8 @@ A backup can be restored by calling the `exist-restore.sh` like this:
 
 ## Logging
 
-By default, eXist-db logs into logfiles located in
-`/usr/local/existdb/exist/webapp/WEB-INF/logs`.
+By default, eXist-db logs into logfiles located in `$EXIST_HOME/logs` (exist
+5.x) or `$EXIST_HOME/webapp/WEB-INF/logs` (exist 4.x).
 
 To log to a central remote syslog server, use the following settings:
 
@@ -406,7 +406,8 @@ To log to a central remote syslog server, use the following settings:
     exist_syslog_enable: yes
     exist_syslog_loghost: 192.168.0.100
 
-With these settings, `/usr/local/existdb/exist/tools/yajsw/conf/log4j2.xml`
+With these settings, the `$EXIST_HOME/etc/log4j2.xml` (exist 5.x) or
+`$EXIST_HOME/tools/yajsw/conf/log4j2.xml` (exist 4.x) config file 
 gets modified to log events in syslog format to the remote syslog server
 `192.168.0.100`.
 
@@ -418,21 +419,23 @@ lightweight in dealing with HTTP abuse attempts.
 
 File webapp/WEB-INF/web.xml gets modified so that `servlet/init-param` prevents
 unauthorized directory listings (`exist_webxml_initparam_hidden="true"`). To
-restore the default behavior:
-
-    exist_webxml_initparam_hidden: "false"
+restore the default behavior, set this variable to string "false".
 
 ## Performance Tuning
 
-Increase memory for the exist process beyond 2GB default (unit is MB). Set
+Increase heap memory for the exist process beyond 2GB default (unit is MB). Set
 min and max to the same amount to help the G1GC garbage collector to size its
 region space:
 
     exist_mem_min_heap: 16384
     exist_mem_max_heap: 16384
 
-If you encounter exceptions relating to out of `Metaspace` or `DirectMemory`
-you may want to increase these values:
+Limit the amount of `Metaspace` and `DirectMemory` to reasonable values (unit
+is MB). Without limits on highly loaded servers, these may consume significant
+amounts of memory that does not get garbage collected. The suggested values
+are good even for highly loaded servers. Should you encounter exceptions
+relating to out of `Metaspace` or `DirectMemory` you may need to increase
+these values:
 
     exist_mem_max_meta: 1024
     exist_mem_max_direct: 1024
@@ -443,11 +446,49 @@ file descriptors" exception on loaded systems:
     exist_fdset_enable: yes
     exist_fdsoft_limit: 8192
 
-More tunable parameters. Do not blindly increase, make sure you understand the
-implications.
+Avoid swapping. If the eXist-db process starts to use swap space, performance
+will degrade massively and likely result in a slow meltdown. The following
+parameters instruct the kernel to reduce the likelyhood of swap space usage:
+
+    exist_kerneltune_enable: yes
+    exist_kerneltune_swappiness: 1
+
+However, that's no silver bullet. If you consume more memory than you actually
+have, you will swap, no matter what.
+
+More tunable parameters from file `conf.xml`. Do not blindly increase, make
+sure you understand the implications. Note `conf.xml` is currently not
+templated by default.
 
     exist_confxml_dbconn_cachesize: "256M"
     exist_confxml_pool_max: 20
+
+### Heavy Memory Tuning
+
+For highly loaded eXist-db servers, more tweaking may be needed to address
+excessive memory consumption.
+
+Enable Java G1GC string deduplication:
+
+    exist_mem_strdedup_enable: yes
+
+Enable workaround for java.nio excessive memory usage (JDK-8147468):
+
+    exist_mem_niocachetune_enable: yes
+
+Enable GC logging/debugging for further analysis:
+
+    exist_mem_gcdebug_enable: yes
+
+Enable Java Native Memory Tracking in exist 5.x. This has no effect on 4.x
+because it interferes with the YAJSW wrapper.
+
+    exist_mem_nmt_enable: yes
+
+If GC analysis suggests that GC cannot keep up, you might consider lowering
+G1GCs pause time goals from 200 to 250 or 300 milliseconds:
+
+    exist_mem_g1gc_pausegoal: 250
 
 ## Multiple Exist Instances on the same Host
 
