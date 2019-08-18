@@ -476,17 +476,17 @@ Enable workaround for java.nio excessive memory usage (JDK-8147468):
 
     exist_mem_niocachetune_enable: yes
 
-Enable GC logging/debugging for further analysis:
+Enable GC logging for further analysis:
 
     exist_mem_gcdebug_enable: yes
 
 Enable Java Native Memory Tracking in exist 5.x. This has no effect on 4.x
-because it interferes with the YAJSW wrapper.
+because it will conflict with the YAJSW wrapper.
 
     exist_mem_nmt_enable: yes
 
-If GC analysis suggests that GC cannot keep up, you might consider lowering
-G1GCs pause time goals from 200 to 250 or 300 milliseconds:
+If GC analysis suggests that GC cannot keep up, you might consider increasing
+G1GCs pause time goal from 200 to 250 or 300 milliseconds:
 
     exist_mem_g1gc_pausegoal: 250
 
@@ -496,7 +496,7 @@ XXX Not fully supported yet.
 
 ## Customizing Xar Installation
 
-XXX Not fully supported yet.
+XXX Not fully supported yet. Works, API will change, docs not up to date.
 
 ## Monex
 
@@ -508,23 +508,82 @@ None, except Java obviously.
 
 ## Example Playbook
 
-Role default vars are overridden below the `role:` line.
-
 ```
-- name: Setup eXist DB
+- name: Setup eXist DB instances
   hosts: exist_servers
   # need to be root for various install steps
-  become: True
+  become: yes
   # confidential data (passwords) are read from an encrypted Ansible vault file
   vars_files:
     - ../inventory/my_vault.yml
   environment:
     JAVA_HOME: "/your/jdk/dir"
-  roles:
-    - role: existdb-ansible-role
-      exist_install_method: source
-      exist_repo_version: develop-5.0.0
-      #exist_http_port: 8081
+
+  tasks:
+    - name: Ensure Maven is installed for exist5 src install
+      include_role:
+        name: ansible-role-maven
+
+    # 4.x instance (apps4test)
+    - name: Ensure exist instance apps4test is setup
+      include_role:
+        name: existdb-ansible-role
+      vars:
+        exist_instname: 'apps4test'
+        exist_instuser: 'exsol'
+        exist_instdns: 'apps4test.example.com'
+        exist_major_version: 4
+        exist_install_method: source
+        exist_repo: 'https://github.com/eXist-db/exist.git'
+        exist_repo_version: 'develop-4.x.x'
+        exist_http_host: '127.0.0.1'
+        exist_http_port: 8571
+        exist_ssl_host: '127.0.0.1'
+        exist_ssl_port: 8572
+        exist_mem_init_heap: 4096
+        exist_mem_max_heap: 4096
+        exist_mem_gcdebug_enable: yes
+        exist_mem_strdedup_enable: yes
+        exist_mem_nmt_enable: no
+        exist_mem_niocachetune_enable: yes
+        exist_install_custom_xars: no
+        exist_webxml_from_template: no
+        exist_logconf_from_template: yes
+        exist_syslog_enable: yes
+        exist_kerneltune_enable: yes
+        exist_wrapper_relclasspath: "target/classes"
+      tags:
+        - apps4test
+
+    # 5.0 instance (apps5test)
+    - name: Ensure exist instance apps5test is setup
+      include_role:
+        name: existdb-ansible-role
+      vars:
+        exist_instname: 'apps5test'
+        exist_instuser: 'exsol'
+        exist_instdns: 'apps5test.example.com'
+        exist_major_version: 5
+        exist_install_method: source
+        exist_repo: 'https://github.com/eXist-db/exist.git'
+        exist_repo_version: 'develop-5.0.0'
+        exist_http_host: '127.0.0.1'
+        exist_http_port: 8561
+        exist_ssl_host: '127.0.0.1'
+        exist_ssl_port: 8562
+        exist_mem_init_heap: 4096
+        exist_mem_max_heap: 4096
+        exist_mem_gcdebug_enable: yes
+        exist_mem_strdedup_enable: yes
+        exist_mem_nmt_enable: yes
+        exist_mem_niocachetune_enable: yes
+        exist_install_custom_xars: no
+        exist_webxml_from_template: no
+        exist_logconf_from_template: yes
+        exist_syslog_enable: yes
+        exist_kerneltune_enable: yes
+      tags:
+        - apps5test
 ```
 
 ## License
