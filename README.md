@@ -128,14 +128,7 @@ Memory settings for this eXist-db instance. They map to the Java flags `-Xms`,
     exist_mem_strdedup_enable: no
     exist_mem_niocachetune_enable: no
 
-Special memory settings suited for high-load installations:
-* `exist_mem_g1gc_pausegoal` is the value of Java option `-XX:MaxGCPauseMillis`
-* `exist_mem_gcdebug_enable` enables GC logging for memory usage analysis
-* `exist_mem_nmt_enable` enable Java Native Memory Tracking. **NOTE** ignpred for exist 4.x because of conflicts with the YAJSW wrapper
-* `exist_mem_strdedup_enable` enables Java String Deduplication
-* `exist_mem_niocachetune_enable` works around a bug in java.nio that may lead
-to excessive memory usage in Java version < 11. This issue appears only in
-high load environments
+Special memory settings suited for high-load installations: `exist_mem_g1gc_pausegoal` is the value of Java option `-XX:MaxGCPauseMillis`; `exist_mem_gcdebug_enable` enables GC logging for memory usage analysis; `exist_mem_nmt_enable` enable Java Native Memory Tracking. **NOTE** ignpred for exist 4.x because of conflicts with the YAJSW wrapper; `exist_mem_strdedup_enable` enables Java String Deduplication; `exist_mem_niocachetune_enable` works around a bug in java.nio that may lead to excessive memory usage in Java version < 11. This issue appears only in high load environments
 
     exist_major_version: 4
 
