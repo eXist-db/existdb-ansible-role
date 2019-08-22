@@ -5,7 +5,8 @@ This is an Ansible role to install and configure eXist DB
 
 The current version is 1.0RC1 (Aug 17 2019). This release supports
 **eXist-db 5.x** and **multiple eXist-db instances** on a single host.
-For a list of changes since the public beta release, please see WHATSNEW.md.
+For a list of changes since the public beta release, please see
+RELEASE_NOTES.md.
 
 ## Overview
 
@@ -50,11 +51,11 @@ This is a list of features coming soon. Most of this is either prepared but
 not fully tested, or already in use at customer sites so that customer
 specific settings need to get factored out yet.
 
+- support `exist_installation_method: 'docker'`
+- autodetect `exist_major_version`
 - some config files such as conf.xml vary among distributions, so
   templating is not optimal; and these configs might get so special that it's
   hard to template at all;
-- custom Xar package installations: we use this at customer sites, but details
-  vary and have to be sorted out;
 - we currently use the Java admin client to execute XQuery scripts, use Perl
   XMLRPC script for simplicity;
 
@@ -492,7 +493,68 @@ G1GCs pause time goal from 200 to 250 or 300 milliseconds:
 
 ## Multiple Exist Instances on the same Host
 
-XXX Not fully supported yet.
+
+Back in the old days, it was quite tedious to run more than one eXist-db instance on a single server. It involved various manual tasks to keep the installations dirs separate, assign port numbers, or create service startup files for each instance.
+
+The eXist-db Ansible role v1.0 supports multiple eXist installations by automating the necessary configuration steps. You would create an Ansible play that includes multiple instances of the existdb-ansible-role, each with its own set of role variables.
+
+## Multiple Instances with the eXist-db Ansible role
+
+In a multi-instance setup, each instance MUST declare at least the following variables:
+
+```
+exist_instname: exist-foo
+exist_instuser: foo
+exist_http_port: 7649
+exist_ssl_port: 7382
+```
+
+* `exist_instname` must be unique to distinguish the instances from each other. this implicitly specifies the system service name and the installation directory;
+* `exist_instuser` is the Unix user that runs this instance (user gets created by default). this can be used to isolate access permissions for each instance;
+* `exist_http_port` and `exist_ssl_port` must be unique for exist instances on the same host, and must not conflict with other applications that may use these ports.
+
+These are mandatory minimum variables for multiple instances. Additional
+variables to customize each instance can be passed as well.
+
+### I Want the Old Single-Instance Setup that I'm familiar with
+
+Fine. Keep the single role instance and **don't** set any of the variables
+above. In this case the following defaults get used which you are familiar
+with:
+
+```
+exist_instname: eXist
+exist_instuser: existdb
+exist_http_port: 8080
+exist_ssl_port: 8443
+```
+
+Running a single-instance setup is actually a special case multi-instance
+setup with only one instance and default values.
+
+### Under the Hood
+
+#### Installation Directories
+
+All eXist-db instances are installed below `exist_home (default /usr/local/existdb)`. Each instance has its own subdirectory here, named after its `exist_instname`. Given the examples above (single-instance plus foo instance added):
+
+```
+# default instance
+/usr/local/existdb/exist
+# foo instance
+/usr/local/existdb/exist-foo
+```
+
+Each instance installation directory gets restricted access modes.
+
+#### Service Startup
+
+For each instance, an indiviual named service startup file gets created. For the examples above you could run:
+
+```
+service eXist stop
+service exist-foo start
+```
 
 ## Customizing Xar Installation
 
