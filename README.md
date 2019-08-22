@@ -15,7 +15,7 @@ This role allows to install exist by
 * pulling a pre-packaged archive file from a remote server
 * pushing a local pre-packaged archive file to the host
 
-Installations methods can be switched by re-running Ansible.
+Installation methods can be switched by re-running Ansible.
 
 This role installs exist and performs all necessary tasks to run on a server
 (create user, install system service, miscellaneous setup).
@@ -128,15 +128,14 @@ Memory settings for this eXist-db instance. They map to the Java flags `-Xms`,
     exist_mem_strdedup_enable: no
     exist_mem_niocachetune_enable: no
 
-Special memory settings suited for high-load installations.
-`exist_mem_g1gc_pausegoal` is the value of Java option `-XX:MaxGCPauseMillis`.
-`exist_mem_gcdebug_enable` enables GC logging for memory usage analysis.
-`exist_mem_nmt_enable` enable Java Native Memory Tracking. **NOTE** use only
-with exist 5.x. The YAJSW wrapper used in exist 4.x will crash if enabled.
-`exist_mem_strdedup_enable` enables Java String Deduplication.
-`exist_mem_niocachetune_enable` works around a bug in java.nio that may lead
+Special memory settings suited for high-load installations:
+* `exist_mem_g1gc_pausegoal` is the value of Java option `-XX:MaxGCPauseMillis`
+* `exist_mem_gcdebug_enable` enables GC logging for memory usage analysis
+* `exist_mem_nmt_enable` enable Java Native Memory Tracking. **NOTE** ignpred for exist 4.x because of conflicts with the YAJSW wrapper
+* `exist_mem_strdedup_enable` enables Java String Deduplication
+* `exist_mem_niocachetune_enable` works around a bug in java.nio that may lead
 to excessive memory usage in Java version < 11. This issue appears only in
-high load environments.
+high load environments
 
     exist_major_version: 4
 
@@ -145,16 +144,16 @@ or 5.x version. There is currently no auto-detection.
 
     exist_install_method: source
 
-How to install exist. Can be `source` (git clone official existdb repository
-and run `ant` or `maven` on the server to install), `remote_archive`
-(pre-packaged archive file downloaded from remote server), `local_archive`
-(pre-packaged archive present on the Ansible host) or `none` (do not install
-or modify eXist). Default is to install from source.
+How to install exist, default is to install from source. Value can be:
+* `source` (git clone official existdb repository and run `ant` or `maven` on the server to install)
+* `remote_archive` (pre-packaged archive file downloaded from remote server)
+* `local_archive` (pre-packaged archive present on the Ansible host)
+* `none` (do not install or modify eXist).
 
 If you can not or do not want to build locally, prepare a pre-packaged archive
 for download and use `remote_archive`. If policy or firewalling does not allow
-this, use `local_archive`. Use `none` to leave the eXist installation
-untouched (eg to run other parts of this role only).
+to pull packages from remote hosts, use `local_archive`. Use `none` to leave
+the eXist installation untouched (eg to run other parts of this role only).
 
     exist_repo: https://github.com/eXist-db/exist.git
     exist_repo_version: develop-4.x.x
@@ -229,7 +228,10 @@ password specified in the vault. List Unix user names that this role must not
 touch. This is useful if the `exist_instuser` Unix user already exists and has
 a valid password already.
 
-    exist_wrapper_relclasspath: "classes"
+    # for exist 4.x >= 4.6
+    exist_wrapper_relclasspath: "target/classes"
+    # for exist 4.x < 4.6
+    #exist_wrapper_relclasspath: "classes"
     exist_wrapper_loglevel: INFO
     exist_wrapper_startup_timeout: 90
     exist_wrapper_shutdown_timeout: 90
@@ -493,14 +495,18 @@ G1GCs pause time goal from 200 to 250 or 300 milliseconds:
 
 ## Multiple Exist Instances on the same Host
 
+Back in the old days, it was quite tedious to run more than one eXist-db
+instance on a single server. It involved various manual tasks to keep the
+installations dirs separate, assign port numbers, or create service startup
+files for each instance.
 
-Back in the old days, it was quite tedious to run more than one eXist-db instance on a single server. It involved various manual tasks to keep the installations dirs separate, assign port numbers, or create service startup files for each instance.
+The eXist-db Ansible role v1.0 supports multiple eXist installations by
+automating the necessary configuration steps. You would create an Ansible
+play that includes multiple instances of the existdb-ansible-role, each with
+its own set of role variables.
 
-The eXist-db Ansible role v1.0 supports multiple eXist installations by automating the necessary configuration steps. You would create an Ansible play that includes multiple instances of the existdb-ansible-role, each with its own set of role variables.
-
-## Multiple Instances with the eXist-db Ansible role
-
-In a multi-instance setup, each instance MUST declare at least the following variables:
+In a multi-instance setup, each instance MUST declare at least the following
+variables:
 
 ```
 exist_instname: exist-foo
@@ -532,9 +538,7 @@ exist_ssl_port: 8443
 Running a single-instance setup is actually a special case multi-instance
 setup with only one instance and default values.
 
-### Under the Hood
-
-#### Installation Directories
+### Installation Directories
 
 All eXist-db instances are installed below `exist_home (default /usr/local/existdb)`. Each instance has its own subdirectory here, named after its `exist_instname`. Given the examples above (single-instance plus foo instance added):
 
@@ -547,7 +551,7 @@ All eXist-db instances are installed below `exist_home (default /usr/local/exist
 
 Each instance installation directory gets restricted access modes.
 
-#### Service Startup
+### Service Startup
 
 For each instance, an indiviual named service startup file gets created. For the examples above you could run:
 
