@@ -2,7 +2,7 @@
 - name: Build/rebuild eXist 5.x
   become_user: "{{ exist_instuser }}"
   # java.io.tmpdir needed to work around an atomic move across filesystems
-  # skipTest because some test fail and we're not doing dev here
+  # skipTest because some tests fail and we're not doing dev here
   # do not try to build Mac images, needs HFS utils
   shell: "MAVEN_OPTS='-Djava.io.tmpdir={{ exist_home }}/tmp' mvn clean package -D skipTests -P '!mac-dmg-on-unix' >build.log 2>&1"
   args:
@@ -21,6 +21,10 @@
     - install
     - src-install
     - exist5
+
+- name: Debug
+  debug:
+    msg: "Found {{ compiled_archive.files[0].path }}"
 
 - name: Copy compiled eXist archive to archive directory on the local Ansible host
   copy:
