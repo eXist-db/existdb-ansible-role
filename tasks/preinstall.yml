@@ -45,20 +45,6 @@
     - preinstall
     - kernel
 
-- name: Ensure scripts dir is present
-  file:
-    path: "{{ exist_home }}/{{ item }}"
-    state: directory
-    owner: "{{ exist_user }}"
-    group: "{{ exist_group }}"
-    mode: 0751
-    recurse: yes
-  with_items:
-    - scripts
-  tags:
-    - preinstall
-    - util
-
 - name: Ensure backup and tmp dirs are present
   file:
     path: "{{ exist_home }}/{{ item }}"
@@ -80,32 +66,6 @@
     owner: "{{ exist_instuser }}"
     group: "{{ exist_group }}"
     mode: 0700
-  tags:
-    - preinstall
-    - util
-
-- name: Install util scripts from files
-  copy:
-    src: "{{ item }}"
-    dest: "{{ exist_home}}/scripts/{{ item }}"
-    owner: "{{ exist_user }}"
-    group: "{{ exist_group }}"
-    mode: 0751
-  with_items:
-    - upload-xmlrpc.pl
-  tags:
-    - preinstall
-    - util
-
-- name: Install util scripts from templates
-  template: 
-    src: "{{ item }}.j2"
-    dest: "{{ exist_home}}/scripts/{{ item }}"
-    owner: "{{ exist_user }}"
-    group: "{{ exist_group }}"
-    mode: 0751
-  with_items:
-    - exist-restore.sh
   tags:
     - preinstall
     - util

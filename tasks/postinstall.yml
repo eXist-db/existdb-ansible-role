@@ -91,6 +91,30 @@
   tags:
     - config
 
+- name: Install util scripts from files
+  copy:
+    src: "{{ item }}"
+    dest: "{{ exist_path }}/bin/{{ item }}"
+    owner: "{{ exist_instuser }}"
+    group: "{{ exist_group }}"
+    mode: 0751
+  with_items:
+    - upload-xmlrpc.pl
+  tags:
+    - config
+
+- name: Install util scripts from templates
+  template: 
+    src: "{{ item }}.j2"
+    dest: "{{ exist_path }}/bin/{{ item }}"
+    owner: "{{ exist_instuser }}"
+    group: "{{ exist_group }}"
+    mode: 0751
+  with_items:
+    - exist-restore.sh
+  tags:
+    - config
+
 ## setup config files before startup
 
 - name: Setup wrapper conf from template

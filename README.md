@@ -389,7 +389,7 @@ lrwxrwxrwx 1 existdb existdb   18 Oct 14 15:03 last -> exist.201810141503
 ```
 
 A backup can be restored by calling the `exist-restore.sh` like this:
-`/usr/local/existdb/scripts/exist-restore.sh exist.201810081603`.
+`/usr/local/existdb/bin/exist-restore.sh exist.201810081603`.
 
 ## Logging
 
