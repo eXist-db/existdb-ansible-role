@@ -162,7 +162,7 @@ exist_confpaths:
     web_xml: 'webapp/WEB-INF/web.xml'
     log4j2_xml: 'tools/yajsw/conf/log4j2.xml'
     client_properties: 'client.properties'
-    data_dir: 'webapp/WEB-INF/data'
+    data_basedir: 'webapp/WEB-INF'
     log_dir: 'webapp/WEB-INF/logs'
     jetty_etc: 'tools/jetty/etc'
   5:
@@ -170,7 +170,7 @@ exist_confpaths:
     web_xml: 'etc/webapp/WEB-INF/web.xml'
     log4j2_xml: 'etc/log4j2.xml'
     client_properties: 'etc/client.properties'
-    data_dir: 'data'
+    data_basedir: ''
     log_dir: 'logs'
     jetty_etc: 'etc/jetty'
 

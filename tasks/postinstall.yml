@@ -208,8 +208,8 @@
 
 - name: Restore data directory from previous installation
   synchronize: 
-    src: "{{ exist_home }}/backup/{{ exist_instuser }}/{{ exist_instname }}.last/{{ exist_instname }}/webapp/WEB-INF/data"
-    dest: "{{ exist_path }}/webapp/WEB-INF/"
+    src: "{{ exist_home }}/backup/{{ exist_instuser }}/{{ exist_instname }}.last/{{ exist_instname }}/{{ exist_confpaths[exist_major_version]['data_basedir'] }}/data"
+    dest: "{{ exist_path }}/{{ exist_confpaths[exist_major_version]['data_basedir'] }}"
   delegate_to: "{{ inventory_hostname }}"
   when:
     - exist_replace_installation|bool
