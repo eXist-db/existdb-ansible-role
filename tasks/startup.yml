@@ -60,7 +60,7 @@
     - runtime-config
 
 - name: Set admin password (exec set-adminpass.xql)
-  shell: 'bin/client.sh -u admin -P "" -F set-adminpass.xql -ouri=xmldb:exist://localhost:{{ exist_http_port }}/exist/xmlrpc && touch {{ exist_datadir }}/.password-set'
+  shell: 'bin/client.sh -u admin -P "" -F set-adminpass.xql && touch {{ exist_datadir }}/.password-set'
   args:
     chdir: "{{ exist_path }}"
   when: not password_set_file.stat.exists
@@ -72,7 +72,7 @@
   shell: 'bin/client.sh -u admin -P "{{ exist_adminpass[inventory_hostname][exist_instname] }}" -F install-xars.xql -ouri=xmldb:exist://localhost:{{ exist_http_port }}/exist/xmlrpc'
   args:
     chdir: "{{ exist_path }}"
-  when: exist_install_custom_xars|bool
+  when: exist_custom_install|bool
   tags:
     - xar-install
 
@@ -89,7 +89,7 @@
     - runtime-config
 
 - name: Run post-install/hardening (exec users-and-groups.xql)
-  shell: 'bin/client.sh -u admin -P "{{ exist_adminpass[inventory_hostname][exist_instname] }}" -p {{ exist_http_port }} -F users-and-groups.xql -ouri=xmldb:exist://localhost:{{ exist_http_port }}/exist/xmlrpc'
+  shell: 'bin/client.sh -u admin -P "{{ exist_adminpass[inventory_hostname][exist_instname] }}" -p {{ exist_http_port }} -F users-and-groups.xql'
   args:
     chdir: "{{ exist_path }}"
   tags:
