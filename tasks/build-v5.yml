@@ -1,9 +1,13 @@
 ---
+#- name: Debug
+#  debug:
+#    msg: "PATH for user {{ exist_instuser }}: {{ ansible_env.PATH }}"
+
 - name: Build/rebuild eXist 5.x
   become_user: "{{ exist_instuser }}"
   # java.io.tmpdir needed to work around an atomic move across filesystems
   # skipTest because some tests fail and we're not doing dev here
-  # do not try to build Mac images, needs HFS utils
+  # do not try to build Mac images, needs HFS utils, not avail everywhere
   shell: "MAVEN_OPTS='-Djava.io.tmpdir={{ exist_home }}/tmp' mvn clean package -D skipTests -P '!mac-dmg-on-unix' >build.log 2>&1"
   args:
     chdir: "{{ exist_srcpath }}"
@@ -30,6 +34,7 @@
   copy:
     src: "{{ compiled_archive.files[0].path }}"
     dest: "{{ exist_home }}/tmp/"
+    remote_src: yes
     owner: "{{ exist_instuser }}"
     group: "{{ exist_group }}"
   tags:
