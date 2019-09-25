@@ -40,7 +40,7 @@ declare function local:compare-versions($installed as xs:string*, $available as 
 
 (: deploy a single xar file, uninstall older first if needed :)
 declare function local:deploy-xar($xar) {
-    let $fname := "/usr/local/existdb/exist/xars/" || $xar
+    let $fname := "{{ exist_path }}/xars/" || $xar
 
     let $xarfile :=  
         if (file:exists($fname) and file:is-readable($fname)) then ( 
@@ -63,10 +63,10 @@ declare function local:deploy-xar($xar) {
     let $descriptors := local:get-descriptors("/db/temp/" || $xar)
     let $expath := $descriptors/expath:package
     let $name := $expath/@name
-    let $newversion := $expath/@version
-    let $installed := (collection("/db/apps")//expath:package,
-                       collection("/db/system/repo")//expath:package)[@name = $name]
-    let $oldversion := $installed/@version
+    let $newversion := $expath/@version/string()
+    let $installed := (collection("/db/apps/*")/expath:package,
+                       collection("/db/system/repo/*")/expath:package)[@name = $name]
+    let $oldversion := $installed/@version/string()
     let $log := util:log('info', "install-xars: xar " || $xar || ", fname: " || $fname || ", uri: " || $name || ", oldversion: " || $oldversion || ", newversion: " || $newversion)
 
     let $toinstall :=
