@@ -200,7 +200,7 @@
   lineinfile:
     path: "{{ exist_path }}/{{ exist_confpaths[exist_major_version]['jetty_etc'] }}/jetty-http.xml"
     regexp: '<Set name="host"><Property name="jetty.http.host"'
-    line: '        <Set name="host"><Property name="jetty.http.host" deprecated="jetty.host"><Default><SystemProperty name="jetty.http.host" default="{{ exist_http_host }}"/></Default></Property></Set>'
+    line: '        <Set name="host"><Property name="jetty.http.host" deprecated="jetty.host"><Default><SystemProperty name="jetty.http.host"/></Default></Property></Set>'
     owner: "{{ exist_instuser }}"
     group: "{{ exist_group }}"
     mode: '0644'
@@ -214,7 +214,7 @@
   lineinfile:
     path: "{{ exist_path }}/{{ exist_confpaths[exist_major_version]['jetty_etc'] }}/jetty-ssl.xml"
     regexp: '<Set name="host"><Property name="jetty.ssl.host"'
-    line: '        <Set name="host"><Property name="jetty.ssl.host" deprecated="jetty.host"><Default><SystemProperty name="jetty.ssl.host" default="{{ exist_ssl_host }}"/></Default></Property></Set>'
+    line: '        <Set name="host"><Property name="jetty.ssl.host" deprecated="jetty.host"><Default><SystemProperty name="jetty.ssl.host"/></Default></Property></Set>'
     owner: "{{ exist_instuser }}"
     group: "{{ exist_group }}"
     mode: '0644'
@@ -285,6 +285,8 @@
   shell: "unzip -qjd {{ exist_path }}/etc {{ exist_path }}/lib/exist-core*jar org/exist/system.properties; chown {{ exist_instuser }}:{{ exist_group }} {{ exist_path }}/etc/system.properties"
   args:
     creates: "{{ exist_path }}/etc/system.properties"
+    # don't nag to use Ansible unarchive instead
+    warn: no
   when: exist_major_version == 5
   tags:
     - config
