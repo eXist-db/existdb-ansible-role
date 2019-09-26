@@ -6,6 +6,18 @@
     exist_logdir: "{{ exist_home }}/{{ exist_instname }}/{{ exist_confpaths[exist_major_version]['log_dir'] }}"
   tags: always
 
+- name: Set srcpath fact (4.x)
+  set_fact:
+    exist_srcpath: '{{ exist_path }}'
+  when: exist_major_version == 4
+  tags: always
+
+- name: Set srcpath fact (5.x)
+  set_fact:
+    exist_srcpath: '{{ exist_path }}-v5source'
+  when: exist_major_version == 5
+  tags: always
+
 - name: Debug0
   debug:
     msg: 'exist_path: {{ exist_path }} exist_instname: {{ exist_instname }} exist_instuser: {{ exist_instuser }}'
