@@ -20,6 +20,7 @@ my $CONF = {
     pass   => '',
     host   => 'localhost',
     port   => 8443,
+    timeout => 180,
     tls    => 1,
     mime   => 'application/xml',
     parse  => 1,
@@ -35,13 +36,14 @@ my ($PROGNAME) = fileparse($0);
 
 # parse cmdline options, override defaults
 my $OPTS = {};
-getopts('dg:hH:Lm:M:o:p:P:Qu:T', $OPTS) or usage();
+getopts('dg:hH:Lm:M:o:p:P:Qu:t:T', $OPTS) or usage();
 usage()                     if $OPTS->{h};
 $CONF->{debug} = 1          if $OPTS->{d};
 $CONF->{user}  = $OPTS->{u} if $OPTS->{u};
 $CONF->{pass}  = $OPTS->{p} if $OPTS->{p};
 $CONF->{host}  = $OPTS->{H} if $OPTS->{H};
 $CONF->{port}  = $OPTS->{P} if $OPTS->{P};
+$CONF->{timeout} = $OPTS->{t} if $OPTS->{t};
 $CONF->{tls}   = 0          if $OPTS->{T};
 $CONF->{parse} = 0          if ($OPTS->{Q} or $OPTS->{L});
 $CONF->{mime}  = 'application/xquery' if $OPTS->{Q};
@@ -63,6 +65,9 @@ my $url    = sprintf("%s://%s:%s\@%s:%d/exist/xmlrpc",
 		     $CONF->{host}, $CONF->{port});
 my $client = RPC::XML::Client->new($url);
 #my $client = RPC::XML::Client->new($url, 'useragent', ['ssl_opts', { verify_hostname => 0 }]);
+
+# adjust timeout
+$client->timeout($CONF->{timeout});
 
 # execute query instead of uploading a file
 if ($PROGNAME eq 'execute-xmlrpc.pl') {
