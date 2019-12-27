@@ -118,14 +118,8 @@ exist_confxml_job_cleansso_enable: no
 exist_confxml_serializer_indent: "yes"
 exist_webxml_initparam_hidden: "true"
 
-# custom xar installation
-exist_install_custom_xars: no
-exist_xarbaseurl: "http://demo.exist-db.org/exist/apps/public-repo/public/"
-exist_remote_xars: []
-exist_local_xars: []
-exist_xarprivdir: /tmp
-exist_force_xar_install: "false"
-
+# installation customization
+exist_custom_install: no
 
 # admin password and user accounts/passwords.  these are confidential and
 # should be kept in an Ansible vault, not in this file.  Listed here for
