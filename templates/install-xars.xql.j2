@@ -2,8 +2,20 @@ xquery version "3.1";
 
 declare namespace expath="http://expath.org/ns/pkg";
 
-declare variable $local:xarlist := ("{{ xarlist | join("\",\"") }}");
-declare variable $local:force-install := "{{ exist_force_xar_install }}";
+(: XQuery to install one or more Xar packages into eXist-db       :)
+(: Xar files are expected in directory $EXIST_HOME/xars/          :)
+
+(: ==== CONFIGURATION ==== :)
+
+(: comma separated list of xar file names as strings              :)
+(:     ("foo-1.0.xar,"bar-1.1.0.xar")                             :)
+declare variable $local:xarlist := ("{{ exist_custom_xarlist | join("\",\"") }}");
+
+(: force installation even if version numbers are identical?      :)
+(:     boolean string values "true" or "false"                    :)
+declare variable $local:force-install := "{{ xar_default.force | default('false') }}";
+
+(: ==== UTIL FUNCTIONS ==== :)
 
 (: util to peek into expath:package data of yet uninstalled xar files.
  : stolen from eXide, thanks :)
@@ -90,7 +102,6 @@ declare function local:deploy-xar($xar) {
 
     return
         if (boolean($toinstall)) then (
-(::        if ($toinstall) then ( :)
             let $log := util:log('info', "install-xars: installing " || $xar)
             return repo:install-and-deploy-from-db("/db/temp/" || $xar)
         ) else ( 
@@ -105,6 +116,8 @@ let $mkcoll :=
         xmldb:create-collection("/db", "temp")
     ) else ()
 
+
+(: ==== MAIN ==== :)
 
 for $xar in ($local:xarlist)
 return local:deploy-xar($xar)
