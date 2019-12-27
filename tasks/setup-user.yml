@@ -62,7 +62,9 @@
     src: sudoers.instuser.j2
     dest: '/etc/sudoers.d/{{ exist_instuser }}'
     mode: 0440
-  when: exist_instuser != exist_user and not exist_instuser in exist_prohibit_usermod
+  when:
+    - exist_instuser != exist_user
+    - not exist_instuser in exist_prohibit_usermod
   tags:
     - preinstall
     - instuser
