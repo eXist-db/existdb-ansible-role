@@ -17,7 +17,7 @@ EXIST_USER={{ exist_instuser }}
 EXIST_DIR={{ exist_path }}
 
 # custom Java options for eXist-db can be defined in file
-#   ${EXIST_DIR}/etc/exist.java.options
+#   ${EXIST_DIR}/contrib/exist.java.options
 # to pass custom Java command line flags (mem, GC settings etc)
 
 
@@ -33,7 +33,7 @@ status() {
 
 startit() {
     echo "Starting eXist-db ..."
-    sudo -b -u ${EXIST_USER} nohup ${EXIST_DIR}/bin/service.sh >${EXIST_DIR}/logs/startup.log 2>&1
+    sudo -b -u ${EXIST_USER} nohup ${EXIST_DIR}/contrib/service.sh >${EXIST_DIR}/logs/startup.log 2>&1
 }
 
 stopit() {

@@ -13,8 +13,8 @@ EXIST_DEFAULT_OPTS="\
   -Djetty.home=${EXIST_DIR} \
   -Dexist.jetty.config=${EXIST_DIR}/etc/jetty/standard.enabled-jetty-configs"
 
-# custom Java opts for eXist-db, read from file etc/exist.java.options
-EXIST_CUSTOM_OPTFILE=${EXIST_DIR}/etc/exist.java.options
+# custom Java opts for eXist-db, read from file contrib/exist.java.options
+EXIST_CUSTOM_OPTFILE=${EXIST_DIR}/contrib/exist.java.options
 EXIST_CUSTOM_OPTS=`/usr/bin/perl -ne 'next if /^\s*#/; print' <${EXIST_CUSTOM_OPTFILE}`
 
 REPO=${EXIST_DIR}/lib

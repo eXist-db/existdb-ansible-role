@@ -6,7 +6,7 @@ After=syslog.target
 [Service]
 User={{ exist_instuser }}
 
-ExecStart={{ exist_path }}/bin/service.sh
+ExecStart={{ exist_path }}/contrib/service.sh
 ExecStop=/usr/bin/pkill -fu {{ exist_instuser }} "{{ exist_instname }} org.codehaus"
 Restart=on-abort
 #StandardOutput=null
