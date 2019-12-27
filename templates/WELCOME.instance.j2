@@ -28,12 +28,14 @@ the eXist-db Ansible role.
 {% endif %}
 * Log dir:           {{ exist_logdir }}
 
+{% if exist_instdns is defined %}
 There is an nginx proxy in front of your eXist-db instance that listens on the
 standard HTTP (80/tcp) and HTTPS (443/tcp) ports. It proxies requests to
 {{ exist_instdns }} to the local ports of your instance.
 
 A TLS certificate for {{ exist_instdns }} has been installed in nginx.
 
+{% endif %}
 ## Accessing the Instance
 
 You should have received a password for your eXist-db instance. This is
@@ -41,7 +43,15 @@ You should have received a password for your eXist-db instance. This is
 * the SSH user password for shell access
 
 Access the instance with a Browser:
+{% if exist_instdns is defined %}
 * `https://{{ exist_instdns }}/exist`
+{% else %}
+{% if exist_ssl_host is defined %}
+* `https://{{ exist_ssl_host }}:{{ exist_ssl_port }}/exist`
+{% else %}
+* `http://{{ exist_http_host }}:{{ exist_http_port }}/exist`
+{% endif %}
+{% endif %}
 
 Access the instance with SSH:
 * `ssh {{ exist_instuser }}@{{ network_hostname }}`
