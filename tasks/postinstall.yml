@@ -91,10 +91,20 @@
   tags:
     - config
 
-- name: Install util scripts from files
+- name: Ensure instance directory for utilities exists
+  file:
+    dest: "{{ exist_path }}/contrib"
+    state: directory
+    owner: "{{ exist_instuser }}"
+    group: "{{ exist_group }}"
+    mode: 0751
+  tags:
+    - config
+
+- name: Install instance util scripts from files
   copy:
     src: "{{ item }}"
-    dest: "{{ exist_path }}/bin/{{ item }}"
+    dest: "{{ exist_path }}/contrib/{{ item }}"
     owner: "{{ exist_instuser }}"
     group: "{{ exist_group }}"
     mode: 0751
@@ -105,16 +115,19 @@
 
 - name: Hardlink upload-xmlrpc.pl to execute-xmlrpc.pl
   file:
-    src: "{{ exist_path }}/bin/upload-xmlrpc.pl"
-    dest: "{{ exist_path }}/bin/execute-xmlrpc.pl"
+    src: "{{ exist_path }}/contrib/upload-xmlrpc.pl"
+    dest: "{{ exist_path }}/contrib/execute-xmlrpc.pl"
     state: hard
+    force: yes
     owner: "{{ exist_instuser }}"
     group: "{{ exist_group }}"
+  tags:
+    - config
 
 - name: Install util scripts from templates
   template: 
     src: "{{ item }}.j2"
-    dest: "{{ exist_path }}/bin/{{ item }}"
+    dest: "{{ exist_path }}/contrib/{{ item }}"
     owner: "{{ exist_instuser }}"
     group: "{{ exist_group }}"
     mode: 0751
