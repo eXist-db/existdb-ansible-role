@@ -70,6 +70,36 @@
     - preinstall
     - util
 
+- name: Ensure system directory for utilities exists
+  file:
+    dest: "{{ exist_system_utildir }}"
+    state: directory
+  tags:
+    - preinstall
+    - util
+
+- name: Install system util scripts from files
+  copy:
+    src: "{{ item }}"
+    dest: "{{ exist_system_utildir }}/{{ item }}"
+    mode: 0755
+  with_items:
+    - psexist
+  tags:
+    - preinstall
+    - util
+
+- name: Install system util scripts from templates
+  template: 
+    src: "{{ item }}.j2"
+    dest: "{{ exist_system_utildir }}/{{ item }}"
+    mode: 0755
+  with_items:
+    - rmexist.sh
+  tags:
+    - preinstall
+    - util
+
 - name: Ensure Ansible facts dir is present
   file:
     path: "/etc/ansible/facts.d"
@@ -86,7 +116,8 @@
   tags:
     - always
 
-- name: Re-gather facts to run the fact gathering script
+- name: Re-gather facts with new fact gathering script
+  #become: yes
   setup:
   tags:
     - always

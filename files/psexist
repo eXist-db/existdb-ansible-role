@@ -1,0 +1,217 @@
+#!/usr/bin/perl
+
+# Display running eXIst-db instances and their main parameters.
+#
+# Usage: psexist [-d] [-h] [-S] [-v] [instance]
+# Help:  psexist -h
+#
+# If "instance" is specified, show only this eXist-db instance if it is
+# running.  Otherwise display all running instances.
+
+
+use Data::Dumper;
+use File::Basename;
+use Getopt::Std;
+use strict;
+use warnings;
+
+# config defaults
+my $CONF = {
+    ps_cmd   => 'ps aux | grep java',
+    ps_regex => '^(.*?)\s+(\d+)\s+(.*?)\s+(.*?)\s+(\d+)\s+(\d+).*\d+:\d{2}\s+(.*)',
+    top_cmd  => 'top -bn1 | head -3',
+    free_cmd => 'free -h',
+    df_cmd   => 'df -h | grep -Ev "(tmpfs|udev)"',
+    cpu_cmd  => 'cat /proc/cpuinfo',
+    sysinfo  => 1,
+    verbose  => 0,
+    debug    => 0,
+};
+
+# check how this program was called
+my ($PROGNAME) = fileparse($0);
+
+# parse cmdline options, override defaults
+my $OPTS = {};
+getopts('dhSv', $OPTS) or usage();
+usage()                     if $OPTS->{h};
+$CONF->{debug} = 1          if $OPTS->{d};
+$CONF->{sysinfo} = 0        if $OPTS->{S};
+$CONF->{verbose} = 1        if $OPTS->{v};
+
+my $INSTNAME = shift;
+my $DATA     = {};
+
+my $line;
+open(PROCS, $CONF->{ps_cmd} . '|') or die "failed to run ps command: $!";
+while (<PROCS>) {
+    chomp;
+    $line = $_;
+    $line =~ /WrapperJVMMain/     and parse_ex4($line);
+    $line =~ /AppassemblerBooter/ and parse_ex5($line);
+    $line =~ /start.jar\s+jetty/  and parse_ex4($line);
+#    $line =~ /wrapper.jar/        and parse_ex4_wrapper($line);
+}
+close PROCS;
+
+print Dumper($DATA) if $CONF->{debug};
+if ($CONF->{sysinfo}) {
+    print_sysinfo();
+}
+if ($INSTNAME) {
+    # display only this instance if $INSTNAME is given
+    if (exists $DATA->{$INSTNAME}) {
+	print_inst($INSTNAME);
+    }
+} else {
+    # else display all running instances
+    foreach my $i (keys %$DATA) {
+	print_inst($i);
+    }
+}
+
+sub usage {
+    print <<USAGE;
+Display running eXIst-db instances and their main parameters.
+
+Usage: $PROGNAME [-d] [-h] [-S] [-v] [instance]
+
+If "instance" is specified, show only this eXist-db instance if it is running.
+Otherwise display all running instances.
+
+OPTIONS:
+
+-d       enable debug output
+-h       help (this text)
+-S       suppress system info (default: display)
+-v       verbose (print more details)
+
+USAGE
+    exit 1;
+}
+
+sub print_sysinfo {
+    my ($cputype, $cpucnt) = parse_cpuinfo();
+    print
+	"System Info:\n\n$cpucnt core $cputype\n",
+	`$CONF->{free_cmd}`,
+	"\n",
+	`$CONF->{top_cmd}`,
+	"\n",
+	`$CONF->{df_cmd}`,
+	"\n";
+}
+
+sub print_inst {
+    my $i = shift;
+    print 
+	"instance: $i\n",
+	"    exist version:      ", $DATA->{$i}->{version}, "\n",
+	"    http port:          ", $DATA->{$i}->{http_port}, "\n",
+	"    ssl port:           ", $DATA->{$i}->{ssl_port}, "\n",
+	"    user:               ", $DATA->{$i}->{user}, "\n",
+	"    pid:                ", $DATA->{$i}->{pid}, "\n",
+	"    inst path:          ", $DATA->{$i}->{instpath}, "\n",
+#	"    exist home:         ", $DATA->{$i}->{exist_home}, "\n",
+        "    java version:       ", $DATA->{$i}->{java_vendor}, " ", $DATA->{$i}->{java_version}, "\n",
+	"    max heap (MB):      ", $DATA->{$i}->{mem_maxheap} || 'default', "\n";
+    if ($CONF->{verbose}) {
+	print 
+	    "    max meta (MB):      ", $DATA->{$i}->{mem_maxmeta} || 'default', "\n",
+	    "    max direct (MB):    ", $DATA->{$i}->{mem_maxdirect} || 'default', "\n",
+	    "    gc algo:            ", $DATA->{$i}->{gc}, "\n",
+	    "    java NMT:           ", $DATA->{$i}->{java_nmt} || 'disabled', "\n",
+	    "    java str dedup:     ", $DATA->{$i}->{java_strdedup} ? 'en' : 'dis', "abled\n",
+	    "    java niocache hack: ", $DATA->{$i}->{java_niocache} ? 'en' : 'dis', "abled\n",
+	    "    cur %mem:           ", $DATA->{$i}->{'%mem'}, "\n",
+	    "    cur %cpu:           ", $DATA->{$i}->{'%cpu'}, "\n";
+    }
+}
+
+sub parse_cpuinfo {
+    my $cpucount = 0;
+    my $cpumodel = 'unknown';
+    open(CPUINFO, $CONF->{cpu_cmd} . " |")
+	or die "failed to cat cpuinfo";
+    while (<CPUINFO>) {
+        /^processor\s*:\s*\d/  and $cpucount++;
+        /^model name\s*:\s*(.*)/ and $cpumodel  = $1;
+    }
+    close CPUINFO;
+    ($cpumodel, $cpucount);
+}
+
+sub parse_ex4 {
+    my $l = shift;
+    my $data = parse_generic($l);
+
+    $l =~ /.*:(.*)\/(.*?)\/start.jar/
+	and $data->{instpath} = "$1/$2"
+	and $data->{instname} = $2;
+
+    open(VERSION, "sudo cat " . $data->{instpath} . "/VERSION.txt |")
+	or die "failed to open VERSION.txt";
+    while (<VERSION>) {
+	/project.version=(.*)/ and $data->{version} = $1;
+    }
+    close VERSION;
+
+    $DATA->{$data->{instname}} = $data;
+}
+
+sub parse_ex5 {
+    my $l = shift;
+    my $data = parse_generic($l);
+
+    $l =~ /basedir=(.*)\/(.*?) org.codehaus/
+	and $data->{instpath} = "$1/$2"
+	and $data->{instname} = $2;
+
+    open(VERSION, "sudo cat " . $data->{instpath} . "/etc/system.properties |")
+	or die "failed to open system.properties";
+    while (<VERSION>) {
+	/product-version=(.*)/ and $data->{version} = $1;
+    }
+    close VERSION;
+
+    $DATA->{$data->{instname}} = $data;
+}
+
+sub parse_generic {
+    my $l = shift;
+    $l =~ /$CONF->{ps_regex}/;
+    my $data = {
+	'user'    => $1,
+	'pid'     => $2,
+	'%cpu'    => $3,
+	'%mem'    => $4,
+	'virt'    => $5,
+	'res'     => $6,
+	'command' => $7,
+	'gc'      => 'unknown',
+    };
+
+    my $c = $data->{command};
+    $c =~ /^(.*bin.java)\s/      and $data->{java_bin} = $1;
+    $c =~ /jetty.port=(\d+)/     and $data->{http_port} = $1;
+    $c =~ /jetty.ssl.port=(\d+)/ and $data->{ssl_port} = $1;
+    $c =~ /-Dexist.home=(.*?)\s/ and $data->{exist_home} = $1;
+    $c =~ /-XX:\+UseG1GC/        and $data->{gc} = 'G1';
+    $c =~ /-Xmx(\d+)m/           and $data->{mem_maxheap} = $1;
+    $c =~ /-XX:MaxMetaspaceSize=(\d+)m/ and $data->{mem_maxmeta} = $1;
+    $c =~ /-XX:MaxDirectMemorySize=(\d+)m/ and $data->{mem_maxdirect} = $1;
+    $c =~ /-XX:NativeMemoryTracking=(.*?)\s/ and $data->{java_nmt} = $1;
+    $c =~ /-XX:\+UseStringDeduplication/ and $data->{java_strdedup} = 1;
+    $c =~ /-Djdk.nio.maxCachedBufferSize=/ and $data->{java_niocache} = 1;
+
+    open(JVERSION, $data->{java_bin} . ' -version 2>&1 |')
+	or die "failed to run java -version: $!";
+    while (<JVERSION>) {
+	/ version \"(.*)\"/ and $data->{java_version} = $1;
+	/HotSpot.TM/        and $data->{java_vendor}  = 'Oracle';
+	/OpenJDK/           and $data->{java_vendor}  = 'OpenJDK';
+    }
+    close JVERSION;
+
+    $data;
+}

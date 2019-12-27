@@ -1,0 +1,27 @@
+#!/bin/sh
+
+# Delete an eXist-db instance and its support files.  The instance name must
+# be passed as the first argument.  Example:
+#   rmexist myinstance
+#
+# Assumes the "psexist" tool is also installed.
+
+INSTNAME=$1
+
+if [ -z "$INSTNAME" ]; then
+   echo No eXist-db instance name specified, exiting ...
+   exit 1
+fi
+
+BASEDIR={{ exist_home }}
+
+echo Stop instance $INSTNAME if it is running
+psexist -S $INSTNAME | grep -q $INSTNAME && service $INSTNAME stop
+
+echo Deleting instance $INSTNAME and support files
+rm -rf \
+    $BASEDIR/$INSTNAME \
+    /etc/ansible/facts.d/$INSTNAME.fact \
+    /etc/ansible/facts.d/$INSTNAME.pl \
+    /etc/systemd/system/$INSTNAME.service \
+    /etc/init.d/$INSTNAME
