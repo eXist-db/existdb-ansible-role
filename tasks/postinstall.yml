@@ -154,7 +154,7 @@
     group: "{{ exist_group }}"
     mode: 0751
   with_items:
-    - exist-restore.sh
+    - exist-filebased-restore.sh
   tags:
     - config
 
