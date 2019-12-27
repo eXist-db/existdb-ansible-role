@@ -3,7 +3,7 @@
 This is an Ansible role to install and configure eXist DB
 (http://exist-db.org/).
 
-The current version is 1.0RC1 (Aug 17 2019). This release supports
+The current version is 1.0RC2 (Dec 31 2019). This release supports
 **eXist-db 5.x** and **multiple eXist-db instances** on a single host.
 For a list of changes since the public beta release, please see
 RELEASE_NOTES.md.
@@ -249,34 +249,6 @@ Template parameters to modify exist conf.xml file.
     exist_webxml_initparam_hidden: "true"
 
 Template parameters to modify exist webapp/WEB-INF/web.xml file.
-
-    exist_install_custom_xars: no
-
-The default behavior is to support exist "autodeploy", that means installing
-all Xar files that are present in the `$EXIST_HOME/autodeploy` folder.
-
-Set `exist_install_custom_xars` to `yes` if you need to control which Xar files
-to install. You need to provide lists of Xar file names such as "foo-1.0.0.xar"
-in variables in the calling playbook, see "Customizing Xar Installation"
-below.
-
-Custom Xar installation supports both downloading remote Xar files from a
-public HTTP repository and installing local xars from a directory on the
-Ansible host, eg for non-public Xars.
-
-    exist_xarbaseurl: "http://demo.exist-db.org/exist/apps/public-repo/public/"
-    exist_remote_xars: []
-
-Public custom Xar files to install that can be fetched from a remote server at
-the specified URL.
-
-    exist_xarprivdir: /tmp
-    exist_local_xars: []
-
-Private custom Xar files to install that must be present in the specified
-directory on the Ansible host.
-
-    exist_force_xar_install: "false"
 
 ## Setting the Admin Password and Pre-installing User Accounts
 
