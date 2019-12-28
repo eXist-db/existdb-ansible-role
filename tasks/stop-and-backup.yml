@@ -1,63 +1,16 @@
 ---
-- name: Ensure exist service is stopped
+- name: Ensure exist instance is stopped
   service:
     name: "{{ exist_instname }}"
     state: stopped
   tags:
     - backup
 
-- name: Calculate current timestamp
-  command: "date +'%Y%m%d%H%M'"
-  register: ts_now
-  when:
-    - exist_is_installed
-    - exist_backup_previnstall
-  tags:
-    - backup
-
-- name: Set current backup directory name
-  set_fact:
-    exist_current_backupdir: "{{ exist_instname }}.{{ ts_now.stdout }}"
-  when:
-    - exist_is_installed
-    - exist_backup_previnstall
-  tags:
-    - backup
-
-- name: Backup installed exist
+- name: Backup installed exist instance
   become: true
-  #shell: "export now=`date +'%Y%m%d%H%M'` && mkdir {{ exist_instname }}.${now} && mv {{ exist_path }} {{ exist_instname }}.${now} && rm -f {{ exist_instname }}.last && ln -sf {{ exist_instname }}.${now} {{ exist_instname }}.last"
-  shell: "mkdir {{ exist_current_backupdir }} && chown {{ exist_instuser }}:{{ exist_group }} {{ exist_current_backupdir }} && mv {{ exist_path }} {{ exist_current_backupdir }} && rm -f {{ exist_instname }}.last && ln -sf {{ exist_current_backupdir }} {{ exist_instname }}.last"
-  args:
-    chdir: "{{ exist_home }}/backup/{{ exist_instuser }}"
+  shell: "{{ exist_path }}/contrib/exist-filebased-backup.sh -M {{ exist_instname }} {{ exist_instuser }}"
   when:
     - exist_is_installed
     - exist_backup_previnstall
-  tags:
-    - backup
-
-- name: Backup eXist-DB init script (SysV init)
-  become_user: "{{ exist_instuser }}"
-  copy:
-    src: "/etc/init.d/{{ exist_instname }}"
-    dest: "{{ exist_home }}/backup/{{ exist_instuser }}/{{ exist_current_backupdir }}/{{ exist_instname }}.init"
-    remote_src: yes
-  when:
-    - exist_is_installed
-    - exist_backup_previnstall
-    - ansible_service_mgr != "systemd"
-  tags:
-    - backup
-
-- name: Backup eXist-DB service file (systemd)
-  become_user: "{{ exist_instuser }}"
-  copy:
-    src: "/etc/systemd/system/{{ exist_instname }}.service"
-    dest: "{{ exist_home }}/backup/{{ exist_instuser }}/{{ exist_current_backupdir }}/{{ exist_instname }}.service"
-    remote_src: yes
-  when:
-    - exist_is_installed
-    - exist_backup_previnstall
-    - ansible_service_mgr == "systemd"
   tags:
     - backup
