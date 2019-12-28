@@ -19,24 +19,14 @@ while getopts "M" PARAM; do
 done
 shift $(($OPTIND - 1))
 
-INSTNAME=$1
-INSTUSER=$2
-
-EXIST_BASEDIR={{ exist_home }}
-BACKUP_DIRNAME=${INSTNAME}.`date +'%Y%m%d%H%M'`
-BACKUP_DIR=${EXIST_BASEDIR}/backup/${INSTUSER}/${BACKUP_DIRNAME}
-INST_DIR=${EXIST_BASEDIR}/${INSTNAME}
-SUPP_FILES="\
- /etc/init.d/${INSTNAME} \
- /etc/systemd/system/${INSTNAME}.service \
- /etc/ansible/facts.d/${INSTNAME}.fact \
- /etc/ansible/facts.d/${INSTNAME}.pl \
-"
 LOGFILE=`mktemp`
 SYSLOG=
 export LOGFILE SYSLOG
 
 . ${INST_DIR}/contrib/common-shfuncs.sh
+
+INSTNAME=$1
+INSTUSER=$2
 
 if [ -z "$INSTNAME" ]; then
     logerr 1 "ERROR: no instance name specified, exiting"
@@ -45,6 +35,16 @@ if [ -z "$INSTUSER" ]; then
     logerr 1 "ERROR: no instance user specified, exiting"
 fi
 
+EXIST_BASEDIR={{ exist_home }}
+BACKUP_DIRNAME=${INSTNAME}.`date +'%Y%m%d%H%M'`
+BACKUP_DIR=${EXIST_BASEDIR}/backup/${INSTUSER}/${BACKUP_DIRNAME}
+INST_DIR=${EXIST_BASEDIR}/${INSTNAME}
+INIT_FILE=/etc/init.d/${INSTNAME}
+SUPP_FILES="\
+ /etc/systemd/system/${INSTNAME}.service \
+ /etc/ansible/facts.d/${INSTNAME}.fact \
+ /etc/ansible/facts.d/${INSTNAME}.pl \
+"
 # if eXist instance is running, stop it first
 if psexist -S $INSTNAME | grep -q $INSTNAME; then
     logmsg "stopping running eXist instance \"${INSTNAME}\""
@@ -63,19 +63,26 @@ install -d ${BACKUP_DIR} \
     || logerr 2 "ERROR: failed to create backup dir ${BACKUP_DIR}: $!"
 
 # move current eXist-db instance directory and support files to backup dir
-if [ "${MOVE}" = yes ]; then 
-    for f in ${SUPP_FILES}; do \
-	[ -e $f ] && ( mv -f $f ${BACKUP_DIR}/ \
-	    || logerr 3 "ERROR: failed to move startup scripts/links: $!" ); done
+if [ "${MOVE}" = yes ]; then
+    SUPPFILE_CMD="mv -f"
     mv ${INST_DIR} ${BACKUP_DIR}/ \
         || logerr 3 "ERROR: failed to move instance to backup dir: $!"
 else
-    for f in ${SUPP_FILES}; do \
-	[ -e $f ] && ( cp -f $f ${BACKUP_DIR}/ \
-	    || logerr 3 "ERROR: failed to move startup scripts/links: $!" ); done
+    SUPPFILE_CMD="cp -f"
     rsync -a ${INST_DIR} ${BACKUP_DIR}/ \
         || logerr 3 "ERROR: failed to rsync instance to backup dir: $!"
 fi
+# init script has no extension
+if [ -e ${INIT_FILE} ]; then
+    ${SUPPFILE_CMD} ${INIT_FILE} ${BACKUP_DIR}/${INIT_FILE}.init \
+        || logerr 3 "ERROR: failed to move init script/link: $!" )
+fi
+for f in ${SUPP_FILES}; do
+    if [ -e $f ]; then
+        ${SUPPFILE_CMD} $f ${BACKUP_DIR}/ \
+	    || logerr 3 "ERROR: failed to move startup scripts/links: $!" ); done
+    fi
+done
 
 # return name of new backup dir
 echo ${BACKUP_DIRNAME}
