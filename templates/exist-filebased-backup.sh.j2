@@ -1,0 +1,55 @@
+#!/bin/sh
+
+usage() {
+    cat <<EOF
+Usage: $0 [-M] instance_name instance_user
+   eg: $0 exist50 existdb
+
+Options:
+   -M  move instance (i.e. delete it after the backup), this is faster when
+       you plan to delete the old instance anyway
+EOF
+}
+
+while getopts "M" PARAM; do
+    case "${PARAM}" in
+        M) MOVE=yes;;
+        *) usage; exit 1;;
+    esac
+done
+shift $(($OPTIND - 1))
+
+INSTNAME=$1
+INSTUSER=$2
+
+EXIST_BASEDIR={{ exist_home }}
+BACKUP_DIR=${EXIST_BASEDIR}/backup/${INSTUSER}/${INSTNAME}.${NOW}
+INST_DIR=${EXIST_BASEDIR}/${INSTNAME}
+NOW=`date +'%Y%m%d%H%M'`
+LOGFILE=`mktemp`
+SYSLOG=
+export LOGFILE SYSLOG
+
+. ./common-shfuncs.sh
+
+# create backup dir
+install -d ${BACKUP_DIR} \
+    || logerr 1 "ERROR: failed to create backup dir ${BACKUP_DIR}: $!"
+
+# move current eXist-db instance directory and support files to backup dir
+if [ "${MOVE}" = yes ]; then 
+    mv ${INST_DIR} ${BACKUP_DIR}/ \
+        || logerr 2 "ERROR: failed to move instance to backup dir: $!"
+else
+    rsync -a ${INST_DIR} ${BACKUP_DIR}/ \
+        || logerr 2 "ERROR: failed to rsync instance to backup dir: $!"
+fi
+cp -f /etc/init.d/${INSTNAME} \
+      /etc/systemd/system/${INSTNAME}.service \
+      /etc/ansible/facts.d/${INSTNAME}.fact \
+      /etc/ansible/facts.d/${INSTNAME}.pl \
+      ${BACKUP_DIR}/ \
+    || logerr 3 "ERROR: failed to copy startup scripts/links: $!"
+
+# return name of new backup dir
+echo ${INSTNAME}.${NOW}
