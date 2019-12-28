@@ -1,0 +1,19 @@
+#!/bin/sh
+
+# This is an example how to do eXist-db client-side backup using the
+# $EXIST_HOME/bin/backup.sh script that is shipped with eXist-db.
+#
+# See https://exist-db.org/exist/apps/doc/backup for details.
+
+INSTNAME=myexist
+ADMIN_USER=admin
+ADMIN_PASS=mypassword
+BACKUP_SRC=/db
+BACKUP_DEST=/var/backup/foo
+
+EXIST_BASEDIR={{ exist_home }}
+EXIST_HOSTPORT={{ exist_http_host | default('localhost') }}:{{ exist_http_port }}
+
+${EXIST_BASEDIR}/${INSTNAME}/bin/backup.sh \
+    -u ${ADMIN_USER} -p ${ADMIN_PASS} -b ${BACKUP_SRC} -d ${BACKUP_DEST} \
+    -ouri=xmldb:exist://${HOSTPORT}/xmlrpc

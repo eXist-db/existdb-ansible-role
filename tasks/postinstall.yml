@@ -156,6 +156,7 @@
   with_items:
     - exist-filebased-backup.sh
     - exist-filebased-restore.sh
+    - exist-clientside-backup.sh
     - common-shfuncs.sh
   tags:
     - config
