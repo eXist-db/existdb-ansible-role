@@ -4,6 +4,16 @@
   tags:
     - config
 
+- name: Ensure instance directory for utilities exists
+  file:
+    dest: "{{ exist_path }}/contrib"
+    state: directory
+    owner: "{{ exist_instuser }}"
+    group: "{{ exist_group }}"
+    mode: 0751
+  tags:
+    - config
+
 - name: Install eXist-DB custom Java options file (5.x)
   template:
     src: exist.java.options.j2
@@ -113,16 +123,6 @@
   tags:
     - config
 
-- name: Ensure instance directory for utilities exists
-  file:
-    dest: "{{ exist_path }}/contrib"
-    state: directory
-    owner: "{{ exist_instuser }}"
-    group: "{{ exist_group }}"
-    mode: 0751
-  tags:
-    - config
-
 - name: Install instance util scripts from files
   copy:
     src: "{{ item }}"
@@ -154,7 +154,9 @@
     group: "{{ exist_group }}"
     mode: 0751
   with_items:
+    - exist-filebased-backup.sh
     - exist-filebased-restore.sh
+    - common-shfuncs.sh
   tags:
     - config
 

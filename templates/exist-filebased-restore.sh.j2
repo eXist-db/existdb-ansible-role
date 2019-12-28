@@ -28,10 +28,16 @@ LOGFILE=`mktemp`
 SYSLOG=
 export LOGFILE SYSLOG
 
-. ./common-shfuncs.sh
+. ${EXIST_BASEDIR}/${INSTNAME}/contrib/common-shfuncs.sh
 
 if [ "$BACKUP_DIR" = "" ]; then
     logerr 1 "ERROR: no backup dir specified, exiting"
+fi
+if [ -z "$INSTNAME" ]; then
+    logerr 1 "ERROR: no instance name specified, exiting"
+fi
+if [ -z "$INSTUSER" ]; then
+    logerr 1 "ERROR: no instance user specified, exiting"
 fi
 
 logmsg "checking if backup files are available"
@@ -65,6 +71,7 @@ fi
 if psexist -S $INSTNAME | grep -q $INSTNAME; then
     logmsg "stopping running eXist instance \"${INSTNAME}\""
     service ${INSTNAME} stop
+    sleep 3
     # check again to verify it is really dead, just to be sure
     if psexist -S $INSTNAME | grep -q $INSTNAME; then
 	logerr 2 "ERROR: eXist instance \"${INSTNAME}\" still running after stop command"

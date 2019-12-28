@@ -23,33 +23,59 @@ INSTNAME=$1
 INSTUSER=$2
 
 EXIST_BASEDIR={{ exist_home }}
-BACKUP_DIR=${EXIST_BASEDIR}/backup/${INSTUSER}/${INSTNAME}.${NOW}
+BACKUP_DIRNAME=${INSTNAME}.`date +'%Y%m%d%H%M'`
+BACKUP_DIR=${EXIST_BASEDIR}/backup/${INSTUSER}/${BACKUP_DIRNAME}
 INST_DIR=${EXIST_BASEDIR}/${INSTNAME}
-NOW=`date +'%Y%m%d%H%M'`
+SUPP_FILES="\
+ /etc/init.d/${INSTNAME} \
+ /etc/systemd/system/${INSTNAME}.service \
+ /etc/ansible/facts.d/${INSTNAME}.fact \
+ /etc/ansible/facts.d/${INSTNAME}.pl \
+"
 LOGFILE=`mktemp`
 SYSLOG=
 export LOGFILE SYSLOG
 
-. ./common-shfuncs.sh
+. ${INST_DIR}/contrib/common-shfuncs.sh
+
+if [ -z "$INSTNAME" ]; then
+    logerr 1 "ERROR: no instance name specified, exiting"
+fi
+if [ -z "$INSTUSER" ]; then
+    logerr 1 "ERROR: no instance user specified, exiting"
+fi
+
+# if eXist instance is running, stop it first
+if psexist -S $INSTNAME | grep -q $INSTNAME; then
+    logmsg "stopping running eXist instance \"${INSTNAME}\""
+    service ${INSTNAME} stop
+    # check again to verify it is really dead, just to be sure
+    sleep 3
+    if psexist -S $INSTNAME | grep -q $INSTNAME; then
+	logerr 2 "ERROR: eXist instance \"${INSTNAME}\" still running after stop command"
+    fi
+else
+    logmsg "eXist instance \"${INSTNAME}\" not running"
+fi
 
 # create backup dir
 install -d ${BACKUP_DIR} \
-    || logerr 1 "ERROR: failed to create backup dir ${BACKUP_DIR}: $!"
+    || logerr 2 "ERROR: failed to create backup dir ${BACKUP_DIR}: $!"
 
 # move current eXist-db instance directory and support files to backup dir
 if [ "${MOVE}" = yes ]; then 
+    for f in ${SUPP_FILES}; do \
+	[ -e $f ] && ( mv -f $f ${BACKUP_DIR}/ \
+	    || logerr 3 "ERROR: failed to move startup scripts/links: $!" ); done
     mv ${INST_DIR} ${BACKUP_DIR}/ \
-        || logerr 2 "ERROR: failed to move instance to backup dir: $!"
+        || logerr 3 "ERROR: failed to move instance to backup dir: $!"
 else
+    for f in ${SUPP_FILES}; do \
+	[ -e $f ] && ( cp -f $f ${BACKUP_DIR}/ \
+	    || logerr 3 "ERROR: failed to move startup scripts/links: $!" ); done
     rsync -a ${INST_DIR} ${BACKUP_DIR}/ \
-        || logerr 2 "ERROR: failed to rsync instance to backup dir: $!"
+        || logerr 3 "ERROR: failed to rsync instance to backup dir: $!"
 fi
-cp -f /etc/init.d/${INSTNAME} \
-      /etc/systemd/system/${INSTNAME}.service \
-      /etc/ansible/facts.d/${INSTNAME}.fact \
-      /etc/ansible/facts.d/${INSTNAME}.pl \
-      ${BACKUP_DIR}/ \
-    || logerr 3 "ERROR: failed to copy startup scripts/links: $!"
 
 # return name of new backup dir
-echo ${INSTNAME}.${NOW}
+echo ${BACKUP_DIRNAME}
