@@ -1,0 +1,31 @@
+#!/bin/sh
+
+# This is an example how to trigger an eXist-db server-side backup using
+# XML-RPC to execute the XQuery function system:trigger-system-task()
+#
+# See https://exist-db.org/exist/apps/doc/backup for details.
+
+INSTNAME=myexist
+ADMIN_USER=admin
+ADMIN_PASS=mypassword
+BACKUP_DEST=/var/backup/foo
+INCREMENTAL=no                  # yes / no
+TIMEOUT=14400                   # 4 hours
+
+EXIST_BASEDIR={{ exist_home }}
+
+
+${EXIST_BASEDIR}/${INSTNAME}/contrib/execute-xmlrpc.pl \
+  -u ${ADMIN_USER} -p "${ADMIN_PASS}" -P {{ exist_http_port }} -T \
+  -t ${TIMEOUT} <<XQUERY
+xquery version "3.1";
+
+let $params :=
+ <parameters>
+   <param name="output" value="${BACKUP_DEST}"/>
+    <param name="backup" value="yes"/>
+    <param name="incremental" value="${INCREMENTAL}"/>
+ </parameters>
+ return
+    system:trigger-system-task("org.exist.storage.ConsistencyCheckTask", $params)
+XQUERY
