@@ -46,7 +46,7 @@ if [ -f $ex_path/etc/conf.xml ]; then
     fi
 fi
 
-if pgrep -lfu {{ exist_instname }} '{{ exist_instname }} org.codehaus' >/dev/null; then
+if pgrep -lfu {{ exist_instuser }} '{{ exist_instname }} org.codehaus' >/dev/null; then
     ex_running=true
 fi
 
