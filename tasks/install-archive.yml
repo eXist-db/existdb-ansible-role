@@ -49,7 +49,7 @@
     remote_src: yes
     owner: "{{ exist_instuser }}"
     group: "{{ exist_group }}"
-    extra_opts: [ '--transform=s:^[^/]\+:{{ exist_instname }}:;', '*exist-core*jar' ]
+    extra_opts: [ '--transform=s:^[^/]\+:{{ exist_instname }}:;', '--wildcards', '*exist-core*jar' ]
   when: exist_major_version == 5
   tags:
     - install
