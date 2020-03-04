@@ -3,6 +3,18 @@
 # pass each custom Java option on a separate line
 # comments and whitespace lines get stripped before applying options
 
+# IP adresses for HTTP/TLS
+{% if exist_http_host is defined %}
+-Djetty.http.host={{ exist_http_host }}
+{% else %}
+#-Djetty.http.host=
+{% endif %}
+{% if exist_ssl_host is defined %}
+-Djetty.ssl.host={{ exist_ssl_host }}
+{% else %}
+#-Djetty.ssl.host=
+{% endif %}
+
 # HTTP/TLS ports
 {% if exist_http_port > 0 %}
 -Djetty.port={{ exist_http_port }}

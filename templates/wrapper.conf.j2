@@ -97,6 +97,16 @@ wrapper.java.library.path.1=lib
 wrapper.java.additional.1=-Dfile.encoding=UTF-8
 wrapper.java.additional.2=-Dexist.home=.
 wrapper.java.additional.3=-Djetty.home=tools/jetty
+{% if exist_http_host is defined %}
+wrapper.java.additional.12=-Djetty.http.host={{ exist_http_host }}
+{% else %}
+#wrapper.java.additional.12=-Djetty.http.host=
+{% endif %}
+{% if exist_ssl_host is defined %}
+wrapper.java.additional.13=-Djetty.ssl.host={{ exist_ssl_host }}
+{% else %}
+#wrapper.java.additional.13=-Djetty.ssl.host=
+{% endif %}
 {% if exist_http_port > 0 %}
 wrapper.java.additional.14=-Djetty.port={{ exist_http_port }}
 {% else %}
