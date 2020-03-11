@@ -192,7 +192,7 @@
 
 - name: Setup eXist conf.xml from template
   template: 
-    src: conf.xml.j2
+    src: "conf_{{ exist_major_version }}.xml.j2"
     dest: "{{ exist_path }}/{{ exist_confpaths[exist_major_version]['conf_xml'] }}"
     owner: "{{ exist_instuser }}"
     group: "{{ exist_group }}"

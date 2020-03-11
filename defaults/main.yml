@@ -115,6 +115,7 @@ exist_confxml_job_check1_enable: no
 exist_confxml_job_check1_backup: "yes"
 exist_confxml_job_twitter_enable: no
 exist_confxml_job_cleansso_enable: no
+exist_confxml_lock_table_disabled: "false"
 exist_confxml_serializer_indent: "yes"
 exist_webxml_initparam_hidden: "true"
 
