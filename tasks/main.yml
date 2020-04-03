@@ -8,13 +8,13 @@
 
 - name: Set srcpath fact (4.x)
   set_fact:
-    exist_srcpath: '{{ exist_path }}'
+    exist_srcpath: '{{ exist_home }}/{{ exist_dir }}'
   when: exist_major_version == 4
   tags: always
 
 - name: Set srcpath fact (5.x)
   set_fact:
-    exist_srcpath: '{{ exist_path }}-v5source'
+    exist_srcpath: '{{ exist_home }}/{{ exist_dir }}-v5source'
   when: exist_major_version == 5
   tags: always
 
