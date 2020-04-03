@@ -49,7 +49,7 @@
     dest: "{{ exist_srcpath }}"
     version: "{{ exist_repo_version }}"
     #refspec: origin
-    #refspec: "{{ exist_repo_refspec }}"
+    refspec: "{{ exist_repo_refspec }}"
     force: "{{ exist_repo_force }}"
     update: "{{ exist_repo_update }}"
   when: not exist_is_installed|bool or exist_replace_installation|bool

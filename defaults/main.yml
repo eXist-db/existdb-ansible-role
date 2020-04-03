@@ -50,7 +50,7 @@ exist_install_method: source
 # git settings (for exist_install_method == "source")
 exist_repo: https://github.com/eXist-db/exist.git
 exist_repo_version: develop-4.x.x
-exist_repo_refspec: origin
+exist_repo_refspec: "+refs/pull/*:refs/remotes/origin/pull/*"
 exist_repo_update: yes
 exist_repo_force: yes
 
