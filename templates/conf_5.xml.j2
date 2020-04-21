@@ -662,7 +662,7 @@
         <job type="system" name="check1" 
             class="org.exist.storage.ConsistencyCheckTask"
             cron-trigger="0 0 * * * ?">
-            <parameter name="output" value="export"/>
+            <parameter name="output" value="{{exist_confxml_job_check1_output}}"/>
             <parameter name="backup" value="{{exist_confxml_job_check1_backup}}"/>
             <parameter name="incremental" value="no"/>
             <parameter name="incremental-check" value="no"/>
