@@ -590,7 +590,7 @@
 {% endif %}
         <job type="system" name="check1" 
             class="org.exist.storage.ConsistencyCheckTask"
-            cron-trigger="0 0 * * * ?">
+            cron-trigger="{{exist_confxml_job_check1_cron_trigger}}">
             <parameter name="output" value="{{exist_confxml_job_check1_output}}"/>
             <parameter name="backup" value="{{exist_confxml_job_check1_backup}}"/>
             <parameter name="incremental" value="no"/>
