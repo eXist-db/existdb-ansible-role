@@ -12,9 +12,10 @@
                 startup
                     triggers
                 pool
+                query-pool
                 recovery
-                security
                 watchdog
+            lock-manager
             repository
             binary-manager
             indexer
@@ -51,9 +52,8 @@
     
         - http://exist-db.org/exist/apps/doc/configuration.xml
         - http://exist-db.org/exist/apps/doc/documentation.xml
-        - http://atomic.exist-db.org/
-        
-    Version: 4.2.0
+
+    Version: 5.2.0
 
 -->
 <exist xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="schema/conf.xsd">
@@ -125,48 +125,34 @@
             with high load will never be shrinked. A negative value means that
             shrinkage will not be performed.
 
-         - doc-ids:
-            how document ids are managed by eXist. Takes the values
-            "default" or "incremental".
-            
-            eXist assigns a unique, 32bit integer document id to every 
-            document. When a document is deleted, its id will be freed 
-            and reused for the next document stored. The disadvantage 
-            of this approach is that document ids
-            are not stable, i.e. one cannot be sure that the same document
-            id will always identify the same document.
-
-            If you need stable, incremental ids, set the option doc-ids to
-            "incremental".
-
         - minDiskSpace:
             The amount of disk space (in megabytes) which should be available for
             the database to continue operations. If free disk space goes below
             the configured limit, eXist-db will flush all buffers to disk and
             switch to read-only mode in order to prevent potential data loss. 
             Set the limit large enough to allow all pending operations to 
-            complete. The default is 1 gigabyte.
+            complete. Set to -1 to disable. The default is 1 gigabyte.
 
         - posix-chown-restricted:
-           As defined by POSIX.1 for _POSIX_CHOWN_RESTRICTED.
+            As defined by POSIX.1 for _POSIX_CHOWN_RESTRICTED.
 
-           When posix-chown-restricted="true" (the default) then:
-               1. Only a superuser process can change the user ID of the file.
-               2. A non-superuser process can change the group ID of the file
-                  if the process owns the file (the effective user ID equals
-                  the user ID of the file), and group equals either the
-                  effective group ID of the process or one of the
-                  process???s supplementary group IDs.
-           This means that when posix-chown-restricted="true", you can???t change
-           the user ID of your files. You can change the group ID of files that
-           you own, but only to groups that you belong to.
+            When posix-chown-restricted="true" (the default) then:
+                1. Only a superuser process can change the user ID of the file.
+                2. A non-superuser process can change the group ID of the file
+                   if the process owns the file (the effective user ID equals
+                   the user ID of the file), and group equals either the
+                   effective group ID of the process or one of the
+                   process’s supplementary group IDs.
+            This means that when posix-chown-restricted="true", you can’t change
+            the user ID of your files. You can change the group ID of files that
+            you own, but only to groups that you belong to.
 
-           When posix-chown-restricted="false" you can change the user ID of
-           any file that you own, effectively "giving away the file" to
-           another user. Such a setting has negative security implications,
-           further details can be seen in the "Rationale" section for the
-           chown function in the POSIX.1-2017 (Issue 7, 2018 edition) standard.
-           See: http://pubs.opengroup.org/onlinepubs/9699919799/functions/chown.html#tag_16_59_07
+            When posix-chown-restricted="false" you can change the user ID of
+            any file that you own, effectively "giving away the file" to
+            another user. Such a setting has negative security implications,
+            further details can be seen in the "Rationale" section for the
+            chown function in the POSIX.1-2017 (Issue 7, 2018 edition) standard.
+            See: http://pubs.opengroup.org/onlinepubs/9699919799/functions/chown.html#tag_16_59_07
 
         - preserve-on-copy
             When copying Collections and Documents within the database, the
@@ -187,7 +173,7 @@
             when calling xmldb:copy(), or via any other API that supports copy.
             Omitting the preserve flag when calling a copy operation, implies
             the behaviour that is set in this configuration.
-   
+
         =====================================================================
         
         The settings below are very conservative to avoid out-of-memory
@@ -198,8 +184,8 @@
         collections, you can also increase the collectionCacheSize value 
     -->
     <db-connection cacheSize="{{exist_confxml_dbconn_cachesize}}" checkMaxCacheSize="true" collectionCache="64M" database="native"
-        files="webapp/WEB-INF/data" pageSize="4096" nodesBuffer="1000" cacheShrinkThreshold="10000"
-        doc-ids="default" minDiskSpace="128M" posix-chown-restricted="true" preserve-on-copy="false">
+        files="../data" pageSize="4096" nodesBuffer="1000" cacheShrinkThreshold="10000"
+        minDiskSpace="1024M" posix-chown-restricted="true" preserve-on-copy="false">
 
         <!--
             Startup Triggers are executed before the database becomes generally available
@@ -211,7 +197,7 @@
 		<!--
 		    Trigger for registering the GNU Crypto JCE Provider with Java
 		-->
-		<trigger class="org.exist.security.GnuCryptoJceProviderStartupTrigger"/>
+		<trigger class="org.exist.security.BouncyCastleJceProviderStartupTrigger"/>
 
                 <!--
                     Trigger for registering eXists XML:DB URL handler with Java
@@ -233,7 +219,7 @@
                     AutoDeploymentTrigger will install any .xar application package it finds
                     in the autodeploy directory unless the application has already been installed
                     in the db. 
-                -->   
+                -->  
 {% if exist_confxml_trigger_autodeploy_enable == False %}                <!--
 {% endif %}
                 <trigger class="org.exist.repo.AutoDeploymentTrigger"/>
@@ -250,13 +236,12 @@
                     mode "rwxrwx___" (0770) with mime-type "application/xquery". 
                     The names of the scripts must end with ".xq", ".xqy" or ".xquery".
                 -->
-
 {% if exist_confxml_trigger_xquerystartup_enable == False %}                <!--
 {% endif %}
                 <trigger class="org.exist.collections.triggers.XQueryStartupTrigger"/>
 {% if exist_confxml_trigger_xquerystartup_enable == False %}                -->
 {% endif %}
-                    
+
             </triggers>
         </startup>
 
@@ -286,7 +271,7 @@
                 wait for all threads to return, no matter how long it takes.
                 No thread will be killed.
         -->
-        <pool max="{{exist_confxml_pool_max}}" min="1" sync-period="120000" wait-before-shutdown="120000"/>
+        <pool max="{{exist_confxml_pool_max}}" min="1" sync-period="120000" wait-before-shutdown="120000"/> 
 
         <!--                                                                        
                 Configure the query pool.
@@ -373,8 +358,8 @@
                 and if inconsistencies are found in the db, it writes an emergency
                 backup to the same directory.
         -->
-        <recovery enabled="{{exist_confxml_recovery_enabled}}"  group-commit="no"   journal-dir="webapp/WEB-INF/data"
-                  size="100M" sync-on-commit="no"  force-restart="no"  consistency-check="{{exist_confxml_recovery_consistency_check}}"/>
+        <recovery enabled="{{exist_confxml_recovery_enabled}}" group-commit="no" journal-dir="../data"
+                  size="100M" sync-on-commit="no" force-restart="no" consistency-check="{{exist_confxml_recovery_consistency_check}}"/>
 
         <!--
             This is the global configuration for the query watchdog. The 
@@ -399,6 +384,92 @@
         <watchdog output-size-limit="1000000" query-timeout="-1"/>
 
     </db-connection>
+
+
+    <!--
+        Settings for the Database Lock Manager
+
+        - upgrade-check
+            Used by developers for diagnosing illegal lock upgrade issues. When enabled
+            checks for lock upgrading within the same thread, i.e. READ_LOCK -> WRITE_LOCK
+            are enabled. When an illegal upgrade is detected a LockException is thrown.
+            Such behaviour will likely corrupt any database writes, and should only be
+            used by developers when debugging database issues.
+
+            This can also be set via the Java System Properties `org.exist.lock-manager.upgrade-check`,
+                or (legacy) `exist.lockmanager.upgrade.check`.
+
+        - warn-wait-on-read-for-write
+            Used by developers for diagnosing lock performance issues. When enabled
+            checks for detecting when a thread wants to acquire the WRITE_LOCK
+            but another thread holds the READ_LOCK are enabled. When such operations
+            are detected a log message is written to locks.log at WARN level.
+
+            This can also be set via the Java System Properties `org.exist.lock-manager.warn-wait-on-read-for-write`,
+                or (legacy) `exist.lockmanager.warn.waitonreadforwrite`.
+
+        - paths-multi-writer
+            Set to true to enable Multi-Writer/Multi-Reader semantics for
+            the database Collection/Document Hierarchy as opposed to the default (false)
+            for Single-Writer/Multi-Reader.
+
+            NOTE: Whilst enabling Multiple-Writers on the Collection and Document Hierarchy can improve concurrent
+            through-put for write-heavy workloads, it can also can lead to deadlocks unless the User's
+            Collection Hierarchy is carefully designed to isolate query/database writes between Collection combs.
+            It is highly recommended that users leave this as the default setting. For more information, see:
+            "Locking and Cache Improvements for eXist-db", 2018-02-05, Section "Attempt 6" Page 58 -
+            https://www.evolvedbinary.com/technical-reports/exist-db/locking-and-cache-improvements/
+
+            This can also be set via the Java System Properties `org.exist.lock-manager.paths-multiple-writers`,
+            or (legacy) `exist.lockmanager.paths-multiwriter`.
+    -->
+    <lock-manager
+            upgrade-check="false"
+            warn-wait-on-read-for-write="false"
+            paths-multi-writer="false">
+
+        <!--
+            Settings for the Lock Table
+
+            - disabled
+                Disables the database lock table which tracks database locks. The Lock Table is enabled by default
+                and allows reporting on database locking via JMX.
+
+                NOTE: Tracking locks via the Lock Table imposes a small overhead per-Lock. Once users
+                have finished testing their system to ensure correct operation, they may wish to disable
+                this in production to ensure the absolute best performance.
+
+                This can also be set via the Java System Properties `org.exist.lock-manager.lock-table.disabled`,
+                    or (legacy) `exist.locktable.disable`.
+
+            - trace-stack-depth
+                When set above 0, this captures n frames of each threads stack that performs a try/lock/release
+                operation. These frames are visible from JMX reporting.
+                In addition, when the logging level for the Lock Table is set in log4j2.xml to TRACE the lock
+                events are written to the locks.log file.
+
+                This can also be set via the Java System Properties `org.exist.lock-manager.lock-table.trace-stack-depth`,
+                    or (legacy) `exist.locktable.trace.stack.depth`.
+        -->
+        <lock-table disabled="{{exist_confxml_lock_table_disabled}}" trace-stack-depth="0"/>
+
+
+        <!-- Settings for Document Locking
+
+            - use-path-locks
+                Set to true to have documents participate in the same hierarchical
+                path based locking strategy as Collections.
+
+                This has a performance and concurrency impact, but will ensure
+                that you cannot have deadlocks between Collections and Documents.
+
+                NOTE: in future this will likely be set to `true` by default.
+
+                This can also be set via the Java System Property `org.exist.lock-manager.document.use-path-locks`.
+        -->
+        <document use-path-locks="false"/>
+
+    </lock-manager>
 
     <!--
         Settings for the package repository:
@@ -590,8 +661,8 @@
 {% endif %}
         <job type="system" name="check1" 
             class="org.exist.storage.ConsistencyCheckTask"
-            cron-trigger="0 0 * * * ?">
-            <parameter name="output" value="export"/>
+            cron-trigger="{{exist_confxml_job_check1_cron_trigger}}">
+            <parameter name="output" value="{{exist_confxml_job_check1_output}}"/>
             <parameter name="backup" value="{{exist_confxml_job_check1_backup}}"/>
             <parameter name="incremental" value="no"/>
             <parameter name="incremental-check" value="no"/>
@@ -599,11 +670,11 @@
         </job>
 {% if exist_confxml_job_check1_enable == False %}        -->
 {% endif %}
-        
+       
 {% if exist_confxml_job_twitter_enable == True %}
         <job xquery="/db/apps/twitter/jobs/download-recent-twitter-posts.xq" period="600000"/>
 {% endif %}
-        
+ 
         <!-- 
             Automatically creates a copy of the database .dbx files every 2 minutes
             
@@ -617,7 +688,7 @@
             <parameter name="output-dir" value="backup" />
         </job>
         -->
-        
+
 {% if exist_confxml_job_cleansso_enable == True %}
         <job    type="user"
                 name="clean-up-sso-reqids"
@@ -628,6 +699,18 @@
 
     <!--
         Default settings for parsing structured documents:
+
+        - xml (optional)
+
+            - features
+                Any default SAX2 feature flags to set on the parser
+
+                    - feature
+                        - name
+                            the name of the feature flag
+                        - value
+                            the value of the feature flag
+
 
         - html-to-xml (optional)
 
@@ -665,6 +748,22 @@
                             the value of the feature flag
     -->
     <parser>
+
+        <xml>
+
+            <features>
+
+                <!-- NOTE: the following feature flags should likely be set in production to ensure a secure environment -->
+
+                <!--
+                <feature name="http://xml.org/sax/features/external-general-entities" value="false"/>
+                <feature name="http://xml.org/sax/features/external-parameter-entities" value="false"/>
+                <feature name="http://javax.xml.XMLConstants/feature/secure-processing" value="true"/>
+                -->
+
+            </features>
+
+        </xml>
 
         <!-- html-to-xml class="org.ccil.cowan.tagsoup.Parser"/ -->
 
@@ -720,7 +819,7 @@
 
     -->
     <serializer add-exist-id="none" compress-output="no" enable-xinclude="yes"
-                enable-xsl="no" indent="{{exist_confxml_serializer_indent}}" match-tagging-attributes="no" 
+                enable-xsl="no" indent="{{exist_confxml_serializer_indent}}" match-tagging-attributes="no"
                 match-tagging-elements="no">
         <!--
             You may add as many custom-filters as you want, they will be executed
@@ -839,158 +938,91 @@
             raise-error-on-failed-retrieval="no">
         
         <builtin-modules>
-            <!-- 
-                Modularized Indexes 
-            -->
-            <module uri="http://exist-db.org/xquery/lucene" class="org.exist.xquery.modules.lucene.LuceneModule" />
-            <module uri="http://exist-db.org/xquery/ngram"  class="org.exist.xquery.modules.ngram.NGramModule" />
-            <module uri="http://exist-db.org/xquery/sort"   class="org.exist.xquery.modules.sort.SortModule" />
-            <module uri="http://exist-db.org/xquery/range"  class="org.exist.xquery.modules.range.RangeIndexModule" />
 
             <!--
-            <module uri="http://exist-db.org/xquery/spatial" class="org.exist.xquery.modules.spatial.SpatialModule" />
+                Core Modules
             -->
-            
-            <!-- 
-                Default Modules 
-            -->
-            <module uri="http://exist-db.org/xquery/examples"   class="org.exist.xquery.modules.example.ExampleModule" />
+            <module uri="http://www.w3.org/2005/xpath-functions/map"  class="org.exist.xquery.functions.map.MapModule"/>
+            <module uri="http://www.w3.org/2005/xpath-functions/math" class="org.exist.xquery.functions.math.MathModule"/>
+            <module uri="http://www.w3.org/2005/xpath-functions/array" class="org.exist.xquery.functions.array.ArrayModule"/>
+            <module uri="http://exist-db.org/xquery/backups" class="org.exist.backup.xquery.BackupModule"/>
             <module uri="http://exist-db.org/xquery/inspection" class="org.exist.xquery.functions.inspect.InspectionModule"/>
-            <module uri="http://exist-db.org/xquery/mail"       class="org.exist.xquery.modules.mail.MailModule" />
-            <module uri="http://exist-db.org/xquery/math"       class="org.exist.xquery.modules.math.MathModule" />
-            <module uri="http://exist-db.org/xquery/request"    class="org.exist.xquery.functions.request.RequestModule" />
-            <module uri="http://exist-db.org/xquery/response"   class="org.exist.xquery.functions.response.ResponseModule" />
+            <module uri="http://www.json.org" src="resource:org/exist/xquery/lib/json.xq"/>
+            <module uri="http://www.jsonp.org" src="resource:org/exist/xquery/lib/jsonp.xq"/>
+            <module uri="http://exist-db.org/xquery/kwic" src="resource:org/exist/xquery/lib/kwic.xql"/>
+            <module uri="http://exist-db.org/xquery/request" class="org.exist.xquery.functions.request.RequestModule"/>
+            <module uri="http://exist-db.org/xquery/response" class="org.exist.xquery.functions.response.ResponseModule"/>
             <module uri="http://exist-db.org/xquery/securitymanager" class="org.exist.xquery.functions.securitymanager.SecurityManagerModule"/>
-            <module uri="http://exist-db.org/xquery/session"    class="org.exist.xquery.functions.session.SessionModule" />
-            <module uri="http://exist-db.org/xquery/system"     class="org.exist.xquery.functions.system.SystemModule" />
-            <module uri="http://exist-db.org/xquery/transform"  class="org.exist.xquery.functions.transform.TransformModule" />
-            
-            <module uri="http://exist-db.org/xquery/util"       class="org.exist.xquery.functions.util.UtilModule">
+            <module uri="http://exist-db.org/xquery/session" class="org.exist.xquery.functions.session.SessionModule"/>
+            <module uri="http://exist-db.org/xquery/system" class="org.exist.xquery.functions.system.SystemModule"/>
+            <module uri="http://exist-db.org/xquery/testing" src="resource:org/exist/xquery/lib/test.xq"/>
+            <module uri="http://exist-db.org/xquery/transform" class="org.exist.xquery.functions.transform.TransformModule"/>
+            <module uri="http://exist-db.org/xquery/util" class="org.exist.xquery.functions.util.UtilModule">
                 <!-- set to true to disable the util:eval functions -->
                 <parameter name="evalDisabled" value="false"/>
             </module>
-            
-            <module uri="http://exist-db.org/xquery/validation" class="org.exist.xquery.functions.validation.ValidationModule" />
-            <module uri="http://exist-db.org/xquery/xmldb"      class="org.exist.xquery.functions.xmldb.XMLDBModule" />
+            <module uri="http://exist-db.org/xquery/validation" class="org.exist.xquery.functions.validation.ValidationModule"/>
+            <module uri="http://exist-db.org/xquery/xmldb" class="org.exist.xquery.functions.xmldb.XMLDBModule"/>
 
-            <module uri="http://www.w3.org/2005/xpath-functions/map"  class="org.exist.xquery.functions.map.MapModule" />
-            <module uri="http://www.w3.org/2005/xpath-functions/math" class="org.exist.xquery.functions.math.MathModule" />
-            <module uri="http://www.w3.org/2005/xpath-functions/array" class="org.exist.xquery.functions.array.ArrayModule" />
-            <module uri="http://exist-db.org/xquery/process" class="org.exist.xquery.modules.process.ProcessModule"/>
-            
 
             <!-- 
-                EXPath Modules 
+                Extension Indexes
             -->
-            <module uri="http://expath.org/ns/http-client" class="org.expath.exist.HttpClientModule"/>
-
-            <!-- (deprecated) Native HTTPClient Module -->
-            <!-- module uri="http://exist-db.org/xquery/httpclient" class="org.exist.xquery.modules.httpclient.HTTPClientModule" /-->
-            
-            <!-- FTPClient Module -->
-            <!--module uri="http://exist-db.org/xquery/ftpclient" class="org.exist.xquery.modules.ftpclient.FTPClientModule" /-->
- 
-            <!-- EXPath ZIP Module -->
-            <module uri="http://expath.org/ns/zip" class="org.expath.exist.ZipModule" />
-
-            <!-- EXPathrepo module: required for managing external dependencies -->
-            <module uri="http://exist-db.org/xquery/repo" class="org.exist.xquery.modules.expathrepo.ExpathPackageModule"  />
-
-            <!-- EXQuery Modules -->
-            <!-- RESTXQ -->
-            <module uri="http://exquery.org/ns/restxq" class="org.exist.extensions.exquery.restxq.impl.xquery.RestXqModule"/>
-            <module uri="http://exquery.org/ns/restxq/exist" class="org.exist.extensions.exquery.restxq.impl.xquery.exist.ExistRestXqModule"/>
-            
-            <!-- Request Module -->           
-            <module uri="http://exquery.org/ns/request" class="org.exist.extensions.exquery.modules.request.RequestModule"/>
-            
-            
-            <!-- 
-                Modules written in XQuery
-                resource: loads module from classpath (jar files)
-            -->        
-            
-            <!-- KWIC module -->
-            <module uri="http://exist-db.org/xquery/kwic" src="resource:org/exist/xquery/lib/kwic.xql" />
-            
-            <!-- JSON module -->
-            <module uri="http://www.json.org" src="resource:org/exist/xquery/lib/json.xq" />
-
-            <!-- JSONP module -->
-            <module uri="http://www.jsonp.org" src="resource:org/exist/xquery/lib/jsonp.xq" />
-            
-            <!-- Test module -->
-            <module uri="http://exist-db.org/xquery/testing" src="resource:org/exist/xquery/lib/test.xq" />
-
-            <!-- 
-                Optional Modules : 
-                - uncomment for enabling modules
-                - the following steps might be required:
-                    - copy extensions/build.properties to extensions/local.build.properties
-                    - edit extensions/local.build.properties
-                    - build modules with "./build.sh extension-modules"
+            <module uri="http://exist-db.org/xquery/lucene" class="org.exist.xquery.modules.lucene.LuceneModule"/>
+            <module uri="http://exist-db.org/xquery/ngram"  class="org.exist.xquery.modules.ngram.NGramModule"/>
+            <module uri="http://exist-db.org/xquery/range"  class="org.exist.xquery.modules.range.RangeIndexModule"/>
+            <module uri="http://exist-db.org/xquery/sort"   class="org.exist.xquery.modules.sort.SortModule"/>
+            <!--
+            <module uri="http://exist-db.org/xquery/spatial" class="org.exist.xquery.modules.spatial.SpatialModule"/>
             -->
-            
-            <!-- Safe to use, function to be used by DBA only  -->
-            <module uri="http://exist-db.org/xquery/file" class="org.exist.xquery.modules.file.FileModule" />
-            
-            <!-- Compression module-->
-            <module uri="http://exist-db.org/xquery/compression" class="org.exist.xquery.modules.compression.CompressionModule" />
-            
-            <!-- XQDoc module: required for generating function documentation -->
-            <module uri="http://exist-db.org/xquery/xqdoc" class="org.exist.xqdoc.xquery.XQDocModule" />
 
-            
-            <!-- Modules to be enabled when building the distribution -->
-            <module uri="http://exist-db.org/xquery/contentextraction"  class="org.exist.contentextraction.xquery.ContentExtractionModule" />
-            <module uri="http://exist-db.org/xquery/counter"            class="org.exist.xquery.modules.counter.CounterModule" />
-            <module uri="http://exist-db.org/xquery/datetime"           class="org.exist.xquery.modules.datetime.DateTimeModule" />
-            <module uri="http://exist-db.org/xquery/httpclient"         class="org.exist.xquery.modules.httpclient.HTTPClientModule" />
-            <module uri="http://exist-db.org/xquery/image"              class="org.exist.xquery.modules.image.ImageModule" />
-            <module uri="http://exist-db.org/xquery/mail"               class="org.exist.xquery.modules.mail.MailModule" />
-            <module uri="http://exist-db.org/xquery/scheduler"          class="org.exist.xquery.modules.scheduler.SchedulerModule" />
-            <module uri="http://exist-db.org/xquery/sql"                class="org.exist.xquery.modules.sql.SQLModule" />
-            <module uri="http://exist-db.org/xquery/xmldiff"            class="org.exist.xquery.modules.xmldiff.XmlDiffModule" />
 
             <!--
-                XSLFO:
-                valid processor adapters are -
-                - org.exist.xquery.modules.xslfo.ApacheFopProcessorAdapter for Apache's FOP
-                - org.exist.xquery.modules.xslfo.RenderXXepProcessorAdapter for RenderX's XEP
-                - org.exist.xquery.modules.xslfo.AntennaHouseProcessorAdapter for AntennaHouse Formatter
+                Extensions
+            -->
+            <module uri="http://exist-db.org/xquery/contentextraction"  class="org.exist.contentextraction.xquery.ContentExtractionModule"/>
+            <!-- module uri="http://exist-db.org/xquery/exiftool"  class="org.exist.exiftool.xquery.ExiftoolModule">
+                <parameter name="perl-path" value="/usr/bin/perl" description="file system path to the perl executable"/>
+                <parameter name="exiftool-path" value="/usr/bin/exiftool" description="file system path to the exiftool perl script"/>
+            </module -->
+            <module uri="http://expath.org/ns/http-client" class="org.expath.exist.HttpClientModule"/>
+            <module uri="http://expath.org/ns/zip" class="org.expath.exist.ZipModule"/>
+            <module uri="http://exquery.org/ns/request" class="org.exist.extensions.exquery.modules.request.RequestModule"/>
+            <module uri="http://exquery.org/ns/restxq" class="org.exist.extensions.exquery.restxq.impl.xquery.RestXqModule"/>
+            <module uri="http://exquery.org/ns/restxq/exist" class="org.exist.extensions.exquery.restxq.impl.xquery.exist.ExistRestXqModule"/>
+            <module uri="http://exist-db.org/xquery/xqdoc" class="org.exist.xqdoc.xquery.XQDocModule"/>
+
+
+            <!--
+                Extension Modules
+            -->
+            <module uri="http://exist-db.org/xquery/cache" class="org.exist.xquery.modules.cache.CacheModule"/>
+            <module uri="http://exist-db.org/xquery/compression" class="org.exist.xquery.modules.compression.CompressionModule"/>
+            <module uri="http://exist-db.org/xquery/counter" class="org.exist.xquery.modules.counter.CounterModule"/>
+            <module uri="http://exist-db.org/xquery/cqlparser" class="org.exist.xquery.modules.cqlparser.CQLParserModule"/>
+            <!-- module uri="http://exist-db.org/xquery/exi" class="org.exist.xquery.modules.exi.ExiModule"/ -->
+            <module uri="http://exist-db.org/xquery/repo" class="org.exist.xquery.modules.expathrepo.ExpathPackageModule"/>
+            <module uri="http://exist-db.org/xquery/file" class="org.exist.xquery.modules.file.FileModule"/>
+            <module uri="http://exist-db.org/xquery/image" class="org.exist.xquery.modules.image.ImageModule"/>
+            <module uri="http://exist-db.org/xquery/jndi" class="org.exist.xquery.modules.jndi.JNDIModule"/>
+            <module uri="http://exist-db.org/xquery/mail" class="org.exist.xquery.modules.mail.MailModule"/>
+            <!-- module uri="http://exist-db.org/xquery/oracle" class="org.exist.xquery.modules.oracle.OracleModule"/ -->
+            <module uri="http://exist-db.org/xquery/persistentlogin" class="org.exist.xquery.modules.persistentlogin.PersistentLoginModule"/>
+            <module uri="http://exist-db.org/xquery/process" class="org.exist.xquery.modules.process.ProcessModule"/>
+            <module uri="http://exist-db.org/xquery/scheduler" class="org.exist.xquery.modules.scheduler.SchedulerModule"/>
+            <module uri="http://exist-db.org/xquery/simple-ql" class="org.exist.xquery.modules.simpleql.SimpleQLModule"/>
+            <module uri="http://exist-db.org/xquery/sql" class="org.exist.xquery.modules.sql.SQLModule"/>
+            <module uri="http://exist-db.org/xquery/xmldiff" class="org.exist.xquery.modules.xmldiff.XmlDiffModule"/>
+            <!--
+                XSL:FO Transformation Module
+                    Valid processor adapters are:
+                        - org.exist.xquery.modules.xslfo.ApacheFopProcessorAdapter for Apache's FOP
+                        - org.exist.xquery.modules.xslfo.RenderXXepProcessorAdapter for RenderX's XEP
+                        - org.exist.xquery.modules.xslfo.AntennaHouseProcessorAdapter for AntennaHouse Formatter
             -->
             <module uri="http://exist-db.org/xquery/xslfo" class="org.exist.xquery.modules.xslfo.XSLFOModule">
                 <parameter name="processorAdapter" value="org.exist.xquery.modules.xslfo.ApacheFopProcessorAdapter"/>
             </module>
-
-            <!-- Modules not enabled in the distribution by default -->
-            <!--
-            <module uri="http://exist-db.org/xquery/cssparser"          class="org.exist.xquery.modules.cssparser.CSSParserModule"/>
-            <module uri="http://exist-db.org/xquery/backups"            class="org.exist.backup.xquery.BackupModule" />
-            <module uri="http://exist-db.org/xquery/cache"              class="org.exist.xquery.modules.cache.CacheModule" />
-            <module uri="http://exist-db.org/xquery/context"            class="org.exist.xquery.modules.context.ContextModule" />
-            <module uri="http://exist-db.org/xquery/cqlparser"          class="org.exist.xquery.modules.cqlparser.CQLParserModule" />
-            <module uri="http://exist-db.org/xquery/exi"                class="org.exist.xquery.modules.exi.ExiModule" />
-            <module uri="http://exist-db.org/xquery/jndi"               class="org.exist.xquery.modules.jndi.JNDIModule" />
-            <module uri="http://exist-db.org/xquery/jfreechart"         class="org.exist.xquery.modules.jfreechart.JFreeChartModule" /> 
-            <module uri="http://exist-db.org/xquery/memcached"          class="org.exist.xquery.modules.memcached.MemcachedModule" />
-            <module uri="http://exist-db.org/xquery/oracle"             class="org.exist.xquery.modules.oracle.OracleModule" />
-            <module uri="http://exist-db.org/xquery/simpleql"           class="org.exist.xquery.modules.simpleql.SimpleQLModule" />
-            <module uri="http://exist-db.org/xquery/versioning/svn"     class="org.exist.versioning.svn.xquery.SVNModule" />
-            <module uri="http://exist-db.org/xquery/xmpp"               class="org.exist.xquery.modules.xmpp.XMPPModule" />
-            -->
-
-            <!--
-                exiftool:
-                - perl-path - file system path to the perl executable
-                - exiftool-path - file system path to the exiftool perl script
-            -->
-            <!--
-            <module uri="http://exist-db.org/xquery/exiftool"  class="org.exist.exiftool.xquery.ExiftoolModule">
-                <parameter name="perl-path" value="/usr/bin/perl"/>
-                <parameter name="exiftool-path" value="/usr/bin/exiftool"/>
-            </module>
-            -->
 
         </builtin-modules>
     </xquery>
