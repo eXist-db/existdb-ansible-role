@@ -373,8 +373,8 @@
                 and if inconsistencies are found in the db, it writes an emergency
                 backup to the same directory.
         -->
-        <recovery enabled="{{exist_confxml_recovery_enabled}}"  group-commit="no"   journal-dir="webapp/WEB-INF/data"
-                  size="100M" sync-on-commit="no"  force-restart="no"  consistency-check="{{exist_confxml_recovery_consistency_check}}"/>
+        <recovery enabled="{% if exist_confxml_recovery_enabled|bool is sameas true %}yes{% else %}no{% endif %}"  group-commit="no"   journal-dir="webapp/WEB-INF/data"
+                  size="100M" sync-on-commit="no"  force-restart="no"  consistency-check="{% if exist_confxml_recovery_consistency_check|bool is sameas true %}yes{% else %}no{% endif %}"/>
 
         <!--
             This is the global configuration for the query watchdog. The 
@@ -592,7 +592,7 @@
             class="org.exist.storage.ConsistencyCheckTask"
             cron-trigger="{{exist_confxml_job_check1_cron_trigger}}">
             <parameter name="output" value="{{exist_confxml_job_check1_output}}"/>
-            <parameter name="backup" value="{{exist_confxml_job_check1_backup}}"/>
+            <parameter name="backup" value="{% if exist_confxml_job_check1_backup|bool is sameas true %}yes{% else %}no{% endif %}"/>
             <parameter name="incremental" value="no"/>
             <parameter name="incremental-check" value="no"/>
             <parameter name="max" value="2"/>
@@ -720,7 +720,7 @@
 
     -->
     <serializer add-exist-id="none" compress-output="no" enable-xinclude="yes"
-                enable-xsl="no" indent="{{exist_confxml_serializer_indent}}" match-tagging-attributes="no" 
+                enable-xsl="no" indent="{% if exist_confxml_serializer_indent|bool is sameas true %}yes{% else %}no{% endif %}" match-tagging-attributes="no"
                 match-tagging-elements="no">
         <!--
             You may add as many custom-filters as you want, they will be executed
