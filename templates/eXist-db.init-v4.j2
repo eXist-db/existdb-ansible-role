@@ -17,16 +17,16 @@
 #-----------------------------------------------------------------------------
 
 status() {
-     {{ ansible_env.JAVA_HOME }}/bin/java -Dwrapper.pidfile={{ exist_path }}/wrapper.eXist-db.pid -Dwrapper.service=true -Dwrapper.visible=false -Djna_tmpdir={{ exist_home }}/tmp -jar {{ exist_path }}/tools/yajsw/wrapper.jar -qx {{ exist_path }}/tools/yajsw/conf/wrapper.conf
+     {{ exist_java_home }}/bin/java -Dwrapper.pidfile={{ exist_path }}/wrapper.eXist-db.pid -Dwrapper.service=true -Dwrapper.visible=false -Djna_tmpdir={{ exist_home }}/tmp -jar {{ exist_path }}/tools/yajsw/wrapper.jar -qx {{ exist_path }}/tools/yajsw/conf/wrapper.conf
 }
 
 stopit() {
     echo "Stopping eXist-db ..."
-    {{ ansible_env.JAVA_HOME }}/bin/java -Dwrapper.pidfile={{ exist_path }}/wrapper.eXist-db.pid -Dwrapper.service=true -Dwrapper.visible=false -Djna_tmpdir={{ exist_home }}/tmp -jar {{ exist_path }}/tools/yajsw/wrapper.jar -px {{ exist_path }}/tools/yajsw/conf/wrapper.conf
+    {{ exist_java_home }}/bin/java -Dwrapper.pidfile={{ exist_path }}/wrapper.eXist-db.pid -Dwrapper.service=true -Dwrapper.visible=false -Djna_tmpdir={{ exist_home }}/tmp -jar {{ exist_path }}/tools/yajsw/wrapper.jar -px {{ exist_path }}/tools/yajsw/conf/wrapper.conf
 }
 startit() {
     echo "Starting eXist-db ..."
-    sudo -u {{ exist_instuser }} {{ ansible_env.JAVA_HOME }}/bin/java -Dwrapper.pidfile={{ exist_path }}/wrapper.eXist-db.pid -Dwrapper.service=true -Dwrapper.visible=false -Djna_tmpdir={{ exist_home }}/tmp -jar {{ exist_path }}/tools/yajsw/wrapper.jar -tx {{ exist_path }}/tools/yajsw/conf/wrapper.conf
+    sudo -u {{ exist_instuser }} {{ exist_java_home }}/bin/java -Dwrapper.pidfile={{ exist_path }}/wrapper.eXist-db.pid -Dwrapper.service=true -Dwrapper.visible=false -Djna_tmpdir={{ exist_home }}/tmp -jar {{ exist_path }}/tools/yajsw/wrapper.jar -tx {{ exist_path }}/tools/yajsw/conf/wrapper.conf
 }
 
 

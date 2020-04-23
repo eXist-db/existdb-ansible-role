@@ -7,7 +7,7 @@
 # Java Executable Properties
 #********************************************************************
 # Java Application
-wrapper.java.command={{ ansible_env.JAVA_HOME }}/bin/java
+wrapper.java.command={{ exist_java_home }}/bin/java
 
 # or define conditions for YAJSW searching for a JVM
 # currently only valid for windows

@@ -1,4 +1,21 @@
 ---
+- name: Gather facts
+  setup:
+
+- name: Get exist_java_home from ansible facts
+  set_fact:
+    exist_java_home: "{{ ansible_local.java.java_home }}"
+  when: "( ( exist_java_home is not defined ) and ( ( ansible_local.java is defined ) and ( ansible_local.java.java_home is defined ) ) )"
+
+- name: Get exist_java_home from environment
+  set_fact:
+    exist_java_home: "{{ ansible_env.JAVA_HOME }}"
+  when: "( ( exist_java_home is not defined ) and ( ( ansible_env is defined ) and ( ansible_env.JAVA_HOME is defined ) ) )"
+
+- fail:
+    msg: Java not found
+  when: exist_java_home is not defined
+
 - name: Set facts for this exist instance
   set_fact:
     exist_path: "{{ exist_home }}/{{ exist_instname }}"

@@ -1,7 +1,7 @@
 #!/bin/sh
 
 EXIST_DIR={{ exist_path }}
-JAVA_HOME={{ ansible_env.JAVA_HOME }}
+JAVA_HOME={{ exist_java_home }}
 
 # default opts as used in the launcher.sh or startup.sh scripts
 EXIST_DEFAULT_OPTS="\
@@ -29,4 +29,4 @@ EXIST_BOOTER_OPTS="\
   -Dbasedir=${EXIST_DIR} \
   org.codehaus.mojo.appassembler.booter.AppassemblerBooter"
 
-exec {{ ansible_env.JAVA_HOME }}/bin/java ${EXIST_DEFAULT_OPTS} ${EXIST_CUSTOM_OPTS} ${EXIST_BOOTER_OPTS}
+exec {{ exist_java_home }}/bin/java ${EXIST_DEFAULT_OPTS} ${EXIST_CUSTOM_OPTS} ${EXIST_BOOTER_OPTS}

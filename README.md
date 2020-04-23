@@ -42,7 +42,9 @@ get set. They are persistent and not re-set in later Ansible runs.
 Exist DB requires Java. Installing Java is outside of scope of this role, we
 assume:
 * Java JDK is installed (JRE might be sufficient in some situations, but you can't build from source then)
-* the `JAVA_HOME` environment variable is correctly set up
+* the fact 'exist_java_home' is set by the calling playbook OR
+  an ansible fact gathering script populating 'ansible_local.java.java_home' was deployed OR
+  the `JAVA_HOME` environment variable is correctly set up
 * Java binaries are in the shell `$PATH`
 
 ## In the Works
