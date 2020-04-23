@@ -116,7 +116,7 @@
 		-->
         <init-param>
             <param-name>hidden</param-name>
-            <param-value>{{exist_webxml_initparam_hidden}}</param-value>
+            <param-value>{% if exist_webxml_initparam_hidden|bool is sameas true %}true{% else %}false{% endif %}</param-value>
         </init-param>
 
         <!--
