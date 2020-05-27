@@ -3,6 +3,7 @@
 exist_user: existdb
 exist_group: existdb
 exist_home: /usr/local/existdb
+exist_dir: existdb
 
 # for multiple eXist-db instances on a single host, assign an individual
 # instance name to each one. No spaces, umlauts or special chars!
