@@ -96,6 +96,9 @@ exist_kerneltune_cachepressure: 50
 exist_syslog_enable: no
 exist_syslog_loghost: 127.0.0.1
 
+# how many days should local log files be kept before they are deleted
+exist_log_retention_days: 30
+
 # list of (pre-existing) Unix users that this role should not modify
 exist_prohibit_usermod: []
 

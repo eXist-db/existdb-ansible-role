@@ -161,6 +161,25 @@
   tags:
     - config
 
+- name: Install logrotate config from templates
+  template:
+    src: "logrotate.j2"
+    dest: "{{ exist_path }}/contrib/logrotate"
+    owner: "{{ exist_instuser }}"
+    group: "{{ exist_group }}"
+  when: exist_log_retention_days > 0
+  tags:
+    - config
+
+- name: Symlink logrotate config into /etc/logrotate.d
+  file:
+    src: "{{ exist_path }}/contrib/logrotate"
+    dest: "/etc/logrotate.d/{{ exist_instname }}"
+    state: link
+  when: exist_log_retention_days > 0
+  tags:
+    - config
+
 ## setup config files before startup
 
 - name: Setup wrapper conf from template
