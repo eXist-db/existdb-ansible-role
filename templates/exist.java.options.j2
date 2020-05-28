@@ -43,37 +43,49 @@
 # GC logging/debugging
 {% if exist_mem_gcdebug_enable == True %}
 -XX:+PrintGCDetails
+{% if java_provider is defined and java_provider == 'Oracle' %}
 -XX:+PrintGCDateStamps
+{% endif %}
 -Xloggc:{{ exist_path }}/logs/gc-%t.log
 {% else %}
 #-XX:+PrintGCDetails
+{% if java_provider is defined and java_provider == 'Oracle' %}
 #-XX:+PrintGCDateStamps
+{% endif %}
 #-Xloggc:{{ exist_path }}/logs/gc-%t.log
 {% endif %}
 
 # NMT (native memory tracking)
 {% if exist_mem_nmt_enable == True %}
 -XX:NativeMemoryTracking=summary
+{% if java_provider is defined and java_provider == 'Oracle' %}
 -XX:+UnlockDiagnosticVMOptions
+{% endif %}
 -XX:+PrintNMTStatistics
 {% else %}
 #-XX:NativeMemoryTracking=summary
+{% if java_provider is defined and java_provider == 'Oracle' %}
 #-XX:+UnlockDiagnosticVMOptions
+{% endif %}
 #-XX:+PrintNMTStatistics
 {% endif %}
 
 # string deduplication, requires Java >= 8u20 and G1 GC
 {% if exist_mem_strdedup_enable == True %}
 -XX:+UseStringDeduplication
+{% if java_provider is defined and java_provider == 'Oracle' %}
 -XX:+PrintStringDeduplicationStatistics
+{% endif %}
 {% else %}
 #-XX:+UseStringDeduplication
+{% if java_provider is defined and java_provider == 'Oracle' %}
 #-XX:+PrintStringDeduplicationStatistics
+{% endif %}
 {% endif %}
 
 # Java NIO cache tuning (256k) to work around high direct memory consumption
 # by java.nio
-# requires Java >= 8u102, should not be needed with Java 11
+# requires Java >= 8u102, maybe not needed with Java 11
 {% if exist_mem_niocachetune_enable == True %}
 -Djdk.nio.maxCachedBufferSize=262144
 {% else %}
