@@ -1,0 +1,11 @@
+# log rotation for eXist-db instance {{ exist_instname }}
+#
+# this removes log files older than {{ exist_log_retention_days }} days from directory {{ exist_logdir }}.
+# eXist-db handles the rotation/renaming of log files itself, so we simply delete old log files.
+{{ exist_logdir }}/*.log {{ exist_logdir }}/*.log.gz {
+    daily
+    missingok
+    maxage {{ exist_log_retention_days }}
+    rotate 0
+    notifempty
+}

@@ -216,6 +216,11 @@ settings instruct the kernel to try to avoid swapping if possible.
 
 Settings for logging to a remote syslog server. See "Logging" below.
 
+    exist_log_retention_days: 30
+
+How many days to keep old logfiles before they get deleted by the logrotate
+mechanism. See "Logging" below.
+
     exist_prohibit_usermod: []
 
 By default, this role will create the `exist_instuser` Unix user and set the
@@ -369,6 +374,12 @@ A backup can be restored by calling the `exist-restore.sh` like this:
 
 By default, eXist-db logs into logfiles located in `$EXIST_HOME/logs` (exist
 5.x) or `$EXIST_HOME/webapp/WEB-INF/logs` (exist 4.x).
+
+Use the following setting to control how many days log files are kept before
+automatic deletion by the logrotate mechanism. Set to zero to prohibit any log
+file deletion (by not installing a logrotate config).
+
+    exist_log_retention_days: 30
 
 To log to a central remote syslog server, use the following settings:
 
