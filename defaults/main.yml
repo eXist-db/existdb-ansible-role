@@ -203,3 +203,5 @@ exist_ubuntu_extra_packages:
   # for upload-xmlrpc script
   - librpc-xml-perl
   - liblwp-protocol-https-perl
+
+xar_install: []
