@@ -55,6 +55,7 @@
     owner: root
     mode: 0600
   when: not password_set_file.stat.exists
+  changed_when: false
   tags:
     - config
     - runtime-config
@@ -75,10 +76,11 @@
     dest: "{{ exist_path }}/contrib/install-xars.xql"
     owner: "{{ exist_instuser }}"
     group: "{{ exist_group }}"
-    mode: 0755
+    mode: 0700
   when:
     - exist_custom_install|bool
     - exist_custom_xarlist
+  changed_when: false
   tags:
     - xar-install
 
@@ -101,6 +103,7 @@
     dest: "{{ exist_path }}/users-and-groups.xql"
     owner: root
     mode: 0600
+  changed_when: false
   tags:
     - config
     - runtime-config
@@ -122,6 +125,7 @@
     - set-adminpass.xql
     - users-and-groups.xql
     - install-xars.xql
+  changed_when: false
   tags:
     - config
     - runtime-config

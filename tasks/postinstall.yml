@@ -10,7 +10,7 @@
     state: directory
     owner: "{{ exist_instuser }}"
     group: "{{ exist_group }}"
-    mode: 0751
+    mode: 0700
   tags:
     - config
 
@@ -18,7 +18,7 @@
   template:
     src: exist.java.options.j2
     dest: "{{ exist_path }}/contrib/exist.java.options"
-    mode: 0644
+    mode: 0600
     owner: "{{ exist_instuser }}"
     group: "{{ exist_group }}"
   when: exist_major_version == 5
@@ -32,7 +32,7 @@
   template:
     src: service.sh.j2
     dest: "{{ exist_path }}/contrib/service.sh"
-    mode: 0755
+    mode: 0700
     owner: "{{ exist_instuser }}"
     group: "{{ exist_group }}"
   when: exist_major_version == 5
@@ -47,7 +47,7 @@
   template:
     src: eXist-db.init-v4.j2
     dest: "{{ exist_path }}/contrib/{{ exist_instname }}.init"
-    mode: 0755
+    mode: 0700
   when: exist_major_version == 4 and ansible_service_mgr != "systemd"
   notify:
     - restart eXist
@@ -60,7 +60,7 @@
   template:
     src: eXist-db.init.j2
     dest: "{{ exist_path }}/contrib/{{ exist_instname }}.init"
-    mode: 0755
+    mode: 0700
   when: exist_major_version == 5 and ansible_service_mgr != "systemd"
   notify:
     - restart eXist
@@ -73,7 +73,7 @@
   template:
     src: eXist-db.systemd-v4.j2
     dest: "{{ exist_path }}/contrib/{{ exist_instname }}.service"
-    mode: 0644
+    mode: 0600
   when: exist_major_version == 4 and ansible_service_mgr == "systemd"
   notify:
     - restart eXist
@@ -86,7 +86,7 @@
   template:
     src: eXist-db.systemd.j2
     dest: "{{ exist_path }}/contrib/{{ exist_instname }}.service"
-    mode: 0644
+    mode: 0600
   when: exist_major_version == 5 and ansible_service_mgr == "systemd"
   notify:
     - restart eXist
@@ -106,10 +106,10 @@
     - config
 
 - name: Symlink eXist-DB service file (systemd)
-  file:
+  copy:
+    remote_src: yes
     src: "{{ exist_path }}/contrib/{{ exist_instname }}.service"
     dest: "/etc/systemd/system/{{ exist_instname }}.service"
-    state: link
   when: ansible_service_mgr == "systemd"
   notify:
     - restart eXist
@@ -129,7 +129,7 @@
     dest: "{{ exist_path }}/contrib/{{ item }}"
     owner: "{{ exist_instuser }}"
     group: "{{ exist_group }}"
-    mode: 0751
+    mode: 0700
   with_items:
     - upload-xmlrpc.pl
   tags:
@@ -152,7 +152,7 @@
     dest: "{{ exist_path }}/contrib/{{ item }}"
     owner: "{{ exist_instuser }}"
     group: "{{ exist_group }}"
-    mode: 0751
+    mode: 0700
   with_items:
     - exist-filebased-backup.sh
     - exist-filebased-restore.sh
@@ -188,7 +188,7 @@
     dest: "{{ exist_path }}/{{ exist_confpaths[exist_major_version]['wrapper_conf'] }}"
     owner: "{{ exist_instuser }}"
     group: "{{ exist_group }}"
-    mode: 0644
+    mode: 0600
   when: exist_major_version == 4 and exist_wrapperconf_from_template
   notify:
     - restart eXist
@@ -202,7 +202,7 @@
     dest: "{{ exist_path }}/{{ exist_confpaths[exist_major_version]['log4j2_xml'] }}"
     owner: "{{ exist_instuser }}"
     group: "{{ exist_group }}"
-    mode: 0644
+    mode: 0600
   when: exist_logconf_from_template|bool
   notify:
     - restart eXist
@@ -215,7 +215,7 @@
     dest: "{{ exist_path }}/{{ exist_confpaths[exist_major_version]['conf_xml'] }}"
     owner: "{{ exist_instuser }}"
     group: "{{ exist_group }}"
-    mode: 0644
+    mode: 0600
   when: exist_confxml_from_template|bool
   notify:
     - restart eXist
@@ -228,7 +228,7 @@
     dest: "{{ exist_path }}/{{ exist_confpaths[exist_major_version]['web_xml'] }}"
     owner: "{{ exist_instuser }}"
     group: "{{ exist_group }}"
-    mode: 0644
+    mode: 0600
   when: exist_webxml_from_template|bool
   notify:
     - restart eXist
@@ -241,7 +241,7 @@
     dest: "{{ exist_path }}/{{ exist_confpaths[exist_major_version]['client_properties'] }}"
     owner: "{{ exist_instuser }}"
     group: "{{ exist_group }}"
-    mode: 0644
+    mode: 0600
   when: exist_clientprops_from_template|bool
   notify:
     - restart eXist
@@ -254,7 +254,7 @@
     dest: "{{ exist_path }}/{{ exist_confpaths[exist_major_version]['jetty_etc'] }}/standard.enabled-jetty-configs"
     owner: "{{ exist_instuser }}"
     group: "{{ exist_group }}"
-    mode: 0644
+    mode: 0600
   when: exist_jettyconf_from_template|bool
   notify:
     - restart eXist
@@ -268,7 +268,7 @@
     line: '        <Set name="host"><Property name="jetty.http.host" deprecated="jetty.host"><Default><SystemProperty name="jetty.http.host"/></Default></Property></Set>'
     owner: "{{ exist_instuser }}"
     group: "{{ exist_group }}"
-    mode: '0644'
+    mode: '0600'
   when:
     - exist_http_host is defined
     - exist_jettyconf_from_template|bool
@@ -282,7 +282,7 @@
     line: '        <Set name="host"><Property name="jetty.ssl.host" deprecated="jetty.host"><Default><SystemProperty name="jetty.ssl.host"/></Default></Property></Set>'
     owner: "{{ exist_instuser }}"
     group: "{{ exist_group }}"
-    mode: '0644'
+    mode: '0600'
   when:
     - exist_ssl_host is defined
     - exist_jettyconf_from_template|bool
@@ -339,7 +339,7 @@
     dest: "{{ exist_datadir }}/jmxservlet.token"
     owner: "{{ exist_instuser }}"
     group: "{{ exist_group }}"
-    mode: 0644
+    mode: 0600
   when: not jmxtoken_file.stat.exists
   notify:
     - restart eXist
