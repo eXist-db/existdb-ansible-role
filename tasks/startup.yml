@@ -1,7 +1,7 @@
 ---
 ## tasks for post installation that need exist running
 
-- name: Ensure exist service is running
+- name: Ensure exist service is (re-)started
   service:
     name: "{{ exist_instname }}"
     enabled: yes
