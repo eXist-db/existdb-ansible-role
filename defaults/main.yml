@@ -185,7 +185,6 @@ exist_redhat_extra_packages:
   # for Ansible synchronize
   - rsync
   # for upload-xmlrpc script
-  - perl-RPC-XML
   - perl-LWP-Protocol-https
 
 # for Debian 8
