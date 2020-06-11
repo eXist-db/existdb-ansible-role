@@ -1,0 +1,13 @@
+diff --git a/extensions/indexes/spatial/pom.xml b/extensions/indexes/spatial/pom.xml
+index e9a1548781..a4c4cee7da 100644
+--- a/extensions/indexes/spatial/pom.xml
++++ b/extensions/indexes/spatial/pom.xml
+@@ -213,7 +213,7 @@
+     <repositories>
+         <repository>
+             <id>osgeo</id>
+-            <url>http://download.osgeo.org/webdav/geotools/</url>
++            <url>http://repo.osgeo.org/repository/geotools-releases/</url>
+             <releases><enabled>true</enabled></releases>
+             <snapshots><enabled>false</enabled></snapshots>
+         </repository>
