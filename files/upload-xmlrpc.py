@@ -40,11 +40,15 @@ xmlrpcSchema = "https"
 if args.T:
     xmlrpcSchema = "http"
 xmlrpcOwner = args.owner
+xmlrpcGroup = args.group
 xmlrpcMode = args.mode
+xmlrpcParse = 1
 xmlrpcMime = args.mime
 if args.Q:
+    xmlrpcParse = 0
     xmlrpcMime = "application/xquery"
 if args.L:
+    xmlrpcParse = 0
     xmlrpcMime = "text/html"
 if args.B:
     xmlrpcMime = "application/octet-stream"
@@ -90,10 +94,10 @@ with ServerProxy('{xmlrpcSchema}://{xmlrpcUser}:{xmlrpcPass}@{xmlrpcHost}:{xmlrp
             upres = proxy.upload(data, len(data))
             print(upres)
             #pares = proxy.parseLocalExt(str(upres), fname, replace=1, mime='application/xml', parse=1)
-            pares = proxy.parseLocalExt(str(upres), fname, 1, xmlrpcMime, 1)
+            pares = proxy.parseLocalExt(str(upres), fname, 1, xmlrpcMime, xmlrpcParse)
             print(pares)
             #spres = proxy.setPermissions(fname, owner='admin', group='SYSTEM', mode='rw-r--r--')
-            spres = proxy.setPermissions(fname, 'admin', 'SYSTEM', 'rw-r--r--')
+            spres = proxy.setPermissions(fname, xmlrpcOwner, xmlrpcGroup, xmlrpcMode)
             print(spres)
         except Error as v:
             print("ERROR", v)
