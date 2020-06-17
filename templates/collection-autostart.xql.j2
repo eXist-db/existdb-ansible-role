@@ -1,0 +1,8 @@
+xquery version "3.1";
+
+let $newCollection := xmldb:create-collection("/db/system", "autostart")
+let $rc := sm:chown($newCollection, "SYSTEM")
+let $rc := sm:chgrp($newCollection, "dba")
+let $rc := sm:chmod($newCollection, "rwxrwx---")
+return ($newCollection)
+
