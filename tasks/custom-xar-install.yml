@@ -33,6 +33,7 @@
     dest: "{{ exist_path }}/xars/{{ item.name }}"
     owner: "{{ exist_instuser }}"
     group: "{{ exist_group }}"
+    remote_src: "{{ item.remote_src | default(xar_default.remote_src|default('no')) }}"
   #with_items: "{{ ansible_local[exist_instname]['exist_custom']['xar-install'] }}"
   with_items: "{{ xar_install }}"
   when:
