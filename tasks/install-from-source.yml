@@ -3,6 +3,7 @@
 
 - name: Determine git branch revision
   shell: "cd {{ exist_srcpath }}; git show-ref -s --abbrev --heads {{ exist_repo_version }} || true"
+  check_mode: false
   register: git_revision
   tags:
     - install
