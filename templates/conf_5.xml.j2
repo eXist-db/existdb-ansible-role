@@ -220,10 +220,10 @@
                     in the autodeploy directory unless the application has already been installed
                     in the db. 
                 -->  
-{% if exist_confxml_trigger_autodeploy_enable == False %}                <!--
+{% if exist_confxml_trigger_autodeploy_enable|bool is sameas false %}                <!--
 {% endif %}
                 <trigger class="org.exist.repo.AutoDeploymentTrigger"/>
-{% if exist_confxml_trigger_autodeploy_enable == False %}                -->
+{% if exist_confxml_trigger_autodeploy_enable|bool is sameas false %}                -->
 {% endif %}
                 
                 <!-- 
@@ -236,10 +236,10 @@
                     mode "rwxrwx___" (0770) with mime-type "application/xquery". 
                     The names of the scripts must end with ".xq", ".xqy" or ".xquery".
                 -->
-{% if exist_confxml_trigger_xquerystartup_enable == False %}                <!--
+{% if exist_confxml_trigger_xquerystartup_enable|bool is sameas false %}                <!--
 {% endif %}
                 <trigger class="org.exist.collections.triggers.XQueryStartupTrigger"/>
-{% if exist_confxml_trigger_xquerystartup_enable == False %}                -->
+{% if exist_confxml_trigger_xquerystartup_enable|bool is sameas false %}                -->
 {% endif %}
 
             </triggers>
@@ -657,7 +657,7 @@
                 backup  Set to "yes" to create a backup whenever the job runs, not just
                         when it detects errors.
         -->
-{% if exist_confxml_job_check1_enable == False %}        <!--
+{% if exist_confxml_job_check1_enable|bool is sameas false %}        <!--
 {% endif %}
         <job type="system" name="check1" 
             class="org.exist.storage.ConsistencyCheckTask"
@@ -668,10 +668,10 @@
             <parameter name="incremental-check" value="no"/>
             <parameter name="max" value="2"/>
         </job>
-{% if exist_confxml_job_check1_enable == False %}        -->
+{% if exist_confxml_job_check1_enable|bool is sameas false %}        -->
 {% endif %}
        
-{% if exist_confxml_job_twitter_enable == True %}
+{% if exist_confxml_job_twitter_enable|bool is sameas true %}
         <job xquery="/db/apps/twitter/jobs/download-recent-twitter-posts.xq" period="600000"/>
 {% endif %}
  
@@ -689,7 +689,7 @@
         </job>
         -->
 
-{% if exist_confxml_job_cleansso_enable == True %}
+{% if exist_confxml_job_cleansso_enable|bool is sameas true %}
         <job    type="user"
                 name="clean-up-sso-reqids"
                 xquery="/db/apps/existdb-saml/content/clean-reqids.xql"
