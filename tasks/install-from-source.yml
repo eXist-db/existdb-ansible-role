@@ -66,6 +66,9 @@
   ignore_errors: true
   with_items:
   - exist-db-maven-repo-osgeo.patch
+  tags:
+    - install
+    - src-install
 
 - name: Include build tasks (4.x)
   include_tasks: build-v4.yml
