@@ -79,7 +79,7 @@
     mode: 0700
   when:
     - exist_custom_install|bool
-    - exist_custom_xarlist
+    - exist_custom_xarlist|length > 0
   changed_when: false
   tags:
     - xar-install
@@ -91,7 +91,7 @@
     chdir: "{{ exist_path }}"
   when:
     - exist_custom_install|bool
-    - exist_custom_xarlist
+    - exist_custom_xarlist|length > 0
   tags:
     - xar-install
 
