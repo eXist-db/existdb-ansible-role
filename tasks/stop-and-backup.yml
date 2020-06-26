@@ -1,8 +1,12 @@
 ---
+- name: Collect facts on existing services
+  service_facts:
+
 - name: Ensure exist instance is stopped
   service:
     name: "{{ exist_instname }}"
     state: stopped
+  when: exist_instname in services
   tags:
     - backup
 

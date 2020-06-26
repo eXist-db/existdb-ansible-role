@@ -185,8 +185,9 @@ exist_redhat_extra_packages:
   # for Ansible synchronize
   - rsync
   # for upload-xmlrpc script
-  - perl-RPC-XML
   - perl-LWP-Protocol-https
+  # for source install
+  - patch
 
 # for Debian 8
 exist_debian_extra_packages:
@@ -197,6 +198,8 @@ exist_debian_extra_packages:
   # for upload-xmlrpc script
   - librpc-xml-perl
   - liblwp-protocol-https-perl
+  # for source install
+  - patch
 
 # for Ubuntu xenial
 exist_ubuntu_extra_packages:
@@ -207,3 +210,7 @@ exist_ubuntu_extra_packages:
   # for upload-xmlrpc script
   - librpc-xml-perl
   - liblwp-protocol-https-perl
+  # for source install
+  - patch
+
+xar_install: []
