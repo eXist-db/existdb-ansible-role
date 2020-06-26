@@ -112,7 +112,7 @@ exist_wrapper_ping_timeout: 90
 exist_confxml_dbconn_cachesize: "256M"
 exist_confxml_trigger_xquerystartup_enable: no
 exist_confxml_trigger_autodeploy_enable: yes
-exist_confxml_trigger_restxq_enable: true
+exist_confxml_trigger_restxq_enable: false
 exist_confxml_pool_max: 20
 exist_confxml_recovery_enabled: "yes"
 exist_confxml_recovery_consistency_check: "yes"
