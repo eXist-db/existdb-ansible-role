@@ -7,7 +7,7 @@
     state: directory
     owner: "{{ exist_instuser }}"
     group: "{{ exist_group }}"
-    mode: 0755
+    mode: 0700
   tags:
     - install
     - xar-install

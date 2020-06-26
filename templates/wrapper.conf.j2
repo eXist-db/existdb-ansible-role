@@ -130,7 +130,7 @@ wrapper.java.additional.17=-XX:MaxDirectMemorySize={{ exist_mem_max_direct }}m
 wrapper.java.additional.8=-Djava.io.tmpdir={{ exist_home }}/tmp
 
 # GC logging/debugging
-{% if exist_mem_gcdebug_enable == True %}
+{% if exist_mem_gcdebug_enable|bool is sameas true %}
 wrapper.java.additional.9=-XX:+PrintGCDetails
 {% if java_provider is defined and java_provider == 'Oracle' %}
 wrapper.java.additional.10=-XX:+PrintGCDateStamps
@@ -139,7 +139,7 @@ wrapper.java.additional.11=-Xloggc:{{ exist_logdir }}/gc-%t.log
 {% endif %}
 
 # String deduplication
-{% if exist_mem_strdedup_enable == True %}
+{% if exist_mem_strdedup_enable|bool is sameas true %}
 wrapper.java.additional.21=-XX:+UseStringDeduplication
 {% if java_provider is defined and java_provider == 'Oracle' %}
 wrapper.java.additional.22=-XX:+PrintStringDeduplicationStatistics
@@ -149,7 +149,7 @@ wrapper.java.additional.22=-XX:+PrintStringDeduplicationStatistics
 # NMT cannot be used with the wrapper
 
 # Java NIO cache tuning (256k)
-{% if exist_mem_niocachetune_enable == True %}
+{% if exist_mem_niocachetune_enable|bool is sameas true %}
 wrapper.java.additional.20=-Djdk.nio.maxCachedBufferSize=262144
 {% endif %}
 

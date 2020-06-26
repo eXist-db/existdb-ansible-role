@@ -1,7 +1,7 @@
 ---
 ## tasks for post installation that need exist running
 
-- name: Ensure exist service is running
+- name: Ensure exist service is (re-)started
   service:
     name: "{{ exist_instname }}"
     enabled: yes
@@ -55,13 +55,14 @@
     owner: root
     mode: 0600
   when: not password_set_file.stat.exists
+  changed_when: false
   tags:
     - config
     - runtime-config
 
 - name: Set admin password (exec set-adminpass.xql)
   #shell: 'bin/client.sh -u admin -P "" -F set-adminpass.xql && touch {{ exist_datadir }}/.password-set'
-  shell: 'contrib/execute-xmlrpc.pl -u admin -p "" -P {{ exist_http_port }} -T < "{{ exist_path }}/set-adminpass.xql" && touch "{{ exist_datadir }}/.password-set"'
+  shell: 'contrib/execute-xmlrpc.py -u admin -p "" -P {{ exist_http_port }} -T < "{{ exist_path }}/set-adminpass.xql" && touch "{{ exist_datadir }}/.password-set"'
   args:
     chdir: "{{ exist_path }}"
   when: not password_set_file.stat.exists
@@ -75,21 +76,22 @@
     dest: "{{ exist_path }}/contrib/install-xars.xql"
     owner: "{{ exist_instuser }}"
     group: "{{ exist_group }}"
-    mode: 0755
+    mode: 0700
   when:
     - exist_custom_install|bool
-    - exist_custom_xarlist
+    - exist_custom_xarlist|length > 0
+  changed_when: false
   tags:
     - xar-install
 
 - name: Install custom xar files (exec install-xars.xql)
   #shell: 'bin/client.sh -u admin -P "{{ exist_adminpass[inventory_hostname][exist_instname] }}" -F contrib/install-xars.xql -ouri=xmldb:exist://localhost:{{ exist_http_port }}/exist/xmlrpc'
-  shell: 'contrib/execute-xmlrpc.pl -u admin -p "{{ exist_adminpass[inventory_hostname][exist_instname] }}" -P {{ exist_http_port }} -t 4800 -T < contrib/install-xars.xql'
+  shell: 'contrib/execute-xmlrpc.py -u admin -p "{{ exist_adminpass[inventory_hostname][exist_instname] }}" -P {{ exist_http_port }} -t 4800 -T < contrib/install-xars.xql'
   args:
     chdir: "{{ exist_path }}"
   when:
     - exist_custom_install|bool
-    - exist_custom_xarlist
+    - exist_custom_xarlist|length > 0
   tags:
     - xar-install
 
@@ -101,13 +103,14 @@
     dest: "{{ exist_path }}/users-and-groups.xql"
     owner: root
     mode: 0600
+  changed_when: false
   tags:
     - config
     - runtime-config
 
 - name: Run post-install/hardening (exec users-and-groups.xql)
   #shell: 'bin/client.sh -u admin -P "{{ exist_adminpass[inventory_hostname][exist_instname] }}" -p {{ exist_http_port }} -F users-and-groups.xql'
-  shell: 'contrib/execute-xmlrpc.pl -u admin -p "{{ exist_adminpass[inventory_hostname][exist_instname] }}" -P {{ exist_http_port }} -T < "{{ exist_path }}/users-and-groups.xql"'
+  shell: 'contrib/execute-xmlrpc.py -u admin -p "{{ exist_adminpass[inventory_hostname][exist_instname] }}" -P {{ exist_http_port }} -T < "{{ exist_path }}/users-and-groups.xql"'
   args:
     chdir: "{{ exist_path }}"
   tags:
@@ -145,6 +148,7 @@
     - users-and-groups.xql
     - install-xars.xql
     - collection-autostart.xql
+  changed_when: false
   tags:
     - config
     - runtime-config
