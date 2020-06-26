@@ -57,6 +57,19 @@
     - install
     - src-install
 
+- name: Try to patch eXist git checkout, don't fail on errors
+  become_user: "{{ exist_instuser }}"
+  patch:
+    src: "{{ item }}"
+    basedir: "{{ exist_srcpath }}"
+    strip: 1
+  ignore_errors: true
+  with_items:
+  - exist-db-maven-repo-osgeo.patch
+  tags:
+    - install
+    - src-install
+
 - name: Include build tasks (4.x)
   include_tasks: build-v4.yml
   when: exist_major_version == 4
