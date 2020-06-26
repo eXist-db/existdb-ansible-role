@@ -117,6 +117,28 @@
     - config
     - runtime-config
 
+# collection-autostart.xql may contain sensitive information, so gets installed
+# with root access only, and gets removed afterwards
+- name: Prepare XQuery script collection-autostart.xql
+  template:
+    src: collection-autostart.xql.j2
+    dest: "{{ exist_path }}/collection-autostart.xql"
+    owner: root
+    mode: 0600
+  changed_when: false
+  tags:
+    - config
+    - runtime-config
+
+- name: Run XQuery script collection-autostart.xql (exec collection-autostart.xql)
+  #shell: 'bin/client.sh -u admin -P "{{ exist_adminpass[inventory_hostname][exist_instname] }}" -p {{ exist_http_port }} -F collection-autostart.xql'
+  shell: 'contrib/execute-xmlrpc.py -u admin -p "{{ exist_adminpass[inventory_hostname][exist_instname] }}" -P {{ exist_http_port }} -T < "{{ exist_path }}/collection-autostart.xql"'
+  args:
+    chdir: "{{ exist_path }}"
+  tags:
+    - config
+    - runtime-config
+
 - name: Ensure post-install scripts are absent after install
   file:
     path: "{{ exist_path }}/{{ item }}"
@@ -125,6 +147,7 @@
     - set-adminpass.xql
     - users-and-groups.xql
     - install-xars.xql
+    - collection-autostart.xql
   changed_when: false
   tags:
     - config
