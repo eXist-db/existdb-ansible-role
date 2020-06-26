@@ -1,0 +1,13 @@
+xquery version "3.1";
+
+(:
+declare namespace xns="http://exist-db.org/collection-config/1.0";
+
+for $trigger in doc("/db/system/config/db/collection.xconf")/xns:collection/xns:triggers/xns:trigger
+where $trigger/@class = "org.exist.extensions.exquery.restxq.impl.RestXqTrigger"
+return update delete $trigger
+:)
+
+try {
+xmldb:remove("/db/system/config/db","collection.xconf")
+} catch * { () }
