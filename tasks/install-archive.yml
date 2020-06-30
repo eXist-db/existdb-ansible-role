@@ -28,6 +28,7 @@
   register: archive_revision
   when: exist_major_version == 4
   changed_when: false
+  check_mode: false
   tags:
     - install
     - arch-install
@@ -61,6 +62,7 @@
   shell: "unzip -p {{ exist_home }}/tmp/{{ exist_instname }}/lib/exist-core*jar org/exist/system.properties | grep git-commit | sed -e 's/git-commit=//;'"
   register: archive_revision
   changed_when: false
+  check_mode: false
   args:
     warn: no
   when: exist_major_version == 5
