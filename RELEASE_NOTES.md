@@ -28,6 +28,13 @@ Version 1.0-SNAPSHOT (May 27 2020)
 * add Ansible tags
 * replace deprecated Ansible constructs (thanks @OyvindLG)
 * add Ansible meta data (thanks @jdwit)
+* rewrite upload-xmlrpc.pl in python3
+* can apply patches after git checkout on source build
+* prepare for 'run xquery during startup' (add collection '/db/system/autostart')
+* allow xars to be installed from path on destination host (add 'remote_src')
+* help ansible check-mode by allowlisting non-modifying shell calls (add 'check_mode: false')
+* make maven options configurable (add 'exist_mvn_options')
+* disable restxq autostart (add 'exist_confxml_trigger_restxq_enable')
 
 ## Incompatibilities with Earlier Versions
 
