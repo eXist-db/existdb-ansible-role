@@ -28,7 +28,11 @@
 
 - name: Debug
   debug:
-    msg: "Found {{ compiled_archive.files[0].path }}"
+    msg: "Found {{ compiled_archive.files[0].path | default('NOTHING') }}"
+  tags:
+    - install
+    - src-install
+    - exist5
 
 - name: Copy compiled eXist archive to archive directory on the local Ansible host
   copy:

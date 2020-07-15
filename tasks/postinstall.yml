@@ -194,7 +194,7 @@
 
 ## setup config files before startup
 
-- name: Setup wrapper conf from template
+- name: Setup wrapper conf from template (4.x)
   template:
     src: wrapper.conf.j2
     dest: "{{ exist_path }}/{{ exist_confpaths[exist_major_version]['wrapper_conf'] }}"

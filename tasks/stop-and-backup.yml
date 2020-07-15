@@ -1,6 +1,8 @@
 ---
 - name: Collect facts on existing services
   service_facts:
+  tags:
+    - backup
 
 - name: Ensure exist instance is stopped
   service:
