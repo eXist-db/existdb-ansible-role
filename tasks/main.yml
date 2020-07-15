@@ -78,6 +78,16 @@
   when: exist_install_method == "remote_archive" or exist_install_method == "local_archive"
   tags: always
 
+- name: Upload xar tasks
+  include_tasks: upload-xar.yml
+  when: exist_custom_install|bool
+  tags: always
+
+- name: Patch xar tasks
+  include_tasks: patch-xar.yml
+  when: exist_custom_install|bool
+  tags: always
+
 - name: Include custom xar installation tasks
   include_tasks: custom-xar-install.yml
   when: exist_custom_install|bool

@@ -28,6 +28,7 @@ Version 1.0-SNAPSHOT (May 27 2020)
 * add Ansible tags
 * replace deprecated Ansible constructs (thanks @OyvindLG)
 * add Ansible meta data (thanks @jdwit)
+* ability to "live"-patch xars by adding attributes to 'xar_install', see 'exist_xar_' and 'exist_replication_'
 
 ## Incompatibilities with Earlier Versions
 

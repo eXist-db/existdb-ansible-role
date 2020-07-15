@@ -214,3 +214,23 @@ exist_ubuntu_extra_packages:
   - patch
 
 xar_install: []
+xar_install_defaults: "{{ exist_xar_patch_xml_defaults }}"
+
+exist_xar_patch_xml_defaults: { src_archive_ext: 'xar', target_archive_suffix: '', namespaces: { "xmlns": "http://exist-db.org/collection-config/1.0" }, xpath: "/xmlns:collection", state: "present", add_children: "{{ exist_replication_trigger_template }}" }
+
+exist_replication_destination: "dynamicTopics/default"
+exist_replication_enable: false
+exist_replication_host: "127.0.0.1"
+exist_replication_port: "61616"
+exist_replication_trigger_template: |
+  <!-- Replication -->
+  <triggers>
+    <trigger class="org.exist.jms.replication.publish.ReplicationTrigger">
+      <parameter name="java.naming.factory.initial" value="org.apache.activemq.jndi.ActiveMQInitialContextFactory"/>
+      <parameter name="java.naming.provider.url" value="failover:tcp://{{ exist_replication_host }}:{{ exist_replication_port }}"/>
+      <parameter name="connection-factory" value="ConnectionFactory"/>
+      <parameter name="destination" value="{{ exist_replication_destination }}"/>
+    </trigger>
+  </triggers>
+
+exist_xar_path: "/usr/local/existdb/xars/"

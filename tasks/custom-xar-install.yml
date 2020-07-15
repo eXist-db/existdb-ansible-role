@@ -12,6 +12,22 @@
     - install
     - xar-install
 
+- name: Move xar_install to xar_install2
+  set_fact:
+    xar_install2: "{{ query('vars', 'xar_install') }}"
+    xar_install: []
+  tags:
+    - install
+    - xar-install
+
+- name: Create xar_install.name if empty
+  set_fact:
+    xar_install: "{{ xar_install|default([]) + [ { 'name': item.src_archive_name|default('asdf') + item.target_archive_suffix|default('asdf') + '.' + item.src_archive_ext|default('xar') } | combine(item) ] }}"
+  with_items: "{{ xar_install2 }}"
+  tags:
+    - install
+    - xar-install
+
 - name: Prepare remote xars to install (custom xar installation)
   get_url:
     #url: "{{ ansible_local[exist_instname]['exist_custom']['xar-default']['uri'] if item.uri == '_' else item.uri }}/{{ item.name }}"

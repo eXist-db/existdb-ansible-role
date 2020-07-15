@@ -1,0 +1,71 @@
+---
+  - name: Copy xar_install to exist_xar_patch_xml
+    set_fact:
+      exist_xar_patch_xml: "{{ query('vars', 'xar_install') }}"
+    tags:
+    - install
+    - xar-patch
+
+  - name: Ensure working directories exist
+    file:
+      path: "{{ item }}"
+      state: directory
+    with_items:
+    - "{{ exist_xar_path }}/src"
+    - "{{ exist_xar_path }}/build"
+    - "{{ exist_xar_path }}/target"
+    tags:
+    - install
+    - xar-patch
+
+  - name: Merge defaults
+    set_fact:
+      exist_xar_patch_xml_merged: "{{ exist_xar_patch_xml_merged | default([]) + [ exist_xar_patch_xml_defaults | default({}) | combine(item) ] }}"
+    with_items: "{{ exist_xar_patch_xml | default([]) }}"
+    tags:
+    - install
+    - xar-patch
+
+  - name: Copy xar from ./src/ to ./build/, append 'target_archive_suffix' to filename, unzip 'src_file_name'
+    shell: "cd {{ exist_xar_path }}; cp ./src/{{ item.src_archive_name }}.{{ item.src_archive_ext }} ./build/{{ item.src_archive_name }}{{ item.target_archive_suffix }}.{{ item.src_archive_ext }}.tmp;{% if item.src_file_name is defined %} mkdir -p ./build/{{ item.src_archive_name }}{{ item.target_archive_suffix }}; cd ./build/{{ item.src_archive_name }}{{ item.target_archive_suffix }}; unzip -o ../{{ item.src_archive_name }}{{ item.target_archive_suffix }}.{{ item.src_archive_ext }}.tmp {{ item.src_file_name }};{% endif %}"
+    with_items: "{{ exist_xar_patch_xml_merged }}"
+    when: "item.src_archive_name is defined and item.src_archive_name != ''"
+    tags:
+    - install
+    - xar-patch
+
+  - name: Patch single xpath
+    xml:
+      path: "{{ exist_xar_path }}/build/{{ item.src_archive_name }}{{ item.target_archive_suffix }}/{{ item.src_file_name }}"
+      xpath: "{{ item.xpath }}"
+      namespaces: "{{ item.namespaces }}"
+      input_type: xml
+      state: "{{ item.state | default('present') }}"
+      add_children: "{{ item.add_children | default('') }}"
+    with_items: "{{ exist_xar_patch_xml_merged }}"
+    when: "item.src_file_name is defined and item.src_file_name != ''"
+    tags:
+    - install
+    - xar-patch
+
+  - name: Update xar in ./build/ with patched xml file(s)
+    shell: "cd {{ exist_xar_path }}/build/{{ item.src_archive_name }}{{ item.target_archive_suffix }}; zip -r ../{{ item.src_archive_name }}{{ item.target_archive_suffix }}.{{ item.src_archive_ext }}.tmp .;"
+    with_items: "{{ exist_xar_patch_xml_merged }}"
+    when: "item.src_archive_name is defined and item.src_archive_name != '' and item.src_file_name is defined"
+    tags:
+    - install
+    - xar-patch
+
+  - name: Move xar from ./build/ to ./target/
+    shell: "cd {{ exist_xar_path }}; if [ -e ./build/{{ item.src_archive_name }}{{ item.target_archive_suffix }}.{{ item.src_archive_ext }}.tmp ]; then mv ./build/{{ item.src_archive_name }}{{ item.target_archive_suffix }}.{{ item.src_archive_ext }}.tmp ./target/{{ item.src_archive_name }}{{ item.target_archive_suffix }}.{{ item.src_archive_ext }}; fi;"
+    with_items: "{{ exist_xar_patch_xml_merged }}"
+    when: "item.src_archive_name is defined and item.src_archive_name != ''"
+    tags:
+    - install
+    - xar-patch
+
+  - name: Move xars from ./target/ to ./
+    shell: "cd {{ exist_xar_path }}; if stat -t ./target/*.xar >/dev/null 2>&1; then mv ./target/*.xar .; fi;"
+    tags:
+    - install
+    - xar-patch
