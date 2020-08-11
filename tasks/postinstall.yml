@@ -357,6 +357,16 @@
     - config
     - exist5
 
+- name: Create instance description file
+  template:
+    src: 'DESCRIPTION.instance.j2'
+    dest: '{{ exist_path }}/contrib/DESCRIPTION.md'
+    owner: "{{ exist_instuser }}"
+    group: "{{ exist_group }}"
+  tags:
+    - config
+    - userdoc
+
 - name: Ensure privacy on instance directory tree
   file:
     path: '{{ exist_path }}'
@@ -367,32 +377,3 @@
     mode: 'go-rwx'
   tags:
     - config
-
-#- name: Create symbolic link to instance in user home dir
-#  file:
-#    src: '{{ exist_path}}'
-#    dest: '/home/{{ exist_instuser }}/{{ exist_instname }}'
-#    owner: '{{ exist_instuser }}'
-#    group: '{{ exist_group }}'
-#    state: link
-#    force: yes
-#  when:
-#    - exist_instuser != exist_user
-#    - not exist_instuser in exist_prohibit_usermod
-#  tags:
-#    - config
-#    - userdoc
-
-#- name: Drop WELCOME file for this instance in user home dir
-#  template:
-#    src: WELCOME.instance.j2
-#    dest: '/home/{{ exist_instuser }}/WELCOME.{{ exist_instname }}.md'
-#    owner: "{{ exist_instuser }}"
-#    group: "{{ exist_group }}"
-#    mode: 0644
-#  when:
-#    - exist_instuser != exist_user
-#    - not exist_instuser in exist_prohibit_usermod
-#  tags:
-#    - config
-#    - userdoc

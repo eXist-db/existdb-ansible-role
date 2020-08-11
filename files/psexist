@@ -106,6 +106,7 @@ sub print_inst {
     my $i = shift;
     print 
 	"instance: $i\n",
+	"    description:        ", $DATA->{$i}->{instdesc}, "\n",
 	"    exist version:      ", $DATA->{$i}->{version}, "\n",
 	"    http port:          ", $DATA->{$i}->{http_port}, "\n",
 	"    ssl port:           ", $DATA->{$i}->{ssl_port}, "\n",
@@ -173,6 +174,17 @@ sub parse_ex5 {
 	/product-version=(.*)/ and $data->{version} = $1;
     }
     close VERSION;
+
+    # read first line, fail silently if file missing
+    $data->{instdesc} = '';
+    if (open(DESCRIPTION,
+	     "sudo cat " . $data->{instpath} . "/contrib/DESCRIPTION.md |")) {
+	while (<DESCRIPTION>) {
+	    $data->{instdesc} = $_;
+	    last;
+	}
+	close DESCRIPTION;
+    }
 
     $DATA->{$data->{instname}} = $data;
 }

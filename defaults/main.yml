@@ -12,12 +12,20 @@ exist_instname: 'exist'
 #exist_instname: 'exist-test'
 #exist_instname: 'exist-prod'
 
-# if you run multiple eXist-db instances on a single host, you may want to each
-# of them as a different user.
+# if you run multiple eXist-db instances on a single host, you may want to run
+# each of them as a different user.
 # if you're not running multiple instances the default is fine
 exist_instuser: 'existdb'
 #exist_instuser: 'tester'
 #exist_instuser: 'customer1'
+
+# if you run multiple eXist-db instances on a single host, you may want to give
+# each of them a descriptive comment.
+# if you're not running multiple instances the default is fine
+# this variable is only used by reporting tools and not required for operation
+exist_instdescription: ''
+#exist_instdescription: 'testing'
+#exist_instdescription: 'production'
 
 # for reference, but don't force anyone to localhost by default
 #exist_http_host: '127.0.0.1'
