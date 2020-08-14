@@ -2,7 +2,7 @@
 
 # Display running eXIst-db instances and their main parameters.
 #
-# Usage: psexist [-d] [-h] [-S] [-v] [instance]
+# Usage: psexist [-d] [-h] [-r] [-S] [-v] [-x] [instance]
 # Help:  psexist -h
 #
 # If "instance" is specified, show only this eXist-db instance if it is
@@ -24,24 +24,36 @@ my $CONF = {
     df_cmd   => 'df -h | grep -Ev "(tmpfs|udev)"',
     cpu_cmd  => 'cat /proc/cpuinfo',
     sysinfo  => 1,
+    raw      => 0,
+    xml      => 0,
     verbose  => 0,
     debug    => 0,
+    indent   => 4,
 };
+
+my $VERSION  = '1.2';
+my $BANNER   = "existsolutions psexist version ${VERSION}";
+my $STARTED  = localtime;
+my $HOSTNAME = `hostname`;
+chomp $HOSTNAME;
 
 # check how this program was called
 my ($PROGNAME) = fileparse($0);
 
 # parse cmdline options, override defaults
 my $OPTS = {};
-getopts('dhSv', $OPTS) or usage();
+getopts('dhrSvx', $OPTS) or usage();
 usage()                     if $OPTS->{h};
 $CONF->{debug} = 1          if $OPTS->{d};
+$CONF->{raw} = 1            if $OPTS->{r};
 $CONF->{sysinfo} = 0        if $OPTS->{S};
 $CONF->{verbose} = 1        if $OPTS->{v};
+$CONF->{xml} = 1            if $OPTS->{x};
 
 my $INSTNAME = shift;
 my $DATA     = {};
 
+# scan process listing for processes that may be eXist-db instances
 my $line;
 open(PROCS, $CONF->{ps_cmd} . '|') or die "failed to run ps command: $!";
 while (<PROCS>) {
@@ -49,32 +61,29 @@ while (<PROCS>) {
     $line = $_;
     $line =~ /WrapperJVMMain/     and parse_ex4($line);
     $line =~ /AppassemblerBooter/ and parse_ex5($line);
-    $line =~ /start.jar\s+jetty/  and parse_ex4($line);
+    $line =~ /start.jar\s+jetty/  and parse_tmux_started($line);
 #    $line =~ /wrapper.jar/        and parse_ex4_wrapper($line);
 }
 close PROCS;
 
-print Dumper($DATA) if $CONF->{debug};
+
+print Dumper($DATA) if ($CONF->{debug} and not $CONF->{xml});
+
+print_banner();
 if ($CONF->{sysinfo}) {
     print_sysinfo();
 }
-if ($INSTNAME) {
-    # display only this instance if $INSTNAME is given
-    if (exists $DATA->{$INSTNAME}) {
-	print_inst($INSTNAME);
-    }
-} else {
-    # else display all running instances
-    foreach my $i (keys %$DATA) {
-	print_inst($i);
-    }
-}
+print_exist();
+print_footer();
+
+exit;
+
 
 sub usage {
     print <<USAGE;
 Display running eXIst-db instances and their main parameters.
 
-Usage: $PROGNAME [-d] [-h] [-S] [-v] [instance]
+Usage: $PROGNAME [-d] [-h] [-r] [-S] [-v] [-x] [instance]
 
 If "instance" is specified, show only this eXist-db instance if it is running.
 Otherwise display all running instances.
@@ -83,77 +92,352 @@ OPTIONS:
 
 -d       enable debug output
 -h       help (this text)
+-r       include raw command output (default: hide)
 -S       suppress system info (default: display)
 -v       verbose (print more details)
+-x       XML output (default: text)
 
 USAGE
     exit 1;
 }
 
-sub print_sysinfo {
-    my ($cputype, $cpucnt) = parse_cpuinfo();
-    print
-	"System Info:\n\n$cpucnt core $cputype\n",
-	`$CONF->{free_cmd}`,
-	"\n",
-	`$CONF->{top_cmd}`,
-	"\n",
-	`$CONF->{df_cmd}`,
-	"\n";
-}
+### PRINTING ROUTINES
 
-sub print_inst {
-    my $i = shift;
-    print 
-	"instance: $i\n",
-	"    description:        ", $DATA->{$i}->{instdesc}, "\n",
-	"    exist version:      ", $DATA->{$i}->{version}, "\n",
-	"    http port:          ", $DATA->{$i}->{http_port}, "\n",
-	"    ssl port:           ", $DATA->{$i}->{ssl_port}, "\n",
-	"    user:               ", $DATA->{$i}->{user}, "\n",
-	"    pid:                ", $DATA->{$i}->{pid}, "\n",
-	"    inst path:          ", $DATA->{$i}->{instpath}, "\n",
-#	"    exist home:         ", $DATA->{$i}->{exist_home}, "\n",
-        "    java version:       ", $DATA->{$i}->{java_vendor}, " ", $DATA->{$i}->{java_version}, "\n",
-	"    max heap (MB):      ", $DATA->{$i}->{mem_maxheap} || 'default', "\n";
-    if ($CONF->{verbose}) {
-	print 
-	    "    max meta (MB):      ", $DATA->{$i}->{mem_maxmeta} || 'default', "\n",
-	    "    max direct (MB):    ", $DATA->{$i}->{mem_maxdirect} || 'default', "\n",
-	    "    gc algo:            ", $DATA->{$i}->{gc}, "\n",
-	    "    java NMT:           ", $DATA->{$i}->{java_nmt} || 'disabled', "\n",
-	    "    java str dedup:     ", $DATA->{$i}->{java_strdedup} ? 'en' : 'dis', "abled\n",
-	    "    java niocache hack: ", $DATA->{$i}->{java_niocache} ? 'en' : 'dis', "abled\n",
-	    "    cur %mem:           ", $DATA->{$i}->{'%mem'}, "\n",
-	    "    cur %cpu:           ", $DATA->{$i}->{'%cpu'}, "\n";
+sub print_banner {
+    if ($CONF->{xml}) {
+        print "<psexist hostname=\"${HOSTNAME}\" psexist-version=\"${VERSION}\" execution-date=\"${STARTED}\" banner=\"${BANNER}\">\n";
+    } else {
+	print "$BANNER\nHost: $HOSTNAME Date: $STARTED\n\n";
     }
 }
+
+sub print_footer {
+    if ($CONF->{xml}) {
+        print "</psexist>\n";
+    }
+}
+
+sub print_sysinfo {
+    xml_open_subnode(1, 'sysinfo') if $CONF->{xml};
+    print_cpuinfo();
+    print_meminfo();
+    print_topinfo();
+    print_diskinfo();
+    xml_close_subnode(1, 'sysinfo') if $CONF->{xml};
+}
+
+sub print_cpuinfo {
+    my $cpudata = parse_cpuinfo();
+    if ($CONF->{xml}) {
+	xml_open_subnode(2, 'cpu');
+	printf("%s<cpu-type num-cores=\"%d\">%s</cpu-type>\n",
+	       indent(3), $cpudata->{cpucount}, $cpudata->{cpumodel});
+	printf("%s<raw-output>%s</raw-output>\n", indent(3), $cpudata->{raw})
+	    if $CONF->{raw};
+	xml_close_subnode(2, 'cpu');
+    } else {
+	print "CPU:\n$cpudata->{cpucount} core $cpudata->{cpumodel}\n\n",
+    }
+}
+
+sub print_meminfo {
+    my ($memdata) = parse_meminfo();
+    if ($CONF->{xml}) {
+	xml_open_subnode(2, 'memory');
+	printf("%s<mem total=\"%s\" used=\"%s\" free=\"%s\" shared=\"%s\" buffers=\"%s\" cached=\"%s\"/>\n",
+	       indent(3), $memdata->{mem_total}, $memdata->{mem_used},
+	       $memdata->{mem_free}, $memdata->{mem_shared},
+	       $memdata->{mem_buffers}, $memdata->{mem_cached});
+	printf("%s<swap total=\"%s\" used=\"%s\" free=\"%s\"/>\n",
+	       indent(3), $memdata->{swap_total},
+	       $memdata->{swap_used}, $memdata->{swap_free});
+	printf("%s<raw-output>%s</raw-output>\n", indent(3), $memdata->{raw})
+	    if $CONF->{raw};
+	xml_close_subnode(2, 'memory');
+    } else {
+	print "Memory:\n", $memdata->{meminfo_raw}, "\n";
+    }
+}
+
+sub print_topinfo {
+    my ($topdata) = parse_topinfo();
+    if ($CONF->{xml}) {
+	xml_open_subnode(2, 'load');
+	printf("%s<state system-time=\"%s\" uptime=\"%s\" active-users=\"%s\"/>\n",
+	       indent(3), $topdata->{systime},
+	       $topdata->{uptime}, $topdata->{users});
+	printf("%s<load load-1min=\"%s\" load-5min=\"%s\" load-15min=\"%s\"/>\n",
+	       indent(3), $topdata->{load1},
+	       $topdata->{load5}, $topdata->{load15});
+	printf("%s<processes total=\"%d\" running=\"%d\" sleeping=\"%d\" stopped=\"%d\" zombie=\"%d\"/>\n",
+	       indent(3), $topdata->{tasks}->{total},
+	       $topdata->{tasks}->{running}, $topdata->{tasks}->{sleeping},
+	       $topdata->{tasks}->{stopped}, $topdata->{tasks}->{zombie});
+	printf("%s<cpu-states user=\"%s\" kernel=\"%s\" nice=\"%s\" idle=\"%s\" iowait=\"%s\" hardint=\"%s\" softint=\"%s\" stolen=\"%s\"/>\n",
+	       indent(3), $topdata->{cpustates}->{user},
+	       $topdata->{cpustates}->{kernel}, $topdata->{cpustates}->{nice},
+	       $topdata->{cpustates}->{idle}, $topdata->{cpustates}->{iowait},
+	       $topdata->{cpustates}->{hardint}, $topdata->{cpustates}->{softint},
+	       $topdata->{cpustates}->{stolen});
+	xml_close_subnode(2, 'load');
+    } else {
+	print "Load:\n", $topdata->{topinfo_raw}, "\n";
+    }
+}
+
+sub print_diskinfo {
+    my ($diskdata) = parse_diskinfo();
+    if ($CONF->{xml}) {
+	xml_open_subnode(2, 'disk');
+	foreach my $part (keys %{$diskdata->{partitions}}) {
+	    printf("%s<partition name=\"%s\" size=\"%s\" used=\"%s\" available=\"%s\" use-percent=\"%s\" mountpoint=\"%s\">\n",
+		   indent(3), $part,
+		   $diskdata->{partitions}->{$part}->{size},
+		   $diskdata->{partitions}->{$part}->{use},
+		   $diskdata->{partitions}->{$part}->{avail},
+		   $diskdata->{partitions}->{$part}->{'use%'},
+		   $diskdata->{partitions}->{$part}->{mount});
+	}
+	xml_close_subnode(2, 'disk');
+    } else {
+	print "Disk:\n", $diskdata->{diskinfo_raw}, "\n";
+    }
+}
+
+sub print_exist {
+    if ($CONF->{xml}) {
+	xml_open_subnode(1, 'exist');
+    }
+    if ($INSTNAME) {
+	# display only this instance if $INSTNAME is given
+	if (exists $DATA->{$INSTNAME}) {
+	    print_exist_inst($INSTNAME);
+	}
+    } else {
+	# else display all running instances
+	foreach my $i (keys %$DATA) {
+	    print_exist_inst($i);
+	}
+    }
+    if ($CONF->{xml}) {
+	xml_close_subnode(1, 'exist');
+    }
+}
+
+sub print_exist_inst {
+    my $i = shift;
+
+    if ($CONF->{xml}) {
+	printf("%s<instance name=\"%s\">\n", indent(2), $i);
+	printf("%s<description>%s</description>\n%s<version>%s</version>\n%s<http-port>%s</http-port>\n%s<ssl-port>%s</ssl-port>\n%s<user>%s</user>\n%s<pid>%d</pid>\n%s<install-path>%s</install-path>\n%s<java-version>%s</java-version>\n%s<mem-max-heap>%s</mem-max-heap>\n",
+	       indent(3), $DATA->{$i}->{description},
+	       indent(3), $DATA->{$i}->{exist_version},
+	       indent(3), $DATA->{$i}->{http_port},
+	       indent(3), $DATA->{$i}->{ssl_port},
+	       indent(3), $DATA->{$i}->{user},
+	       indent(3), $DATA->{$i}->{pid},
+	       indent(3), $DATA->{$i}->{instpath},
+	       indent(3), $DATA->{$i}->{java_version},
+	       indent(3), $DATA->{$i}->{mem_maxheap});
+	if ($CONF->{verbose}) {
+	    printf("%s<mem-max-metaspace>%s</mem-max-metaspace>\n%s<mem-max-direct>%s</mem-max-direct>\n%s<exist-home>%s</exist-home>\n%s<java-binary>%s</java-binary>\n%s<java-gc-algo>%s</java-gc-algo>\n%s<java-nmt>%s</java-nmt>\n%s<java-string-deduplication>%s</java-string-deduplication>\n%s<java-niocache-hack>%s</java-niocache-hack>%s<percent-mem>%s</percent-mem>\n%s<percent-cpu>%s</percent-cpu>\n%s<command>%s</command>\n",
+		   indent(3), $DATA->{$i}->{mem_maxmeta},
+		   indent(3), $DATA->{$i}->{mem_maxdirect},
+		   indent(3), $DATA->{$i}->{exist_home},
+		   indent(3), $DATA->{$i}->{java_bin},
+		   indent(3), $DATA->{$i}->{gc},
+		   indent(3), $DATA->{$i}->{java_nmt} || 'disabled',
+		   indent(3), ($DATA->{$i}->{java_strdedup} ? 'en' : 'dis' . 'abled'),
+		   indent(3), ($DATA->{$i}->{java_niocache} ? 'en' : 'dis' . 'abled'),
+		   indent(3), $DATA->{$i}->{'%mem'},
+		   indent(3), $DATA->{$i}->{'%cpu'},
+		   indent(3), $DATA->{$i}->{command});
+	}
+	print indent(2), "</instance>\n";
+    } else {
+
+	print 
+	    "instance: $i\n",
+	    "    description:        ", $DATA->{$i}->{description}, "\n",
+	    "    exist version:      ", $DATA->{$i}->{exist_version}, "\n",
+	    "    http port:          ", $DATA->{$i}->{http_port}, "\n",
+	    "    ssl port:           ", $DATA->{$i}->{ssl_port}, "\n",
+	    "    user:               ", $DATA->{$i}->{user}, "\n",
+	    "    pid:                ", $DATA->{$i}->{pid}, "\n",
+	    "    inst path:          ", $DATA->{$i}->{instpath}, "\n",
+	    "    java version:       ", $DATA->{$i}->{java_vendor}, " ", $DATA->{$i}->{java_version}, "\n",
+	    "    max heap (MB):      ", $DATA->{$i}->{mem_maxheap} || 'default', "\n";
+	if ($CONF->{verbose}) {
+	    print 
+		"    max meta (MB):      ", $DATA->{$i}->{mem_maxmeta} || 'default', "\n",
+		"    max direct (MB):    ", $DATA->{$i}->{mem_maxdirect} || 'default', "\n",
+		"    exist home:         ", $DATA->{$i}->{exist_home}, "\n",
+		"    java binary:        ", $DATA->{$i}->{java_bin}, "\n",
+		"    gc algo:            ", $DATA->{$i}->{gc}, "\n",
+		"    java NMT:           ", $DATA->{$i}->{java_nmt} || 'disabled', "\n",
+		"    java str dedup:     ", $DATA->{$i}->{java_strdedup} ? 'en' : 'dis', "abled\n",
+		"    java niocache hack: ", $DATA->{$i}->{java_niocache} ? 'en' : 'dis', "abled\n",
+		"    cur %mem:           ", $DATA->{$i}->{'%mem'}, "\n",
+		"    cur %cpu:           ", $DATA->{$i}->{'%cpu'}, "\n",
+		"    command:            ", $DATA->{$i}->{command}, "\n";
+	}
+    }
+}
+
+### PARSING ROUTINES
 
 sub parse_cpuinfo {
-    my $cpucount = 0;
-    my $cpumodel = 'unknown';
-    open(CPUINFO, $CONF->{cpu_cmd} . " |")
-	or die "failed to cat cpuinfo";
-    while (<CPUINFO>) {
-        /^processor\s*:\s*\d/  and $cpucount++;
-        /^model name\s*:\s*(.*)/ and $cpumodel  = $1;
+    my $cpudata = {
+	cpucount    => 0,
+	cpumodel    => 'unknown',
+	cpuinfo_raw => '',
+    };
+
+    my @out = `$CONF->{cpu_cmd}`;
+    foreach (@out) {
+	$cpudata->{cpuinfo_raw} .= $_;
+        /^processor\s*:\s*\d/    and $cpudata->{cpucount}++;
+        /^model name\s*:\s*(.*)/ and $cpudata->{cpumodel} = $1;
     }
-    close CPUINFO;
-    ($cpumodel, $cpucount);
+
+    $cpudata;
+}
+
+sub parse_meminfo {
+    my $memdata = {
+	mem_total   => 0,
+	mem_used    => 0,
+	mem_free    => 0,
+	mem_shared  => 0,
+	mem_buffers => 0,
+	mem_cached  => 0,
+	swap_total  => 0,
+	swap_used   => 0,
+	swap_free   => 0,
+	meminfo_raw => '',
+    };
+
+#             total       used       free     shared    buffers     cached
+#Mem:           31G        25G       6.2G       659M       743M       8.7G
+#-/+ buffers/cache:        15G        15G
+#Swap:          15G       357M        15G
+
+    my @out = `$CONF->{free_cmd}`;
+    foreach (@out) {
+	$memdata->{meminfo_raw} .= $_;
+        if (/^Mem:\s*(.*)/) {
+	    my ($mtotal, $mused, $mfree, $mshared, $mbufs, $mcached) =
+		split(/\s+/, $1);
+	    $memdata->{mem_total}   = $mtotal;
+	    $memdata->{mem_used}    = $mused;
+	    $memdata->{mem_free}    = $mfree;
+	    $memdata->{mem_shared}  = $mshared;
+	    $memdata->{mem_buffers} = $mbufs;
+	    $memdata->{mem_cached}  = $mcached;
+	}
+        if (/^Swap:\s*(.*)/) {
+	    my ($swtotal, $swused, $swfree) = split(/\s+/, $1);
+	    $memdata->{swap_total} = $swtotal;
+	    $memdata->{swap_used}  = $swused;
+	    $memdata->{swap_free}  = $swfree;
+	}
+    }
+
+    $memdata;
+}
+
+sub parse_topinfo {
+    my $topdata = {
+	topinfo_raw => '',
+    };
+
+#top - 23:25:17 up 1155 days, 10:41,  1 user,  load average: 0.27, 0.51, 0.45
+    my @out = `$CONF->{top_cmd}`;
+    my $topline = shift @out;
+    my $topline_regex = 'top -\s+(.*?)\s+up\s+(.*),\s+(\d+)\s+user.*load average:\s+(.*)';
+    my ($load1, $load5, $load15);
+    if ($topline =~ /$topline_regex/) {
+	$topdata->{systime} = $1;
+	$topdata->{uptime} = $2;
+	$topdata->{users} = $3;
+	($load1, $load5, $load15) = split(/,\s*/, $4);
+	$topdata->{load1} = $load1;
+	$topdata->{load5} = $load5;
+	$topdata->{load15} = $load15;
+    }
+    $topdata->{topinfo_raw} .= $topline;
+
+#Tasks: 198 total,   1 running, 196 sleeping,   1 stopped,   0 zombie
+    my $tasksline = shift @out;
+    my $tasksline_regex = 'Tasks:\s(\d+)\s+total,\s+(\d+)\s+running,\s+(\d+)\s+sleeping,\s+(\d+)\s+stopped,\s+(\d+)\s+zombie';
+    if ($tasksline =~ /$tasksline_regex/) {
+	$topdata->{tasks} = {
+	    total    => $1,
+	    running  => $2,
+	    sleeping => $3,
+	    stopped  => $4,
+	    zombie   => $5,
+	};
+    }
+    $topdata->{topinfo_raw} .= $tasksline;
+
+#%Cpu(s):  9.0 us,  0.1 sy,  0.0 ni, 90.6 id,  0.3 wa,  0.0 hi,  0.0 si,  0.0 st
+    my $cpuline = shift @out;
+    my $cpuline_regex = 'Cpu.*:\s+(.*)\s+us,\s+(.*)\s+sy,\s+(.*)\s+ni,\s+(.*)\s+id,\s+(.*)\s+wa,\s+(.*)\s+hi,\s+(.*)\s+si,\s+(.*)\s+st';
+    if ($cpuline =~ /$cpuline_regex/) {
+	$topdata->{cpustates} = {
+	    user    => $1,
+	    kernel  => $2,
+	    nice    => $3,
+	    idle    => $4,
+	    iowait  => $5,
+	    hardint => $6,
+	    softint => $7,
+	    stolen  => $8,
+	};
+    }
+    $topdata->{topinfo_raw} .= $cpuline; 
+
+    $topdata;
+}
+
+sub parse_diskinfo {
+    my $diskdata = {
+	partitions   => {},
+	diskinfo_raw => '',
+    };
+
+    my ($dev, $size, $use, $avail, $use_percent, $mount);
+    my @out = `$CONF->{df_cmd}`;
+    foreach (@out) {
+	$diskdata->{diskinfo_raw} .= $_;
+	next if /^Filesystem/;
+	($dev, $size, $use, $avail, $use_percent, $mount) = split /\s+/;
+	$diskdata->{partitions}->{$dev} = {
+	    size   => $size,
+	    use    => $use,
+	    avail  => $avail,
+	    'use%' => $use_percent,
+	    mount  => $mount,
+	};
+    }
+
+    $diskdata;
 }
 
 sub parse_ex4 {
     my $l = shift;
     my $data = parse_generic($l);
 
-    $l =~ /.*:(.*)\/(.*?)\/start.jar/
-	and $data->{instpath} = "$1/$2"
-	and $data->{instname} = $2;
+    if ($data->{command} =~ /.*:(.*)\/(.*?)\/start.jar/) {
+	$data->{instpath} = "$1/$2";
+	$data->{instname} = $2;
+    }
 
-    open(VERSION, "sudo cat " . $data->{instpath} . "/VERSION.txt |")
-	or die "failed to open VERSION.txt";
+    open(VERSION, "sudo cat " . $data->{instpath} . "/VERSION.txt |");
+#        or die "failed to open VERSION.txt";
     while (<VERSION>) {
-	/project.version=(.*)/ and $data->{version} = $1;
+	/project.version=(.*)/ and $data->{exist_version} = $1;
     }
     close VERSION;
 
@@ -168,10 +452,33 @@ sub parse_ex5 {
 	and $data->{instpath} = "$1/$2"
 	and $data->{instname} = $2;
 
-    open(VERSION, "sudo cat " . $data->{instpath} . "/etc/system.properties |")
-	or die "failed to open system.properties";
+    open(VERSION, "sudo cat " . $data->{instpath} . "/etc/system.properties |");
+#	or die "failed to open system.properties";
     while (<VERSION>) {
-	/product-version=(.*)/ and $data->{version} = $1;
+	/product-version=(.*)/ and $data->{exist_version} = $1;
+    }
+    close VERSION;
+
+    my $desc = `sudo head -1 $data->{instpath}/contrib/DESCRIPTION.md 2>/dev/null`;
+    chomp $desc;
+    $data->{description} = $desc;
+
+    $DATA->{$data->{instname}} = $data;
+}
+
+sub parse_tmux_started {
+    my $l = shift;
+    my $data = parse_generic($l);
+
+    # no path to determine instpath, assume exist_home
+    $data->{instpath} = $data->{exist_home};
+    $data->{instpath} =~ /.*\/(.*?)$/;
+    $data->{instname} = $1;
+
+    open(VERSION, "sudo cat " . $data->{instpath} . "/VERSION.txt |");
+#        or die "failed to open VERSION.txt";
+    while (<VERSION>) {
+	/project.version=(.*)/ and $data->{exist_version} = $1;
     }
     close VERSION;
 
@@ -201,10 +508,24 @@ sub parse_generic {
 	'res'     => $6,
 	'command' => $7,
 	'gc'      => 'unknown',
+	# defaults
+	'http_port' => 8080,
+	'ssl_port'  => 8443,
+	'instname'      => 'unknown',
+	'instpath'      => 'unknown',
+	'description'   => '',
+	'exist_home'    => 'unknown',
+	'exist_version' => 'unknown',
+	'mem_maxheap'   => 'default',
+	'mem_maxmeta'   => 'default',
+	'mem_maxdirect' => 'default',
+	'java_bin'      => 'java',
+	'java_vendor'   => 'unknown',
+	'java_version'  => 'unknown',
     };
 
     my $c = $data->{command};
-    $c =~ /^(.*bin.java)\s/      and $data->{java_bin} = $1;
+    $c =~ /((.*)?java)\s/    and $data->{java_bin} = $1;
     $c =~ /jetty.port=(\d+)/     and $data->{http_port} = $1;
     $c =~ /jetty.ssl.port=(\d+)/ and $data->{ssl_port} = $1;
     $c =~ /-Dexist.home=(.*?)\s/ and $data->{exist_home} = $1;
@@ -227,3 +548,22 @@ sub parse_generic {
 
     $data;
 }
+
+### FORMATTING UTILS
+
+sub xml_open_subnode {
+    my ($indent, $name) = @_;
+    print indent($indent), "<${name}>\n";
+}
+
+sub xml_close_subnode {
+    my ($indent, $name) = @_;
+    print indent($indent), "</${name}>\n";
+}
+
+sub indent {
+    my $num = shift;
+    return ' ' x ($num * $CONF->{indent});
+}
+
+1;
