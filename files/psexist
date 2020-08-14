@@ -255,6 +255,7 @@ sub print_exist_inst {
 	}
 	print indent(2), "</instance>\n";
     } else {
+
 	print 
 	    "instance: $i\n",
 	    "    description:        ", $DATA->{$i}->{description}, "\n",
@@ -480,6 +481,17 @@ sub parse_tmux_started {
 	/project.version=(.*)/ and $data->{exist_version} = $1;
     }
     close VERSION;
+
+    # read first line, fail silently if file missing
+    $data->{instdesc} = '';
+    if (open(DESCRIPTION,
+	     "sudo cat " . $data->{instpath} . "/contrib/DESCRIPTION.md |")) {
+	while (<DESCRIPTION>) {
+	    $data->{instdesc} = $_;
+	    last;
+	}
+	close DESCRIPTION;
+    }
 
     $DATA->{$data->{instname}} = $data;
 }
