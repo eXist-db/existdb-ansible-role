@@ -6,7 +6,7 @@
 
 # Current Version
 
-Version 1.0-SNAPSHOT (May 27 2020)
+Version 1.0-SNAPSHOT (Jun 11 2020)
 
 ## New Features
 
@@ -17,6 +17,7 @@ Version 1.0-SNAPSHOT (May 27 2020)
 
 ## Fixes and Improvements
 
+* provide installation documentation
 * cleanup exist_adminpass and exist_userpass_map formats
 * add syslog support
 * add logrotate support for automatic deletion of old log files
