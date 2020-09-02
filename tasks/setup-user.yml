@@ -75,7 +75,7 @@
   template:
     src: limits.exist.j2
     dest: '/etc/security/limits.d/{{ exist_instuser }}.conf'
-  when: exist_fdset_enable == True
+  when: exist_fdset_enable|bool is sameas true
   tags:
     - preinstall
     - instuser
@@ -88,7 +88,7 @@
   with_items:
     - login
     - su
-  when: exist_fdset_enable == True and ansible_os_family == "Debian"
+  when: exist_fdset_enable|bool is sameas true and ansible_os_family == "Debian"
   tags:
     - preinstall
     - instuser
@@ -98,7 +98,7 @@
     name: /etc/pam.d/system-auth
     regexp: 'session\s+required\s+pam_limits.so'
     line: 'session  required  pam_limits.so'
-  when: exist_fdset_enable == True and ansible_os_family == "RedHat"
+  when: exist_fdset_enable|bool is sameas true and ansible_os_family == "RedHat"
   tags:
     - preinstall
     - instuser

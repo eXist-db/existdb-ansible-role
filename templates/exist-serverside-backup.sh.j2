@@ -15,17 +15,17 @@ TIMEOUT=14400                   # 4 hours
 EXIST_BASEDIR={{ exist_home }}
 
 
-${EXIST_BASEDIR}/${INSTNAME}/contrib/execute-xmlrpc.pl \
+${EXIST_BASEDIR}/${INSTNAME}/contrib/execute-xmlrpc.py \
   -u ${ADMIN_USER} -p "${ADMIN_PASS}" -P {{ exist_http_port }} -T \
   -t ${TIMEOUT} <<XQUERY
 xquery version "3.1";
 
-let $params :=
+let \$params :=
  <parameters>
    <param name="output" value="${BACKUP_DEST}"/>
     <param name="backup" value="yes"/>
     <param name="incremental" value="${INCREMENTAL}"/>
  </parameters>
  return
-    system:trigger-system-task("org.exist.storage.ConsistencyCheckTask", $params)
+    system:trigger-system-task("org.exist.storage.ConsistencyCheckTask", \$params)
 XQUERY

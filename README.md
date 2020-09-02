@@ -95,6 +95,17 @@ used to run each eXist-db instance under a separate user.
 
 The specified Unix user gets created by this role if it does not exist yet.
 
+    exist_instdescription: ''
+    #exist_instdescription: 'testing'
+    #exist_instdescription: 'my experimental setup'
+
+An optional description string for this eXist-db instance. This gets used by
+reporting tools only and is not required for operation. May be used to
+provide additional information about this instance. Can be a multiline string,
+but only the first line gets read by reporting tools. The content of this
+variable gets stored in `$EXIST_HOME/contrib/DESCRIPTION.md` along with other
+information.
+
     exist_http_port: 8080
     exist_ssl_port: 8443
     #exist_http_host: '127.0.0.1'
@@ -215,6 +226,11 @@ settings instruct the kernel to try to avoid swapping if possible.
     exist_syslog_loghost: 127.0.0.1
 
 Settings for logging to a remote syslog server. See "Logging" below.
+
+    exist_log_retention_days: 30
+
+How many days to keep old logfiles before they get deleted by the logrotate
+mechanism. See "Logging" below.
 
     exist_prohibit_usermod: []
 
@@ -369,6 +385,12 @@ A backup can be restored by calling the `exist-restore.sh` like this:
 
 By default, eXist-db logs into logfiles located in `$EXIST_HOME/logs` (exist
 5.x) or `$EXIST_HOME/webapp/WEB-INF/logs` (exist 4.x).
+
+Use the following setting to control how many days log files are kept before
+automatic deletion by the logrotate mechanism. Set to zero to prohibit any log
+file deletion (by not installing a logrotate config).
+
+    exist_log_retention_days: 30
 
 To log to a central remote syslog server, use the following settings:
 

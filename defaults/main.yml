@@ -3,6 +3,7 @@
 exist_user: existdb
 exist_group: existdb
 exist_home: /usr/local/existdb
+exist_dir: existdb
 
 # for multiple eXist-db instances on a single host, assign an individual
 # instance name to each one. No spaces, umlauts or special chars!
@@ -11,12 +12,20 @@ exist_instname: 'exist'
 #exist_instname: 'exist-test'
 #exist_instname: 'exist-prod'
 
-# if you run multiple eXist-db instances on a single host, you may want to each
-# of them as a different user.
+# if you run multiple eXist-db instances on a single host, you may want to run
+# each of them as a different user.
 # if you're not running multiple instances the default is fine
 exist_instuser: 'existdb'
 #exist_instuser: 'tester'
 #exist_instuser: 'customer1'
+
+# if you run multiple eXist-db instances on a single host, you may want to give
+# each of them a descriptive comment.
+# if you're not running multiple instances the default is fine
+# this variable is only used by reporting tools and not required for operation
+exist_instdescription: ''
+#exist_instdescription: 'testing'
+#exist_instdescription: 'production'
 
 # for reference, but don't force anyone to localhost by default
 #exist_http_host: '127.0.0.1'
@@ -95,6 +104,9 @@ exist_kerneltune_cachepressure: 50
 # logging to local files only.
 exist_syslog_enable: no
 exist_syslog_loghost: 127.0.0.1
+
+# how many days should local log files be kept before they are deleted
+exist_log_retention_days: 30
 
 # list of (pre-existing) Unix users that this role should not modify
 exist_prohibit_usermod: []
@@ -181,8 +193,9 @@ exist_redhat_extra_packages:
   # for Ansible synchronize
   - rsync
   # for upload-xmlrpc script
-  - perl-RPC-XML
   - perl-LWP-Protocol-https
+  # for source install
+  - patch
 
 # for Debian 8
 exist_debian_extra_packages:
@@ -193,6 +206,8 @@ exist_debian_extra_packages:
   # for upload-xmlrpc script
   - librpc-xml-perl
   - liblwp-protocol-https-perl
+  # for source install
+  - patch
 
 # for Ubuntu xenial
 exist_ubuntu_extra_packages:
@@ -203,5 +218,9 @@ exist_ubuntu_extra_packages:
   # for upload-xmlrpc script
   - librpc-xml-perl
   - liblwp-protocol-https-perl
+  # for source install
+  - patch
+
+xar_install: []
 
 exist_mvn_options: "-D skipTests -D docker=false -P '!build-dist-archives,!mac-dmg-on-mac,!codesign-mac-dmg,!mac-dmg-on-unix,!installer,!concurrency-stress-tests,!micro-benchmarks'"

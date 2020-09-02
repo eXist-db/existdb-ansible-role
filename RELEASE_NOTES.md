@@ -6,7 +6,7 @@
 
 # Current Version
 
-Version 1.0RC1 (Aug 24 2019)
+Version 1.0-SNAPSHOT (Jun 11 2020)
 
 ## New Features
 
@@ -17,8 +17,10 @@ Version 1.0RC1 (Aug 24 2019)
 
 ## Fixes and Improvements
 
+* provide installation documentation
 * cleanup exist_adminpass and exist_userpass_map formats
 * add syslog support
+* add logrotate support for automatic deletion of old log files
 * add kernel memory tuning (swappiness)
 * add install_method: 'none' (do not touch an installed version)
 * make install/replace decision logic more robust

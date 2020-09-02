@@ -3,6 +3,7 @@
 ex_path="{{ exist_path }}"
 
 # defaults
+ex_description=
 ex_running=false
 ex_installed=false
 ex_version=
@@ -46,6 +47,10 @@ if [ -f $ex_path/etc/conf.xml ]; then
     fi
 fi
 
+if [ -f $ex_path/contrib/DESCRIPTION.md ]; then
+    ex_description=`head -1 $ex_path/contrib/DESCRIPTION.md 2>/dev/null`
+fi
+
 if pgrep -lfu {{ exist_instuser }} '{{ exist_instname }} org.codehaus' >/dev/null; then
     ex_running=true
 fi
@@ -59,6 +64,7 @@ fi
 cat <<EOF
 {
     "exist_installed": ${ex_installed},
+    "exist_description": "${ex_description}",
     "exist_path": "${ex_path}",
     "exist_running": ${ex_running},
     "exist_version": "${ex_version}",
