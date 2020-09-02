@@ -222,3 +222,5 @@ exist_ubuntu_extra_packages:
   - patch
 
 xar_install: []
+
+exist_mvn_options: "-D skipTests -D docker=false -P '!build-dist-archives,!mac-dmg-on-mac,!codesign-mac-dmg,!mac-dmg-on-unix,!installer,!concurrency-stress-tests,!micro-benchmarks'"
