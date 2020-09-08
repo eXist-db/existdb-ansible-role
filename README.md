@@ -95,6 +95,17 @@ used to run each eXist-db instance under a separate user.
 
 The specified Unix user gets created by this role if it does not exist yet.
 
+    exist_instdescription: ''
+    #exist_instdescription: 'testing'
+    #exist_instdescription: 'my experimental setup'
+
+An optional description string for this eXist-db instance. This gets used by
+reporting tools only and is not required for operation. May be used to
+provide additional information about this instance. Can be a multiline string,
+but only the first line gets read by reporting tools. The content of this
+variable gets stored in `$EXIST_HOME/contrib/DESCRIPTION.md` along with other
+information.
+
     exist_http_port: 8080
     exist_ssl_port: 8443
     #exist_http_host: '127.0.0.1'

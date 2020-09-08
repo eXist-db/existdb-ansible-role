@@ -6,7 +6,7 @@
 
 # Current Version
 
-Version 1.0-SNAPSHOT (May 27 2020)
+Version 1.0-SNAPSHOT (Jun 11 2020)
 
 ## New Features
 
@@ -17,6 +17,7 @@ Version 1.0-SNAPSHOT (May 27 2020)
 
 ## Fixes and Improvements
 
+* provide installation documentation
 * cleanup exist_adminpass and exist_userpass_map formats
 * add syslog support
 * add logrotate support for automatic deletion of old log files
@@ -28,6 +29,13 @@ Version 1.0-SNAPSHOT (May 27 2020)
 * add Ansible tags
 * replace deprecated Ansible constructs (thanks @OyvindLG)
 * add Ansible meta data (thanks @jdwit)
+* rewrite upload-xmlrpc.pl in python3
+* can apply patches after git checkout on source build
+* prepare for 'run xquery during startup' (add collection '/db/system/autostart')
+* allow xars to be installed from path on destination host (add 'remote_src')
+* help ansible check-mode by allowlisting non-modifying shell calls (add 'check_mode: false')
+* make maven options configurable (add 'exist_mvn_options')
+* disable restxq autostart (add 'exist_confxml_trigger_restxq_enable')
 * ability to "live"-patch xars by adding attributes to 'xar_install', see 'exist_xar_' and 'exist_replication_'
 
 ## Incompatibilities with Earlier Versions

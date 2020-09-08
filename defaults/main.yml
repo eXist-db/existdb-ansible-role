@@ -12,12 +12,20 @@ exist_instname: 'exist'
 #exist_instname: 'exist-test'
 #exist_instname: 'exist-prod'
 
-# if you run multiple eXist-db instances on a single host, you may want to each
-# of them as a different user.
+# if you run multiple eXist-db instances on a single host, you may want to run
+# each of them as a different user.
 # if you're not running multiple instances the default is fine
 exist_instuser: 'existdb'
 #exist_instuser: 'tester'
 #exist_instuser: 'customer1'
+
+# if you run multiple eXist-db instances on a single host, you may want to give
+# each of them a descriptive comment.
+# if you're not running multiple instances the default is fine
+# this variable is only used by reporting tools and not required for operation
+exist_instdescription: ''
+#exist_instdescription: 'testing'
+#exist_instdescription: 'production'
 
 # for reference, but don't force anyone to localhost by default
 #exist_http_host: '127.0.0.1'
@@ -112,6 +120,7 @@ exist_wrapper_ping_timeout: 90
 exist_confxml_dbconn_cachesize: "256M"
 exist_confxml_trigger_xquerystartup_enable: no
 exist_confxml_trigger_autodeploy_enable: yes
+exist_confxml_trigger_restxq_enable: false
 exist_confxml_pool_max: 20
 exist_confxml_recovery_enabled: "yes"
 exist_confxml_recovery_consistency_check: "yes"
@@ -215,6 +224,8 @@ exist_ubuntu_extra_packages:
 
 xar_install: []
 xar_install_defaults: "{{ exist_xar_patch_xml_defaults }}"
+
+exist_mvn_options: "-D skipTests -D docker=false -P '!build-dist-archives,!mac-dmg-on-mac,!codesign-mac-dmg,!mac-dmg-on-unix,!installer,!concurrency-stress-tests,!micro-benchmarks'"
 
 exist_xar_patch_xml_defaults: { src_archive_ext: 'xar', target_archive_suffix: '', namespaces: { "xmlns": "http://exist-db.org/collection-config/1.0" }, xpath: "/xmlns:collection", state: "present", add_children: "{{ exist_replication_trigger_template }}" }
 

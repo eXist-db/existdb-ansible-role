@@ -8,7 +8,7 @@
   # java.io.tmpdir needed to work around an atomic move across filesystems
   # skipTest because some tests fail and we're not doing dev here
   # do not try to build Mac images, needs HFS utils, not avail everywhere
-  shell: "MAVEN_OPTS='-Djava.io.tmpdir={{ exist_home }}/tmp' mvn clean package -D skipTests -P '!mac-dmg-on-unix' >build.log 2>&1"
+  shell: "MAVEN_OPTS='-Djava.io.tmpdir={{ exist_home }}/tmp' mvn clean package {{ exist_mvn_options }} >build.log 2>&1"
   args:
     chdir: "{{ exist_srcpath }}"
   tags:

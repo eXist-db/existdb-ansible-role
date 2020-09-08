@@ -213,7 +213,11 @@
                 <!-- 
                     EXQuery RESTXQ trigger to load the RESTXQ Registry at startup time 
                 -->
+{% if exist_confxml_trigger_restxq_enable|bool is sameas false %}                <!--
+{% endif %}
                 <trigger class="org.exist.extensions.exquery.restxq.impl.RestXqStartupTrigger"/>
+{% if exist_confxml_trigger_restxq_enable|bool is sameas false %}                -->
+{% endif %}
                 
                 <!-- 
                     AutoDeploymentTrigger will install any .xar application package it finds
