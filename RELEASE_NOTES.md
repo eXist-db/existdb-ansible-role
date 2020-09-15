@@ -36,6 +36,7 @@ Version 1.0-SNAPSHOT (Jun 11 2020)
 * help ansible check-mode by allowlisting non-modifying shell calls (add 'check_mode: false')
 * make maven options configurable (add 'exist_mvn_options')
 * disable restxq autostart (add 'exist_confxml_trigger_restxq_enable')
+* ability to "live"-patch xars by adding attributes to 'xar_install', see 'exist_xar_' and 'exist_replication_'
 
 ## Incompatibilities with Earlier Versions
 

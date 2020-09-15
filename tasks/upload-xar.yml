@@ -1,0 +1,51 @@
+---
+  - name: Merge defaults
+    set_fact:
+      xar_install_merged: "{{ xar_install_merged | default([]) + [ xar_install_defaults | combine(item) ] }}"
+    with_items: "{{ xar_install | default([]) }}"
+    tags:
+      - install
+      - xar-upload
+
+  - name: Move xar_install_merged to xar_install_merged2
+    set_fact:
+      xar_install_merged2: "{{ query('vars', 'xar_install_merged') }}"
+      xar_install_merged: []
+    tags:
+      - install
+      - xar-upload
+
+  - name: Create xar_install_merged.item.name if empty
+    set_fact:
+      xar_install_merged: "{{ xar_install_merged|default([]) + [ { 'name': item.src_archive_name|default('') + item.target_archive_suffix + '.' + item.src_archive_ext } | combine(item) ] }}"
+    with_items: "{{ xar_install_merged2 }}"
+    tags:
+      - install
+      - xar-upload
+
+  - name: Ensure working directories exist
+    file:
+      path: "{{ item }}"
+      state: directory
+    become_user: existdb
+    become: true
+    with_items:
+    - "{{ exist_xar_path }}/src"
+    - "{{ exist_xar_path }}/build"
+    - "{{ exist_xar_path }}/target"
+    tags:
+      - install
+      - xar-upload
+
+  - name: Upload xar
+    copy:
+      src: "{{ exist_xar_path }}/{{ item.src_archive_name + '.' + item.src_archive_ext if item.src_archive_name is defined else item.name }}"
+      dest: "{{ exist_xar_path }}/{{ 'src' if item.src_archive_name is defined else 'target' }}/{{ item.src_archive_name + '.' + item.src_archive_ext if item.src_archive_name is defined else item.name }}"
+      remote_src: no
+    become_user: existdb
+    become: true
+    with_items: "{{ xar_install_merged }}"
+    when: "item.path is defined"
+    tags:
+      - install
+      - xar-upload
