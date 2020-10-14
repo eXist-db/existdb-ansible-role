@@ -41,6 +41,7 @@
     copy:
       src: "{{ exist_xar_path }}/{{ item.src_archive_name + '.' + item.src_archive_ext if item.src_archive_name is defined else item.name }}"
       dest: "{{ exist_xar_path }}/{{ 'src' if item.src_archive_name is defined else 'target' }}/{{ item.src_archive_name + '.' + item.src_archive_ext if item.src_archive_name is defined else item.name }}"
+      mode: "0666"
       remote_src: no
     become_user: existdb
     become: true
