@@ -676,7 +676,7 @@
 {% endif %}
        
 {% if exist_confxml_job_twitter_enable|bool is sameas true %}
-        <job xquery="/db/apps/twitter/jobs/download-recent-twitter-posts.xq" period="600000"/>
+        <job xquery="/db/apps/twitter/jobs/download-recent-twitter-posts.xq" period="600000" unschedule-on-exception="false" />
 {% endif %}
  
         <!-- 
