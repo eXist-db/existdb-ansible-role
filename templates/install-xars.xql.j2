@@ -10,7 +10,7 @@ declare namespace repo="http://exist-db.org/xquery/repo";
 
 (: comma separated list of xar file names as strings              :)
 (:     ("foo-1.0.xar,"bar-1.1.0.xar")                             :)
-declare variable $local:xarlist := ("{{ exist_custom_xarlist | join("\",\"") }}");
+declare variable $local:xarlist := ("{{ exist_custom_xarlist | join("\", \"") }}");
 
 (: force installation even if version numbers are identical?      :)
 (:     boolean string values "true" or "false"                    :)
@@ -62,10 +62,15 @@ declare function local:get-expath-package ($name as xs:string) as item()? {
     return $collections
 };
 declare function local:get-repo-meta ($name as xs:string) as element(meta)? {
+    let $expath-package := local:get-expath-package($name)
     let $collection :=
-        local:get-expath-package($name)
-            => util:collection-name()
-            => collection()
+        if (count($expath-package)=1) then (
+            $expath-package
+                => util:collection-name()
+                => collection()
+        ) else (
+            ()
+        )
     return $collection//repo:meta
 };
 
