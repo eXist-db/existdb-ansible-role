@@ -91,6 +91,14 @@
     - install
     - xar-patch
 
+  - name: Update xar in ./build/ with patched repo.xml
+    shell: "cd {{ exist_xar_path }}/build/{{ item.src_archive_name }}{{ item.target_archive_suffix }}; zip -r ../{{ item.src_archive_name }}{{ item.target_archive_suffix }}.{{ item.src_archive_ext }}.tmp ./repo.xml;"
+    with_items: "{{ exist_xar_patch_xml_merged }}"
+    when: "item.src_archive_name is defined and item.src_archive_name != ''"
+    tags:
+    - install
+    - xar-patch
+
   - name: Update xar in ./build/ with patched xml file(s)
     shell: "cd {{ exist_xar_path }}/build/{{ item.src_archive_name }}{{ item.target_archive_suffix }}; zip -r ../{{ item.src_archive_name }}{{ item.target_archive_suffix }}.{{ item.src_archive_ext }}.tmp .;"
     with_items: "{{ exist_xar_patch_xml_merged }}"
