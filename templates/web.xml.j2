@@ -293,7 +293,7 @@
     </servlet>
 
     <!--
-	<servlet>
+    <servlet>
         <servlet-name>OAuthServlet</servlet-name>
         <servlet-class>org.exist.security.realm.oauth.OAuthServlet</servlet-class>
     </servlet>
@@ -319,21 +319,21 @@
         betterFORM servlets
     -->
     <servlet>
-      <servlet-name>ResourceServlet</servlet-name>
-      <servlet-class>de.betterform.agent.web.resources.ResourceServlet</servlet-class>
-      <init-param>
-         <param-name>caching</param-name>
-         <param-value>true</param-value>
-      </init-param>
-   </servlet>
+        <servlet-name>ResourceServlet</servlet-name>
+        <servlet-class>de.betterform.agent.web.resources.ResourceServlet</servlet-class>
+        <init-param>
+            <param-name>caching</param-name>
+            <param-value>true</param-value>
+        </init-param>
+    </servlet>
     
     <!--
         betterFORM servlet mappings
     -->
     <servlet-mapping>
-      <servlet-name>ResourceServlet</servlet-name>
-      <url-pattern>/bfResources/*</url-pattern>
-   </servlet-mapping>
+        <servlet-name>ResourceServlet</servlet-name>
+        <url-pattern>/bfResources/*</url-pattern>
+    </servlet-mapping>
 
 
     <!--
