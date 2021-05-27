@@ -69,6 +69,8 @@
       state: "{{ item.state | default('present') }}"
       attribute: "config-id"
       #value: "0000000000000000000000000000000000000000"
+      #value: "{{ ansible_date_time['epoch'] }}"
+      #value: "{{ ansible_date_time['iso8601_basic_short'] }}"
       value: "{{ exist_xar_patch_xml_config_ids[item.src_archive_name] }}"
     with_items: "{{ exist_xar_patch_xml_merged }}"
     when: "item.src_archive_name is defined"
