@@ -19,6 +19,8 @@
     src: "{{ item }}"
     dest: "{{ exist_path }}/contrib/{{ item }}"
     mode: 0700
+    owner: "{{ exist_instuser }}"
+    group: "{{ exist_group }}"
   with_items:
     - common-shfuncs.sh
   tags:
