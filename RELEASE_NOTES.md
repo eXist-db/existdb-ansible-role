@@ -6,7 +6,7 @@
 
 # Current Version
 
-Version 1.0-SNAPSHOT (Jun 11 2020)
+Version 1.0-SNAPSHOT (Jun 13 2021)
 
 ## New Features
 
@@ -17,6 +17,7 @@ Version 1.0-SNAPSHOT (Jun 11 2020)
 
 ## Fixes and Improvements
 
+* [bugfix] disable exist_webxml_from_template by default (thanks @sermo-de-arboribus)
 * provide installation documentation
 * cleanup exist_adminpass and exist_userpass_map formats
 * add syslog support
