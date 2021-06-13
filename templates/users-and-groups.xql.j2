@@ -4,7 +4,7 @@ xquery version "3.1";
 {% if exist_major_version > 4 %}
 declare variable $local:users :=
     map {
-{% for k,v in exist_userpass_map[inventory_hostname][exist_instname].iteritems() %}
+{% for k,v in exist_userpass_map[inventory_hostname][exist_instname].items() %}
         "{{ k }}": "{{ v }}"{% if not loop.last %},{% endif %}
 
 {% endfor %}
@@ -12,7 +12,7 @@ declare variable $local:users :=
 {% else %}
 declare variable $local:users :=
     map:new((
-{% for k,v in exist_userpass_map[inventory_hostname][exist_instname].iteritems() %}
+{% for k,v in exist_userpass_map[inventory_hostname][exist_instname].items() %}
         map:entry("{{ k }}", "{{ v }}"){% if not loop.last %},{% endif %}
 
 {% endfor %}
