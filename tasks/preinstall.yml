@@ -85,7 +85,6 @@
     mode: 0755
   with_items:
     - psexist
-    - common-shfuncs.sh
   tags:
     - preinstall
     - util

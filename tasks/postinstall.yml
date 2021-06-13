@@ -14,6 +14,18 @@
   tags:
     - config
 
+- name: Copy scripts with common functions
+  copy:
+    src: "{{ item }}"
+    dest: "{{ exist_path }}/contrib/{{ item }}"
+    mode: 0700
+  with_items:
+    - common-shfuncs.sh
+  tags:
+    - config
+    - exist4
+    - exist5
+
 - name: Install eXist-DB custom Java options file (5.x)
   template:
     src: exist.java.options.j2
