@@ -86,9 +86,9 @@ exist_wrapperconf_from_template: yes
 exist_jettyconf_from_template: yes
 exist_logconf_from_template: no
 exist_clientprops_from_template: yes
-exist_webxml_from_template: yes
 # XXX these are not fully supported yet, leave as is!
 exist_confxml_from_template: no
+exist_webxml_from_template: no
 
 # used to increase file descriptor limits for the user running eXist
 exist_fdset_enable: yes
