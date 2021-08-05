@@ -214,13 +214,18 @@ exist_debian_extra_packages:
 exist_ubuntu_extra_packages:
   # for uuidgen, not installed by default
   - uuid-runtime
-  # for Ansible synchronize
+  # for Ansible
+  - acl
+  - python3-lxml
+  - python-lxml
   - rsync
   # for upload-xmlrpc script
   - librpc-xml-perl
   - liblwp-protocol-https-perl
   # for source install
   - patch
+  # for WebDAV and debugging
+  - davfs2
 
 xar_install: []
 xar_install_defaults: "{{ exist_xar_patch_xml_defaults }}"
