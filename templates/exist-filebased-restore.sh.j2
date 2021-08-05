@@ -2,108 +2,94 @@
 
 usage() {
     cat <<EOF
-Usage: $0 [-K] backupdir
-   eg: $0 exist.201801151508
+Usage: $0 [-K] backupdir instance_name instance_user
+   eg: $0 exist.201801151508 exist50 existdb
 
 Options:
-   -K  keep eXist instance dir from before restore (gets deleted by default)
+ -d  search backups below this directory (default ${BACKUP_DIR})
+ -f  force, skip "proceed?" question
+ -h  help (this text)
+ -i  backup the named exist-db instance (default ${INSTNAME})
+ -K  keep eXist instance dir from before restore (gets deleted by default)
+ -s  log to syslog
 EOF
 }
 
-while getopts "K" PARAM; do
+# defaults
+INSTNAME={{ exist_instname }}
+EXIST_BASEDIR={{ exist_home }}
+INSTUSER={{ exist_instuser }}
+BACKUP_DIR=${EXIST_BASEDIR}/backup
+TYPE=rsync
+FORCE=
+VERBOSE=
+SYSLOG=
+LOGFILE=`mktemp`
+export VERBOSE SYSLOG LOGFILE
+
+trap "rm -rf $LOGFILE" EXIT
+
+while getopts "d:fhi:Kst:u:v" PARAM; do
     case "${PARAM}" in
+	d) BACKUP_DIR=$OPTARG;;
+	f) FORCE=yes;;
+	i) INSTNAME=$OPTARG;;
 	K) KEEP_PREVIOUS=yes;;
+	s) SYSLOG=yes;;
+	t) TYPE=$OPTARG;;
+	u) INSTUSER=$OPTARG;;
+	v) VERBOSE=yes;;
 	*) usage; exit 1;;
     esac
 done
 shift $(($OPTIND - 1))
 
-BACKUP_DIR=$1
-INSTNAME=$2
-INSTUSER=$3
+SCRIPT_DIR=`dirname $0`
+. ${SCRIPT_DIR}/common-shfuncs.sh
 
-EXIST_BASEDIR={{ exist_home }}
-BACKUP_BASEDIR=${EXIST_BASEDIR}/backup/${INSTUSER}
-LOGFILE=`mktemp`
-SYSLOG=
-export LOGFILE SYSLOG
-
-. ${EXIST_BASEDIR}/${INSTNAME}/contrib/common-shfuncs.sh
-
-if [ "$BACKUP_DIR" = "" ]; then
-    logerr 1 "ERROR: no backup dir specified, exiting"
-fi
-if [ -z "$INSTNAME" ]; then
-    logerr 1 "ERROR: no instance name specified, exiting"
-fi
-if [ -z "$INSTUSER" ]; then
-    logerr 1 "ERROR: no instance user specified, exiting"
-fi
-
-logmsg "checking if backup files are available"
-bakdir=${BACKUP_BASEDIR}/${BACKUP_DIR}/${INSTNAME}
-if [ -d $bakdir -a -r $bakdir ]; then
-    logmsg "found exist backup $bakdir"
-    found_exist=true
+if [ -d "${BACKUP_DIR}/${INSTNAME}" -a \
+     -d "${BACKUP_DIR}/${INSTNAME}/${INSTNAME}" -a \
+     "$TYPE" = rsync ]; then
+    logmsg "Found rsync backup in ${BACKUP_DIR}/${INSTNAME}"
+elif [ -f ${BACKUP_DIR}/${INSTNAME}.tgz -a "$TYPE" = tgz ]; then
+    logmsg "Found tgz backup ${BACKUP_DIR}/${INSTNAME}.tgz"
 else
-    logmsg "WARN: backup not found: $bakdir"
-    found_exist=false
-fi
-init=${BACKUP_BASEDIR}/${BACKUP_DIR}/${INSTNAME}.init
-if [ -e $init -a -r $init ]; then
-    logmsg "found init.d script $init"
-    found_init=true
-else
-    #logmsg "WARN: not found: init.d script $init}"
-    found_init=false
-fi
-systemd=${BACKUP_BASEDIR}/${BACKUP_DIR}/${INSTNAME}.service
-if [ -e $systemd -a -r $systemd ]; then
-    logmsg "found systemd file $systemd"
-    found_systemd=true
-else
-    #logmsg "WARN: not found: systemd file $systemd"
-    found_systemd=false
+    logerr 1 "No backup found"
 fi
 
-
-# if eXist instance is running, stop it first
-if psexist -S $INSTNAME | grep -q $INSTNAME; then
-    logmsg "stopping running eXist instance \"${INSTNAME}\""
-    service ${INSTNAME} stop
-    sleep 3
-    # check again to verify it is really dead, just to be sure
-    if psexist -S $INSTNAME | grep -q $INSTNAME; then
-	logerr 2 "ERROR: eXist instance \"${INSTNAME}\" still running after stop command"
-    fi
-else
-    logmsg "eXist instance \"${INSTNAME}\" not running"
-fi
+shutdown_exist
 
 # rename current eXist installation dir
-logmsg "moving current eXist dir to \"${INSTNAME}.BEFORE_RESTORE\""
-mv ${EXIST_BASEDIR}/${INSTNAME} ${EXIST_BASEDIR}/${INSTNAME}.BEFORE_RESTORE
-
-# copy backed up eXist instance to installation dir
-logmsg "restoring eXist instance \"${INSTNAME}\""
-rsync -a ${bakdir} ${EXIST_BASEDIR}/
-
-# restore init.d or systemd startup file from backup
-if [ -e $init ]; then
-    logmsg "restoring init.d script/link for eXist instance \"${INSTNAME}\""
-    cp -f $init /etc/init.d/${INSTNAME}
+if [ -d "${EXIST_BASEDIR}/${INSTNAME}" ]; then
+    logmsg "Moving current exist-db dir to \"${INSTNAME}.BEFORE_RESTORE\""
+    mv ${EXIST_BASEDIR}/${INSTNAME} ${EXIST_BASEDIR}/${INSTNAME}.BEFORE_RESTORE
 fi
-if [ -e $systemd ]; then
-    logmsg "restoring systemd file/link for eXist instance \"${INSTNAME}\""
-    cp -f $systemd /etc/systemd/system/${INSTNAME}.service
+
+if [ "$TYPE" = rsync ]; then
+    logmsg "Restoring from rsync dir ${BACKUP_DIR}/${INSTNAME}/${INSTNAME}"
+    rsync -a ${BACKUP_DIR}/${INSTNAME}/${INSTNAME} ${EXIST_BASEDIR}
+    [ -f ${BACKUP_DIR}/${INSTNAME}/${INSTNAME}.fact ] && \
+	rsync -a ${BACKUP_DIR}/${INSTNAME}/${INSTNAME}.fact /etc/ansible/facts.d/
+    [ -f ${BACKUP_DIR}/${INSTNAME}/${INSTNAME}.service ] && \
+	rsync -a ${BACKUP_DIR}/${INSTNAME}/${INSTNAME}.service /etc/systemd/system/
+elif [ "$TYPE" = tgz ]; then
+    logmsg "Restoring from tgz file ${BACKUP_DIR}/${INSTNAME}.tgz"
+    tar zxf ${BACKUP_DIR}/${INSTNAME}.tgz -C ${EXIST_BASEDIR} ${INSTNAME}
+    tar zxf ${BACKUP_DIR}/${INSTNAME}.tgz -C / etc
+else
+    :
 fi
 
 # remove eXist version from before the restore, unless KEEP_PREVIOUS
 if [ -z "$KEEP_PREVIOUS" ]; then
-    logmsg "removing previous eXist version from before the restore"
+    logmsg "Removing previous eXist version from before the restore"
     rm -rf ${EXIST_BASEDIR}/${INSTNAME}.BEFORE_RESTORE
 fi
 
 # move restore logfile to eXist log dir
 [ -n "$LOGFILE" ] \
-    && mv $LOGFILE ${EXIST_BASEDIR}/${INSTNAME}/restore-${BACKUP_DIR}.log
+    && mv $LOGFILE ${EXIST_BASEDIR}/${INSTNAME}/logs/restore-${TYPE}.log \
+    && chown ${INSTUSER} ${EXIST_BASEDIR}/${INSTNAME}/logs/restore-${TYPE}.log
+
+# reload systemd, in case systemd service file was recreated
+systemctl daemon-reload
