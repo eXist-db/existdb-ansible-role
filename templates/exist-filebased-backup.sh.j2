@@ -2,87 +2,122 @@
 
 usage() {
     cat <<EOF
-Usage: $0 [-M] instance_name instance_user
-   eg: $0 exist50 existdb
+Usage: $0 [-f] [-s] [-v] [-d bakdir] [-i instname] [-t baktype] [-u instuser]
+       $0 [-h]
 
 Options:
-   -M  move instance (i.e. delete it after the backup), this is faster when
-       you plan to delete the old instance anyway
+ -d  place backups below this directory (default ${BACKUP_DIR})
+ -f  force, skip "proceed?" question
+ -h  help (this text)
+ -i  backup the named exist-db instance (default ${INSTNAME})
+ -s  log to syslog
+ -t  backup type (rsync/tgz/fast, default ${TYPE})
+ -u  exist-db instance user (default ${INSTUSER})
+ -v  verbose
 EOF
 }
 
-while getopts "M" PARAM; do
+# defaults
+INSTNAME={{ exist_instname }}
+INSTUSER={{ exist_instuser }}
+EXIST_BASEDIR={{ exist_home }}
+BACKUP_DIR=${EXIST_BASEDIR}/backup
+TYPE=rsync
+DEAD_CHECK_SLEEP=5
+FORCE=
+FAST=
+DATESTR=
+VERBOSE=
+SYSLOG=
+LOGFILE=`mktemp`
+export VERBOSE SYSLOG LOGFILE
+
+trap "rm -rf $LOGFILE" EXIT
+
+while getopts "d:fDi:st:u:v" PARAM; do
     case "${PARAM}" in
-        M) MOVE=yes;;
+	d) BACKUP_DIR=$OPTARG;;
+	f) FORCE=yes;;
+	D) DATESTR=`date +'%Y%m%d%H%M'`;;
+	i) INSTNAME=$OPTARG;;
+	s) SYSLOG=yes;;
+	t) TYPE=$OPTARG;;
+	u) INSTUSER=$OPTARG;;
+	v) VERBOSE=yes;;
         *) usage; exit 1;;
     esac
 done
 shift $(($OPTIND - 1))
 
-LOGFILE=`mktemp`
-SYSLOG=
-export LOGFILE SYSLOG
+case "$TYPE" in
+    rsync|fast)  BACKUP_TARGET=${BACKUP_DIR}/${INSTNAME} ;;
+    tgz)         BACKUP_TARGET=${BACKUP_DIR}/${INSTNAME}.tgz ;;
+    *)           logerr 1 "Unsupported format: \"$TYPE\"" ;;
+esac
 
-. ${INST_DIR}/contrib/common-shfuncs.sh
+BACKUP_SRCDIR=${EXIST_BASEDIR}/${INSTNAME}
 
-INSTNAME=$1
-INSTUSER=$2
-
-if [ -z "$INSTNAME" ]; then
-    logerr 1 "ERROR: no instance name specified, exiting"
-fi
-if [ -z "$INSTUSER" ]; then
-    logerr 1 "ERROR: no instance user specified, exiting"
-fi
-
-EXIST_BASEDIR={{ exist_home }}
-BACKUP_DIRNAME=${INSTNAME}.`date +'%Y%m%d%H%M'`
-BACKUP_DIR=${EXIST_BASEDIR}/backup/${INSTUSER}/${BACKUP_DIRNAME}
-INST_DIR=${EXIST_BASEDIR}/${INSTNAME}
-INIT_FILE=/etc/init.d/${INSTNAME}
+# support files outside of exist-db tree
 SUPP_FILES="\
+ /etc/init.d/${INSTNAME} \
  /etc/systemd/system/${INSTNAME}.service \
  /etc/ansible/facts.d/${INSTNAME}.fact \
  /etc/ansible/facts.d/${INSTNAME}.pl \
 "
-# if eXist instance is running, stop it first
-if psexist -S $INSTNAME | grep -q $INSTNAME; then
-    logmsg "stopping running eXist instance \"${INSTNAME}\""
-    service ${INSTNAME} stop
-    # check again to verify it is really dead, just to be sure
-    sleep 3
-    if psexist -S $INSTNAME | grep -q $INSTNAME; then
-	logerr 2 "ERROR: eXist instance \"${INSTNAME}\" still running after stop command"
-    fi
-else
-    logmsg "eXist instance \"${INSTNAME}\" not running"
-fi
 
-# create backup dir
+SCRIPT_DIR=`dirname $0`
+. ${SCRIPT_DIR}/common-shfuncs.sh
+
+dumpconf() {
+    echo "INSTNAME: $INSTNAME"
+    echo "BACKUP_DIR: $BACKUP_DIR"
+    echo "BACKUP_SRCDIR: $BACKUP_SRCDIR"
+    echo "BACKUP_TARGET: $BACKUP_TARGET"
+    echo "TYPE: $TYPE"
+    echo "FORCE: $FORCE"
+    echo "DATESTR: $DATESTR"
+    echo "VERBOSE: $VERBOSE"
+    echo "SYSLOG: $SYSLOG"
+    echo "SCRIPT_DIR: $SCRIPT_DIR"
+}
+#dumpconf
+
+which psexist >/dev/null || logerr 1 "ERROR: psexist command not found, exiting"
+
+logmsg "Backing up instance \"$INSTNAME\" ${BACKUP_SRCDIR} to ${BACKUP_TARGET} ..."
+shutdown_exist
+
+# ensure backup dir exists
 install -d ${BACKUP_DIR} \
     || logerr 2 "ERROR: failed to create backup dir ${BACKUP_DIR}: $!"
 
-# move current eXist-db instance directory and support files to backup dir
-if [ "${MOVE}" = yes ]; then
-    SUPPFILE_CMD="mv -f"
-    mv ${INST_DIR} ${BACKUP_DIR}/ \
-        || logerr 3 "ERROR: failed to move instance to backup dir: $!"
-else
-    SUPPFILE_CMD="cp -f"
-    rsync -a ${INST_DIR} ${BACKUP_DIR}/ \
-        || logerr 3 "ERROR: failed to rsync instance to backup dir: $!"
-fi
-# init script has no extension
-if [ -e ${INIT_FILE} ]; then
-    ${SUPPFILE_CMD} ${INIT_FILE} ${BACKUP_DIR}/${INIT_FILE}.init \
-        || logerr 3 "ERROR: failed to move init script/link: $!" )
-fi
-for f in ${SUPP_FILES}; do
-    if [ -e $f ]; then
-        ${SUPPFILE_CMD} $f ${BACKUP_DIR}/ \
-	    || logerr 3 "ERROR: failed to move startup scripts/links: $!" ); done
-    fi
-done
 
-# return name of new backup dir
-echo ${BACKUP_DIRNAME}
+if [ "$TYPE" = rsync ]; then
+    logmsg "Start rsync backup"
+    rsync -a --ignore-missing-args ${EXIST_BASEDIR}/${INSTNAME} ${SUPP_FILES} ${BACKUP_TARGET}/
+    logmsg "Rsync backup dir is ${BACKUP_TARGET}"
+    logmsg "`du -sh ${BACKUP_TARGET}`"
+elif [ "$TYPE" = tgz ]; then
+    logmsg "Start tgz backup"
+    tar zcf $BACKUP_TARGET -C "${EXIST_BASEDIR}" ${INSTNAME}/ ${SUPP_FILES} 2>/dev/null
+    logmsg "Backup tgz file is ${BACKUP_TARGET}"
+    logmsg "`ls -lh ${BACKUP_TARGET}`"
+elif [ "$TYPE" = fast ]; then
+    if [ -z "$FORCE" ]; then
+	echo -n "This will MOVE the exist instance to the backup. Proceed? [yN] "
+	read move
+	case "$move" in
+	    y|Y) :;;
+	    *) logerr 1 "Aborted by user"; exit 1;;
+	esac
+    fi
+    logerr 1 "I can't let you do that, Dave"
+    #mv ${EXIST_BASEDIR}/${INSTNAME} ${BACKUP_TARGET}/
+    #mv ${SUPP_FILES} ${BACKUP_TARGET}/
+    #logmsg "Fast-moved backup dir is ${BACKUP_TARGET}"
+fi
+
+# move restore logfile to eXist log dir
+[ -n "$LOGFILE" ] \
+    && mv $LOGFILE ${EXIST_BASEDIR}/${INSTNAME}/logs/backup-${TYPE}.log \
+    && chown ${INSTUSER} ${EXIST_BASEDIR}/${INSTNAME}/logs/backup-${TYPE}.log
