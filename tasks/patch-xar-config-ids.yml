@@ -1,0 +1,53 @@
+---
+  - name: make temp copy of exist_xar_patch_xml_merged, clear exist_xar_patch_xml_merged
+    set_fact:
+      _exist_xar_patch_xml_merged_temp: "{{ exist_xar_patch_xml_merged }}"
+      exist_xar_patch_xml_merged: []
+    no_log: true
+  - name: add hash of current patch to each entry of exist_xar_patch_xml_merged
+    set_fact:
+      exist_xar_patch_xml_merged: "{{ exist_xar_patch_xml_merged + [item | combine({'hash': (
+        (item.src_file_name|default('')) + item.xpath + item.state + item.add_children
+        ) | hash('sha1') })] }}"
+    with_items:
+    - "{{ _exist_xar_patch_xml_merged_temp }}"
+    no_log: true
+
+  - name: create dict src_archive_name to (empty) list of hashes of patches for this src_archive_name
+    set_fact:
+      #exist_xar_patch_xml_config_ids: "{{ (exist_xar_patch_xml_config_ids | default( {'filename':[]} ))
+      #  | combine({item.src_archive_name:[]}) }}"
+      exist_xar_patch_xml_config_ids: "{{ (exist_xar_patch_xml_config_ids | default({}))
+        | combine({item.src_archive_name:[]}) }}"
+    with_items:
+    - "{{ exist_xar_patch_xml_merged }}"
+    when:
+    - "item.src_archive_name is defined and item.src_archive_name != ''"
+    no_log: true
+
+  - name: collect all hashes for a src_archive_name in this list in this dict
+    set_fact:
+      #exist_xar_patch_xml_config_ids: "{{ (exist_xar_patch_xml_config_ids | default( {'filename':['hash1','hash2']} ))
+      #  | combine({item.src_archive_name : exist_xar_patch_xml_config_ids[item.src_archive_name] + [item.hash]}) }}"
+      exist_xar_patch_xml_config_ids: "{{ (exist_xar_patch_xml_config_ids | default({}))
+        | combine({item.src_archive_name : exist_xar_patch_xml_config_ids[item.src_archive_name] + [item.hash]}) }}"
+    with_items:
+    - "{{ exist_xar_patch_xml_merged }}"
+    when:
+    - "item.src_archive_name is defined and item.src_archive_name != ''"
+    no_log: true
+
+  - name: make temp copy of exist_xar_patch_xml_config_ids, clear exist_xar_patch_xml_config_ids
+    set_fact:
+      _exist_xar_patch_xml_config_ids_temp: "{{ exist_xar_patch_xml_config_ids }}"
+      exist_xar_patch_xml_config_ids: {}
+    no_log: true
+  - name: per filename, sort hash list, hash hash list to final config hash for this filename
+    set_fact:
+      #exist_xar_patch_xml_config_ids: "{{ (exist_xar_patch_xml_config_ids | default( {'filename':'hash'} ))
+      #  | combine({item.key : (_exist_xar_patch_xml_config_ids_temp[item.key] | sort) | join('') | hash('sha1') })}}"
+      exist_xar_patch_xml_config_ids: "{{ (exist_xar_patch_xml_config_ids | default({}))
+        | combine({item.key : (_exist_xar_patch_xml_config_ids_temp[item.key] | sort) | join('') | hash('sha1') })}}"
+    with_dict:
+    - "{{ _exist_xar_patch_xml_config_ids_temp }}"
+    no_log: true

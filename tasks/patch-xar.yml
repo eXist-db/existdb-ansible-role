@@ -26,8 +26,8 @@
     - install
     - xar-patch
 
-  - name: Copy xar from ./src/ to ./build/, append 'target_archive_suffix' to filename, unzip 'src_file_name'
-    shell: "cd {{ exist_xar_path }}; cp ./src/{{ item.src_archive_name }}.{{ item.src_archive_ext }} ./build/{{ item.src_archive_name }}{{ item.target_archive_suffix }}.{{ item.src_archive_ext }}.tmp;{% if item.src_file_name is defined %} mkdir -p ./build/{{ item.src_archive_name }}{{ item.target_archive_suffix }}; cd ./build/{{ item.src_archive_name }}{{ item.target_archive_suffix }}; unzip -o ../{{ item.src_archive_name }}{{ item.target_archive_suffix }}.{{ item.src_archive_ext }}.tmp {{ item.src_file_name }};{% endif %}"
+  - name: Copy xar from ./src/ to ./build/, append 'target_archive_suffix' to filename, unzip ['repo.xml', 'src_file_name']
+    shell: "cd {{ exist_xar_path }}; cp ./src/{{ item.src_archive_name }}.{{ item.src_archive_ext }} ./build/{{ item.src_archive_name }}{{ item.target_archive_suffix }}.{{ item.src_archive_ext }}.tmp; mkdir -p ./build/{{ item.src_archive_name }}{{ item.target_archive_suffix }}; cd ./build/{{ item.src_archive_name }}{{ item.target_archive_suffix }}; unzip -o ../{{ item.src_archive_name }}{{ item.target_archive_suffix }}.{{ item.src_archive_ext }}.tmp repo.xml{% if item.src_file_name is defined %} {{ item.src_file_name }}{% endif %};"
     with_items: "{{ exist_xar_patch_xml_merged }}"
     when: "item.src_archive_name is defined and item.src_archive_name != ''"
     tags:
@@ -44,6 +44,57 @@
       add_children: "{{ item.add_children | default('') }}"
     with_items: "{{ exist_xar_patch_xml_merged }}"
     when: "item.src_file_name is defined and item.src_file_name != ''"
+    tags:
+    - install
+    - xar-patch
+
+  # it goes like this:
+  # for every entry that defines a patch, create a string representation of the patch e.g. str(xpath + state + add_children)
+  # calculatete the hash over the string representation e.g. string | password_hash()
+  # lookup to which src_archive_name the patch belongs
+  # add the hash to the list of hashes belonging to this src_archive_name
+  # for every src_archive_name sort the list of hashes
+  # for every src_archive_name hash the items in the list of hashes to the final hash for this src_archive_name
+  # done.
+  - include_tasks: patch-xar-config-ids.yml
+    when: exist_custom_install|bool
+    tags: always
+
+  - name: Patch repo.xml config-id of every XAR
+    xml:
+      path: "{{ exist_xar_path }}/build/{{ item.src_archive_name }}{{ item.target_archive_suffix }}/repo.xml"
+      xpath: "/xmlns:meta"
+      namespaces: {'xmlns': "http://exist-db.org/xquery/repo"}
+      input_type: xml
+      state: "{{ item.state | default('present') }}"
+      attribute: "config-id"
+      #value: "0000000000000000000000000000000000000000"
+      value: "{{ exist_xar_patch_xml_config_ids[item.src_archive_name] }}"
+    with_items: "{{ exist_xar_patch_xml_merged }}"
+    when: "item.src_archive_name is defined"
+    tags:
+    - install
+    - xar-patch
+
+  - name: Patch repo.xml config-time of every XAR
+    xml:
+      path: "{{ exist_xar_path }}/build/{{ item.src_archive_name }}{{ item.target_archive_suffix }}/repo.xml"
+      xpath: "/xmlns:meta"
+      namespaces: {'xmlns': "http://exist-db.org/xquery/repo"}
+      input_type: xml
+      state: "{{ item.state | default('present') }}"
+      attribute: "config-time"
+      value: "{{ ansible_date_time.epoch }}"
+    with_items: "{{ exist_xar_patch_xml_merged }}"
+    when: "item.src_archive_name is defined"
+    tags:
+    - install
+    - xar-patch
+
+  - name: Update xar in ./build/ with patched repo.xml
+    shell: "cd {{ exist_xar_path }}/build/{{ item.src_archive_name }}{{ item.target_archive_suffix }}; zip -r ../{{ item.src_archive_name }}{{ item.target_archive_suffix }}.{{ item.src_archive_ext }}.tmp ./repo.xml;"
+    with_items: "{{ exist_xar_patch_xml_merged }}"
+    when: "item.src_archive_name is defined and item.src_archive_name != ''"
     tags:
     - install
     - xar-patch

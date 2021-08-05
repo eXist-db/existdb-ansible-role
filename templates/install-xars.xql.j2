@@ -1,6 +1,7 @@
 xquery version "3.1";
 
 declare namespace expath="http://expath.org/ns/pkg";
+declare namespace repo="http://exist-db.org/xquery/repo";
 
 (: XQuery to install one or more Xar packages into eXist-db       :)
 (: Xar files are expected in directory $EXIST_HOME/xars/          :)
@@ -9,7 +10,7 @@ declare namespace expath="http://expath.org/ns/pkg";
 
 (: comma separated list of xar file names as strings              :)
 (:     ("foo-1.0.xar,"bar-1.1.0.xar")                             :)
-declare variable $local:xarlist := ("{{ exist_custom_xarlist | join("\",\"") }}");
+declare variable $local:xarlist := ("{{ exist_custom_xarlist | join("\", \"") }}");
 
 (: force installation even if version numbers are identical?      :)
 (:     boolean string values "true" or "false"                    :)
@@ -24,7 +25,7 @@ declare function local:get-descriptors($zipPath) {
     return
         if (exists($binary)) then
             let $dataCb := function($path as xs:anyURI, $type as xs:string, $data as item()?, $param as item()*) { $data }
-            let $entryCb := function($path as xs:anyURI, $type as xs:string, $param as item()*) { $path = "expath-pkg.xml" }
+            let $entryCb := function($path as xs:anyURI, $type as xs:string, $param as item()*) { ($path = "expath-pkg.xml") or ($path = "repo.xml") }
             return
                 compression:unzip($binary, $entryCb, (), $dataCb, ())
         else
@@ -50,6 +51,29 @@ declare function local:compare-versions($installed as xs:string*, $available as 
         number(head($available)) > number(head($installed))
 };
 
+
+(: helper functions to get info about installed xar with $name :)
+declare variable $local:collections := (
+    collection("/db/apps"),
+    collection("/db/system/repo")
+);
+declare function local:get-expath-package ($name as xs:string) as item()? {
+    let $collections := $local:collections//expath:package[./@name=$name]
+    return $collections
+};
+declare function local:get-repo-meta ($name as xs:string) as element(meta)? {
+    let $expath-package := local:get-expath-package($name)
+    let $collection :=
+        if (count($expath-package)=1) then (
+            $expath-package
+                => util:collection-name()
+                => collection()
+        ) else (
+            ()
+        )
+    return $collection//repo:meta
+};
+
 (: deploy a single xar file, uninstall older first if needed :)
 declare function local:deploy-xar($xar) {
     let $fname := "{{ exist_path }}/xars/" || $xar
@@ -65,7 +89,6 @@ declare function local:deploy-xar($xar) {
     (: $stored is logically true if the xar could be saved into eXist DB :)
     let $stored := 
         if (not(empty($xarfile))) then ( 
-(:        if (boolean($xarfile)) then ( :)
             xmldb:store("/db/temp", $xar, $xarfile)
         ) else ( 
             let $log := util:log('info', "install-xars: not storing empty xar file " || $fname)
@@ -76,10 +99,24 @@ declare function local:deploy-xar($xar) {
     let $expath := $descriptors/expath:package
     let $name := $expath/@name
     let $newversion := $expath/@version/string()
-    let $installed := (collection("/db/apps/*")/expath:package,
-                       collection("/db/system/repo/*")/expath:package)[@name = $name]
+    let $installed := local:get-expath-package($name)
     let $oldversion := $installed/@version/string()
     let $log := util:log('info', "install-xars: xar " || $xar || ", fname: " || $fname || ", uri: " || $name || ", oldversion: " || $oldversion || ", newversion: " || $newversion)
+
+    let $oldrepo := local:get-repo-meta($name)
+    let $oldcommitid := $oldrepo/@commit-id/string()
+    let $oldcommittime := $oldrepo/@commit-time/string()
+    let $oldconfigid := $oldrepo/@config-id/string()
+    let $oldconfigtime := $oldrepo/@config-time/string()
+
+    let $newrepo := $descriptors/repo:meta
+    let $newcommitid := $newrepo/@commit-id/string()
+    let $newcommittime := $newrepo/@commit-time/string()
+    let $newconfigid := $newrepo/@config-id/string()
+    let $newconfigtime := $newrepo/@config-time/string()
+
+    let $log := util:log('info', 'OLD: ' || $oldversion || ' ' || $oldcommitid || ' ' || $oldconfigid)
+    let $log := util:log('info', 'NEW: ' || $newversion || ' ' || $newcommitid || ' ' || $newconfigid)
 
     let $toinstall :=
         if (not(boolean($installed))) then (
@@ -87,6 +124,10 @@ declare function local:deploy-xar($xar) {
             return true()
         ) else if ($local:force-install = "true") then (
             let $log := util:log('info', "install-xars: forcing uninstall of existing version " || $oldversion || ", uninstalling " || $name)
+            let $undep := repo:undeploy($name)
+            return repo:remove($name)
+        ) else if ((not(empty($newcommitid)) or not(empty($newconfigid))) and (not($newcommitid = $oldcommitid) or not($newconfigid = $oldconfigid))) then (
+            let $log := util:log('info', 'install-xars: commit-id or config-id mismatch, re-installing ' || $xar)
             let $undep := repo:undeploy($name)
             return repo:remove($name)
         ) else ( 
