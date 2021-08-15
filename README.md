@@ -3,7 +3,7 @@
 This is an Ansible role to install and configure eXist DB
 (http://exist-db.org/).
 
-The current version is 1.0RC2 (Dec 31 2019). This release supports
+The current version is 1.0 (Aug 15 2021). This release supports
 **eXist-db 5.x** and **multiple eXist-db instances** on a single host.
 For a list of changes since the public beta release, please see
 RELEASE_NOTES.md.
@@ -46,20 +46,6 @@ assume:
   an ansible fact gathering script populating 'ansible_local.java.java_home' was deployed OR
   the `JAVA_HOME` environment variable is correctly set up
 * Java binaries are in the shell `$PATH`
-
-## In the Works
-
-This is a list of features coming soon. Most of this is either prepared but
-not fully tested, or already in use at customer sites so that customer
-specific settings need to get factored out yet.
-
-- support `exist_installation_method: 'docker'`
-- autodetect `exist_major_version`
-- some config files such as conf.xml vary among distributions, so
-  templating is not optimal; and these configs might get so special that it's
-  hard to template at all;
-- we currently use the Java admin client to execute XQuery scripts, use Perl
-  XMLRPC script for simplicity;
 
 ## Role Variables
 
@@ -141,7 +127,7 @@ Memory settings for this eXist-db instance. They map to the Java flags `-Xms`,
     exist_mem_strdedup_enable: no
     exist_mem_niocachetune_enable: no
 
-Special memory settings suited for high-load installations: `exist_mem_g1gc_pausegoal` is the value of Java option `-XX:MaxGCPauseMillis`; `exist_mem_gcdebug_enable` enables GC logging for memory usage analysis; `exist_mem_nmt_enable` enable Java Native Memory Tracking. **NOTE** ignpred for exist 4.x because of conflicts with the YAJSW wrapper; `exist_mem_strdedup_enable` enables Java String Deduplication; `exist_mem_niocachetune_enable` works around a bug in java.nio that may lead to excessive memory usage in Java version < 11. This issue appears only in high load environments
+Special memory settings suited for high-load installations: `exist_mem_g1gc_pausegoal` is the value of Java option `-XX:MaxGCPauseMillis`; `exist_mem_gcdebug_enable` enables GC logging for memory usage analysis; `exist_mem_nmt_enable` enable Java Native Memory Tracking. **NOTE** ignored for exist 4.x because of conflicts with the YAJSW wrapper; `exist_mem_strdedup_enable` enables Java String Deduplication; `exist_mem_niocachetune_enable` works around a bug in java.nio that may lead to excessive memory usage in Java version < 11. This issue appears only in high load environments
 
     exist_major_version: 4
 
@@ -199,11 +185,12 @@ this value may need to be increased.
     exist_jettyconf_from_template: yes
     exist_logconf_from_template: no
     exist_clientprops_from_template: yes
-    exist_webxml_from_template: yes
+    # leave below at "no"
+    exist_webxml_from_template: no
     exist_confxml_from_template: no
 
-Whether to create certain config files from template. Not fully supported for
-conf.xml, leave that disabled!
+Whether to create certain config files from templates. Not fully supported for
+conf.xml and web.xml, leave that disabled!
 
     exist_fdset_enable: yes
     exist_fdsoft_limit: 8192
@@ -249,6 +236,7 @@ a valid password already.
     exist_wrapper_ping_timeout: 90
 
 Template parameters to modify exist tools/yajsw/conf/wrapper.conf file.
+Applies to eXist 4.x and earlier only.
 
     exist_confxml_dbconn_cachesize: "256M"
     exist_confxml_trigger_xquerystartup_enable: no
@@ -262,11 +250,13 @@ Template parameters to modify exist tools/yajsw/conf/wrapper.conf file.
     exist_confxml_job_cleansso_enable: no
     exist_confxml_serializer_indent: "yes"
 
-Template parameters to modify exist conf.xml file.
+Template parameters to modify exist conf.xml file. Ignored if
+`exist_confxml_from_template` left at `no`.
 
     exist_webxml_initparam_hidden: "true"
 
-Template parameters to modify exist webapp/WEB-INF/web.xml file.
+Template parameters to modify exist webapp/WEB-INF/web.xml file. Ignored if
+`exist_webxml_from_template` left at `no`.
 
 ## Setting the Admin Password and Pre-installing User Accounts
 
@@ -366,20 +356,7 @@ switching between source/archive, or by installing a different archive, or by
 compiling newer source code), this Ansible role creates a backup by default.
 These are file backups made after cleanly shutting down eXist.
 
-The backups are stored in dir `{{ exist_home }}/backup` in directories named
-after the eXist instance and a timestamp like this:
-
-```
-# cd {{ exist_home }}/backup; ls -l
-drwxr-x--x 3 existdb existdb 4096 Sep 18 14:09 exist.201809181409
-drwxr-x--x 3 existdb existdb 4096 Oct  8 16:03 exist.201810081603
-drwxr-x--x 3 existdb existdb 4096 Oct 14 14:51 exist-test.201810141451
-drwxr-xr-x 3 existdb existdb 4096 Oct 14 15:03 exist.201810141503
-lrwxrwxrwx 1 existdb existdb   18 Oct 14 15:03 last -> exist.201810141503
-```
-
-A backup can be restored by calling the `exist-restore.sh` like this:
-`/usr/local/existdb/bin/exist-restore.sh exist.201810081603`.
+[outdated documentation removed]
 
 ## Logging
 
@@ -464,7 +441,8 @@ Enable Java G1GC string deduplication:
 
     exist_mem_strdedup_enable: yes
 
-Enable workaround for java.nio excessive memory usage (JDK-8147468):
+Enable workaround for java.nio excessive memory usage (JDK-8147468) - ignore
+if using Java11 or higher:
 
     exist_mem_niocachetune_enable: yes
 
@@ -551,7 +529,7 @@ service exist-foo start
 
 ## Customizing Xar Installation
 
-XXX Not fully supported yet. Works, API will change, docs not up to date.
+Works, but not fully documented yet.
 
 ## Monex
 
