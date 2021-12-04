@@ -189,6 +189,8 @@ exist_system_utildir: '/usr/local/bin'
 
 # for CentOS 7, Amazon Linux
 exist_redhat_extra_packages:
+  # to handle .jar and .xar archives
+  - unzip
   # to handle .bz2 archives, not installed by default
   - bzip2
   # for Ansible synchronize
@@ -200,6 +202,8 @@ exist_redhat_extra_packages:
 
 # for Debian 8
 exist_debian_extra_packages:
+  # to handle .jar and .xar archives
+  - unzip
   # for uuidgen, not installed by default
   - uuid-runtime
   # for Ansible synchronize
@@ -212,6 +216,8 @@ exist_debian_extra_packages:
 
 # for Ubuntu xenial
 exist_ubuntu_extra_packages:
+  # to handle .jar and .xar archives
+  - unzip
   # for uuidgen, not installed by default
   - uuid-runtime
   # for Ansible
