@@ -1,6 +1,16 @@
-# Current Version
+# Version 1.1 (Dec 13 2021)
 
-Version 1.0 (Aug 15 2021)
+This is a security release addressing the log4j vulnerability.
+
+## Security
+
+* Mitigate log4j CVE-2021-44228 by passing `-Dlog4j2.formatMsgNoLookups=true`
+
+## Fixes and Improvements
+
+* add missing `unzip` dependency (thanks @gabicavalcante)
+
+# Version 1.0 (Aug 15 2021)
 
 This version has been applied to various eXist-db instances that are actively
 in production, including more complex setups that use production/staging/dev
@@ -44,8 +54,6 @@ environments or data replication for high availability.
 * recommended role invocation has changed to `include_role`, see "Example Playbook" in README.md
 * some config variables have been removed or renamed, please refer to `defaults/main.yml` or README.md
 
-# Old Versions
-
-## Unversioned Beta-Release (Nov 1 2018)
+# Unversioned Beta-Release (Nov 1 2018)
 
 Initial public beta release.

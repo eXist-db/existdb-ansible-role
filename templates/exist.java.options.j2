@@ -94,3 +94,6 @@
 
 # tmp dir
 -Djava.io.tmpdir={{ exist_home }}/tmp
+
+# SECURITY: log4j CVE-2021-44228 - do not allow log msg formatting
+-Dlog4j2.formatMsgNoLookups=true
