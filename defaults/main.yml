@@ -183,6 +183,14 @@ exist_confpaths:
     data_basedir: ''
     log_dir: 'logs'
     jetty_etc: 'etc/jetty'
+  6:
+    conf_xml: 'etc/conf.xml'
+    web_xml: 'etc/webapp/WEB-INF/web.xml'
+    log4j2_xml: 'etc/log4j2.xml'
+    client_properties: 'etc/client.properties'
+    data_basedir: ''
+    log_dir: 'logs'
+    jetty_etc: 'etc/jetty'
 
 # for exist utils installed in the system path
 exist_system_utildir: '/usr/local/bin'
@@ -196,6 +204,7 @@ exist_redhat_extra_packages:
   # for Ansible synchronize
   - rsync
   # for upload-xmlrpc script
+  - perl-RPC-XML
   - perl-LWP-Protocol-https
   # for source install
   - patch

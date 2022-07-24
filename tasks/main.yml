@@ -33,10 +33,10 @@
   when: exist_major_version == 4
   tags: always
 
-- name: Set srcpath fact (5.x)
+- name: Set srcpath fact (5.x or higher)
   set_fact:
-    exist_srcpath: '{{ exist_home }}/{{ exist_dir }}-v5source'
-  when: exist_major_version == 5
+    exist_srcpath: '{{ exist_home }}/{{ exist_dir }}-v{{ exist_major_version }}source'
+  when: exist_major_version > 4
   tags: always
 
 - name: Debug0

@@ -14,28 +14,28 @@
   tags:
     - config
 
-- name: Install eXist-DB custom Java options file (5.x)
+- name: Install eXist-DB custom Java options file (5.x or higher)
   template:
     src: exist.java.options.j2
     dest: "{{ exist_path }}/contrib/exist.java.options"
     mode: 0600
     owner: "{{ exist_instuser }}"
     group: "{{ exist_group }}"
-  when: exist_major_version == 5
+  when: exist_major_version > 4
   notify:
     - restart eXist
   tags:
     - config
     - exist5
 
-- name: Install eXist-DB service startup script (5.x)
+- name: Install eXist-DB service startup script (5.x or higher)
   template:
     src: service.sh.j2
     dest: "{{ exist_path }}/contrib/service.sh"
     mode: 0700
     owner: "{{ exist_instuser }}"
     group: "{{ exist_group }}"
-  when: exist_major_version == 5
+  when: exist_major_version > 4
   notify:
     - restart eXist
   tags:
@@ -56,12 +56,12 @@
     - exist4
 
 # init script calling contrib/service.sh
-- name: Install eXist-DB init script (SysV init, 5.x)
+- name: Install eXist-DB init script (SysV init, 5.x or higher)
   template:
     src: eXist-db.init.j2
     dest: "{{ exist_path }}/contrib/{{ exist_instname }}.init"
     mode: 0700
-  when: exist_major_version == 5 and ansible_service_mgr != "systemd"
+  when: exist_major_version > 4 and ansible_service_mgr != "systemd"
   notify:
     - restart eXist
   tags:
@@ -82,12 +82,12 @@
     - exist4
 
 # systemd service file calling contrib/service.sh
-- name: Install eXist-DB service file (systemd, 5.x)
+- name: Install eXist-DB service file (systemd, 5.x or higher)
   template:
     src: eXist-db.systemd.j2
     dest: "{{ exist_path }}/contrib/{{ exist_instname }}.service"
     mode: 0600
-  when: exist_major_version == 5 and ansible_service_mgr == "systemd"
+  when: exist_major_version > 4 and ansible_service_mgr == "systemd"
   notify:
     - restart eXist
   tags:
@@ -237,7 +237,7 @@
 
 - name: Setup eXist web.xml from template
   template:
-    src: web.xml.j2
+    src: web_{{ exist_major_version }}.xml.j2
     dest: "{{ exist_path }}/{{ exist_confpaths[exist_major_version]['web_xml'] }}"
     owner: "{{ exist_instuser }}"
     group: "{{ exist_group }}"
@@ -263,7 +263,7 @@
 
 - name: Setup Jetty standard.enabled-jetty-configs file from template
   template: 
-    src: standard.enabled-jetty-configs.j2
+    src: standard.enabled-jetty-configs_{{ exist_major_version }}.j2
     dest: "{{ exist_path }}/{{ exist_confpaths[exist_major_version]['jetty_etc'] }}/standard.enabled-jetty-configs"
     owner: "{{ exist_instuser }}"
     group: "{{ exist_group }}"
@@ -365,7 +365,7 @@
     creates: "{{ exist_path }}/etc/system.properties"
     # don't nag to use Ansible unarchive instead
     warn: no
-  when: exist_major_version == 5
+  when: exist_major_version > 4
   tags:
     - config
     - exist5

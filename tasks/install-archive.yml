@@ -44,7 +44,7 @@
     - exist4
 
 # need to jump hoops because the relevant info is packed inside a jar file
-- name: Extract exist-core jar from archive to install (5.x)
+- name: Extract exist-core jar from archive to install (5.x or higher)
   unarchive:
     src: "{{ exist_home }}/tmp/{{ exist_archive }}"
     dest: "{{ exist_home }}/tmp"
@@ -52,20 +52,20 @@
     owner: "{{ exist_instuser }}"
     group: "{{ exist_group }}"
     extra_opts: [ '--transform=s:^[^/]\+:{{ exist_instname }}:;', '--wildcards', '*exist-core*jar' ]
-  when: exist_major_version == 5
+  when: exist_major_version > 4
   tags:
     - install
     - arch-install
     - exist5
 
-- name: Determine source code revision in archive to install (5.x)
+- name: Determine source code revision in archive to install (5.x or higher)
   shell: "unzip -p {{ exist_home }}/tmp/{{ exist_instname }}/lib/exist-core*jar org/exist/system.properties | grep git-commit | sed -e 's/git-commit=//;'"
   register: archive_revision
   changed_when: false
   check_mode: false
   args:
     warn: no
-  when: exist_major_version == 5
+  when: exist_major_version > 4
   tags:
     - install
     - arch-install
@@ -74,7 +74,7 @@
 - name: Set exist_archive_revision fact
   set_fact:
     exist_archive_revision: "{{ archive_revision.stdout }}"
-  when: exist_major_version == 5
+  when: exist_major_version > 4
   tags:
     - install
     - arch-install

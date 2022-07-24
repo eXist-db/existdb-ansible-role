@@ -46,7 +46,7 @@ Use the commands below to manage your eXist-db instance from the shell.
 
 ## Controlling Java Options Passed to the eXist-db Process
 
-{% if exist_major_version == 5 %}
+{% if exist_major_version > 4 %}
 Edit {{ exist_path }}/contrib/exist.java.options and restart exist.
 {% else %}
 Edit {{ exist_path }}/{{ exist_confpaths[exist_major_version]['wrapper_conf'] }}

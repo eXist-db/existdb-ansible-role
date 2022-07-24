@@ -132,7 +132,7 @@ Special memory settings suited for high-load installations: `exist_mem_g1gc_paus
     exist_major_version: 4
 
 You need to explicitly specify whether you are going to install an eXist-db 4.x
-or 5.x version. There is currently no auto-detection.
+or higher version. There is currently no auto-detection.
 
     exist_install_method: source
 

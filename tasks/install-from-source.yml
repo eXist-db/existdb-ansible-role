@@ -77,8 +77,8 @@
   tags:
     - always
 
-- name: Include build tasks (5.x)
+- name: Include build tasks (5.x or higher)
   include_tasks: build-v5.yml
-  when: exist_major_version == 5
+  when: exist_major_version > 4
   tags:
     - always
