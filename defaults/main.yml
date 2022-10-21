@@ -223,7 +223,7 @@ exist_debian_extra_packages:
   # for source install
   - patch
 
-# for Ubuntu xenial
+# for Ubuntu (xenial or later)
 exist_ubuntu_extra_packages:
   # to handle .jar and .xar archives
   - unzip
@@ -232,7 +232,8 @@ exist_ubuntu_extra_packages:
   # for Ansible
   - acl
   - python3-lxml
-  - python-lxml
+  ## for python2 only
+  #- python-lxml
   - rsync
   # for upload-xmlrpc script
   - librpc-xml-perl
