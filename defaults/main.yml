@@ -46,6 +46,10 @@ exist_mem_nmt_enable: no
 exist_mem_strdedup_enable: no
 exist_mem_niocachetune_enable: no
 
+# OOM memory settings
+exist_mem_exitoom_enable: yes
+exist_mem_dumpoom_enable: no
+
 # because eXist-db 5.0 introduces many changes in its filesystem layout that
 # affect Ansible operation, we use this variable as an indicator for Ansible
 # processing. Expected values:

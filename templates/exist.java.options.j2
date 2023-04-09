@@ -92,6 +92,15 @@
 #-Djdk.nio.maxCachedBufferSize=262144
 {% endif %}
 
+{% if exist_mem_dumpoom_enable|bool is sameas true %}
+-XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath={{ exist_home }}/dump
+{% endif %}
+
+{% if exist_mem_exitoom_enable|bool is sameas true %}
+-XX:+ExitOnOutOfMemoryError
+{% endif %}
+
+
 # tmp dir
 -Djava.io.tmpdir={{ exist_home }}/tmp
 
