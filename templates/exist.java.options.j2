@@ -58,6 +58,11 @@
 -XX:+UseShenandoahGC
 {% endif %}
 
+# NUMA
+{% if exist_mem_numa_enable|bool is sameas true %}
+-XX:+UseNUMA
+{% endif %}
+
 # GC logging/debugging
 {% if exist_mem_gcdebug_enable|bool is sameas true %}
 -XX:+PrintGCDetails

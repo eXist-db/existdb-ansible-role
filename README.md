@@ -123,6 +123,7 @@ Memory settings for this eXist-db instance. They map to the Java flags `-Xms`,
 
     exist_mem_gc: 'g1'
     exist_mem_g1gc_pausegoal: 200
+    exist_mem_numa_enable: no
     exist_mem_gcdebug_enable: no
     exist_mem_nmt_enable: no
     exist_mem_strdedup_enable: yes
@@ -131,6 +132,7 @@ Memory settings for this eXist-db instance. They map to the Java flags `-Xms`,
 Special memory settings suited for high-load installations:
 * `exist_mem_gc` is the garbage collector to use, recognised values are: `serial`, `parallel`, `cms`, `g1`, `z`, and `shenandoah`.
 * `exist_mem_g1gc_pausegoal` is the value of Java option `-XX:MaxGCPauseMillis`; only relevant if `exist_mem_gc == 'g1'`.
+* `exist_mem_numa_enable` activates/deactivates the Java option `-XX:+UseNUMA`; This should only be used with Java 11+ due to the issue: https://bugs.openjdk.java.net/browse/JDK-8189922
 * `exist_mem_gcdebug_enable` enables GC logging for memory usage analysis
 * `exist_mem_nmt_enable` enable Java Native Memory Tracking. **NOTE** ignored for exist 4.x because of conflicts with the YAJSW wrapper
 * `exist_mem_strdedup_enable` enables Java String Deduplication
