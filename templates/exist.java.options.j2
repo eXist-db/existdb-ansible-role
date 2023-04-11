@@ -37,9 +37,32 @@
 -XX:MaxMetaspaceSize={{ exist_mem_max_meta }}m
 -XX:MaxDirectMemorySize={{ exist_mem_max_direct }}m
 
-# GC (default G1 GC)
+# GC
+{% if exist_mem_gc == 'serial' %}
+-XX:+UseSerialGC
+{% endif %}
+{% if exist_mem_gc == 'parallel' %}
+-XX:+UseParallelGC
+{% endif %}
+{% if exist_mem_gc == 'cms' %}
+-XX:+UseConcMarkSweepGC
+{% endif %}
+{% if exist_mem_gc == 'g1' %}
 -XX:+UseG1GC
 -XX:MaxGCPauseMillis={{ exist_mem_g1gc_pausegoal }}
+{% endif %}
+{% if exist_mem_gc == 'z' %}
+-XX:+UseZGC
+{% endif %}
+{% if exist_mem_gc == 'shenandoah' %}
+-XX:+UseShenandoahGC
+{% endif %}
+
+# NUMA
+{% if exist_mem_numa_enable|bool is sameas true %}
+-XX:+UseNUMA
+{% endif %}
+
 # GC logging/debugging
 {% if exist_mem_gcdebug_enable|bool is sameas true %}
 -XX:+PrintGCDetails
@@ -91,6 +114,15 @@
 {% else %}
 #-Djdk.nio.maxCachedBufferSize=262144
 {% endif %}
+
+{% if exist_mem_dumpoom_enable|bool is sameas true %}
+-XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath={{ exist_home }}/dump
+{% endif %}
+
+{% if exist_mem_exitoom_enable|bool is sameas true %}
+-XX:+ExitOnOutOfMemoryError
+{% endif %}
+
 
 # tmp dir
 -Djava.io.tmpdir={{ exist_home }}/tmp

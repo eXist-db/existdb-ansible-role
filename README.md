@@ -121,13 +121,29 @@ details.
 Memory settings for this eXist-db instance. They map to the Java flags `-Xms`,
 `-Xmx`, `-XX:MaxMetaspaceSize` and `-XX:MaxDirectMemorySize`.
 
+    exist_mem_gc: 'g1'
     exist_mem_g1gc_pausegoal: 200
+    exist_mem_numa_enable: no
     exist_mem_gcdebug_enable: no
     exist_mem_nmt_enable: no
-    exist_mem_strdedup_enable: no
+    exist_mem_strdedup_enable: yes
     exist_mem_niocachetune_enable: no
 
-Special memory settings suited for high-load installations: `exist_mem_g1gc_pausegoal` is the value of Java option `-XX:MaxGCPauseMillis`; `exist_mem_gcdebug_enable` enables GC logging for memory usage analysis; `exist_mem_nmt_enable` enable Java Native Memory Tracking. **NOTE** ignored for exist 4.x because of conflicts with the YAJSW wrapper; `exist_mem_strdedup_enable` enables Java String Deduplication; `exist_mem_niocachetune_enable` works around a bug in java.nio that may lead to excessive memory usage in Java version < 11. This issue appears only in high load environments
+Special memory settings suited for high-load installations:
+* `exist_mem_gc` is the garbage collector to use, recognised values are: `serial`, `parallel`, `cms`, `g1`, `z`, and `shenandoah`.
+* `exist_mem_g1gc_pausegoal` is the value of Java option `-XX:MaxGCPauseMillis`; only relevant if `exist_mem_gc == 'g1'`.
+* `exist_mem_numa_enable` activates/deactivates the Java option `-XX:+UseNUMA`; This should only be used with Java 11+ due to the issue: https://bugs.openjdk.java.net/browse/JDK-8189922
+* `exist_mem_gcdebug_enable` enables GC logging for memory usage analysis
+* `exist_mem_nmt_enable` enable Java Native Memory Tracking. **NOTE** ignored for exist 4.x because of conflicts with the YAJSW wrapper
+* `exist_mem_strdedup_enable` enables Java String Deduplication
+* `exist_mem_niocachetune_enable` works around a bug in java.nio that may lead to excessive memory usage in Java version < 11. This issue appears only in high load environments
+
+Out of Memory error settings for this eXist-db instance. These only take effect if the JVM runs out of memory for eXist-db to operate. As it is almost impossible to recover from a Java OutOfMemoryError, it is recommened to at least enable `exist_mem_exitoom_enable` as this will help possible further corruption to the eXist-db database itself.
+
+    exist_mem_exitoom_enable: yes
+    exist_mem_dumpoom_enable: no
+
+The `exist_mem_dumpoom_enable` setting will cause the JVM to write a Heap Dump file to `$EXIST_HOME/dump` if it runs out of memory. This can be useful for debugging possible Memory Leaks in eXist-db, or analyzing where eXist-db applications are consuming excessive memory.
 
     exist_major_version: 4
 
