@@ -1,7 +1,6 @@
-# Ansible Role: exist DB
+# Ansible Role: eXist-db
 
-This is an Ansible role to install and configure eXist DB
-(http://exist-db.org/).
+This is an Ansible role to install and configure [eXist-db](http://exist-db.org/).
 
 ## Overview
 
@@ -23,7 +22,7 @@ By default, the exist/autodeploy directory is left untouched, so any xar files
 there get installed at first startup. This can be overridden to pre-install a
 defined set of xar packages for each host.
 
-When upgrading or replacing a running exist DB (either by installing a newer
+When upgrading or replacing a running eXist-db (either by installing a newer
 or different archive, or switching install methods between source/archive
 installation), a backup gets created by default, and the data directory of the
 previous installation gets copied back into the new installation. This is
@@ -34,7 +33,7 @@ get set. They are persistent and not re-set in later Ansible runs.
 
 ## Requirements
 
-Exist DB requires Java. Installing Java is outside of scope of this role, we
+eXist-db requires Java. Installing Java is outside of scope of this role, we
 assume:
 * Java JDK is installed (JRE might be sufficient in some situations, but you can't build from source then)
 * the fact 'exist_java_home' is set by the calling playbook OR
@@ -50,7 +49,7 @@ Available variables are listed below, along with default values (see `defaults/m
     exist_group: existdb
     exist_home: /usr/local/existdb
 
-Settings for the user that usually runs exist DB. This is a system user,
+Settings for the user that usually runs eXist-db. This is a system user,
 logins are not allowed. A separate user should be created to manage exist at
 the shell level, this is outside the scope of this role.
 
@@ -471,7 +470,7 @@ G1GCs pause time goal from 200 to 250 or 300 milliseconds:
 
     exist_mem_g1gc_pausegoal: 250
 
-## Multiple Exist Instances on the same Host
+## Multiple eXist-db Instances on the same Host
 
 Back in the old days, it was quite tedious to run more than one eXist-db
 instance on a single server. It involved various manual tasks to keep the
@@ -553,7 +552,7 @@ None, except Java obviously.
 ## Example Playbook
 
 ```
-- name: Setup eXist DB instances
+- name: Setup eXist-db instances
   hosts: exist_servers
   # need to be root for various install steps
   become: yes
