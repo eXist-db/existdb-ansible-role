@@ -3,11 +3,6 @@
 This is an Ansible role to install and configure eXist DB
 (http://exist-db.org/).
 
-The current version is 1.1 (Dec 13 2021). This release supports
-**eXist-db 5.x** and **multiple eXist-db instances** on a single host.
-For a list of changes since the public beta release, please see
-RELEASE_NOTES.md.
-
 ## Overview
 
 This role allows to install exist by
