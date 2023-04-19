@@ -39,7 +39,7 @@
 
   - name: make temp copy of exist_xar_patch_xml_config_ids, clear exist_xar_patch_xml_config_ids
     set_fact:
-      _exist_xar_patch_xml_config_ids_temp: "{{ exist_xar_patch_xml_config_ids }}"
+      _exist_xar_patch_xml_config_ids_temp: "{{ exist_xar_patch_xml_config_ids|default({}) }}"
       exist_xar_patch_xml_config_ids: {}
     no_log: true
   - name: per filename, sort hash list, hash hash list to final config hash for this filename
