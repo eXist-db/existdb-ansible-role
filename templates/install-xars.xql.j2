@@ -127,8 +127,8 @@ declare function local:deploy-xar($xar) {
             let $undep := repo:undeploy($name)
             return repo:remove($name)
         ) else if (
-            (not(empty($newcommitid)) and (not($newcommitid = $oldcommitid))) or
-            (not(empty($newconfigid)) and (not($newconfigid = $oldconfigid)))
+            (exists($newcommitid) and (not($newcommitid = $oldcommitid))) or
+            (exists($newconfigid) and (not($newconfigid = $oldconfigid)))
             ) then (
             let $log := util:log('info', 'install-xars: commit-id or config-id mismatch, re-installing ' || $xar)
             let $undep := repo:undeploy($name)
