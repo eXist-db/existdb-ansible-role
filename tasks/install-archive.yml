@@ -59,7 +59,7 @@
     - exist5
 
 - name: Determine source code revision in archive to install (5.x or higher)
-  shell: "unzip -p {{ exist_home }}/tmp/{{ exist_instname }}/lib/exist-core*jar org/exist/system.properties | grep git-commit | sed -e 's/git-commit=//;'"
+  shell: "unzip -p {{ exist_home }}/tmp/{{ exist_instname }}/lib/exist-core*jar org/exist/system.properties | grep git-commit= | sed -e 's/git-commit=//;'"
   register: archive_revision
   changed_when: false
   check_mode: false
