@@ -363,8 +363,6 @@
   shell: "unzip -qjd {{ exist_path }}/etc {{ exist_path }}/lib/exist-core*jar org/exist/system.properties; chown {{ exist_instuser }}:{{ exist_group }} {{ exist_path }}/etc/system.properties"
   args:
     creates: "{{ exist_path }}/etc/system.properties"
-    # don't nag to use Ansible unarchive instead
-    warn: no
   when: exist_major_version > 4
   tags:
     - config

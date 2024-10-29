@@ -64,7 +64,6 @@
   changed_when: false
   check_mode: false
   args:
-    warn: no
   when: exist_major_version > 4
   tags:
     - install
