@@ -131,19 +131,7 @@
     group: "{{ exist_group }}"
     mode: 0700
   with_items:
-    - upload-xmlrpc.pl
     - upload-xmlrpc.py
-  tags:
-    - config
-
-- name: Hardlink upload-xmlrpc.pl to execute-xmlrpc.pl
-  file:
-    src: "{{ exist_path }}/contrib/upload-xmlrpc.pl"
-    dest: "{{ exist_path }}/contrib/execute-xmlrpc.pl"
-    state: hard
-    force: yes
-    owner: "{{ exist_instuser }}"
-    group: "{{ exist_group }}"
   tags:
     - config
 

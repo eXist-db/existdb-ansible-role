@@ -209,9 +209,6 @@ exist_redhat_extra_packages:
   - bzip2
   # for Ansible synchronize
   - rsync
-  # for upload-xmlrpc script
-  - perl-RPC-XML
-  - perl-LWP-Protocol-https
   # for source install
   - patch
 
@@ -223,9 +220,6 @@ exist_debian_extra_packages:
   - uuid-runtime
   # for Ansible synchronize
   - rsync
-  # for upload-xmlrpc script
-  - librpc-xml-perl
-  - liblwp-protocol-https-perl
   # for source install
   - patch
 
@@ -241,9 +235,6 @@ exist_ubuntu_extra_packages:
   ## for python2 only
   #- python-lxml
   - rsync
-  # for upload-xmlrpc script
-  - librpc-xml-perl
-  - liblwp-protocol-https-perl
   # for source install
   - patch
   # for WebDAV and debugging
